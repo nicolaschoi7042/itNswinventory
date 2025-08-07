@@ -10,8 +10,8 @@ class ApiService {
             // Development: localhost:8080 -> localhost:3001
             apiUrl = origin.replace(':8080', ':3001');
         } else if (origin.includes('it.roboetech.com')) {
-            // Production: https://it.roboetech.com -> https://it.roboetech.com:3001
-            apiUrl = origin + ':3001';
+            // Production: https://it.roboetech.com -> https://it.roboetech.com/api (same domain)
+            apiUrl = origin;
         } else {
             // Fallback: add port 3001 to any other domain
             apiUrl = origin + ':3001';
