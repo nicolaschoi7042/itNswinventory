@@ -1,7 +1,14 @@
-# IT 자산 및 SW 인벤토리 관리시스템
+# IT 자산 및 SW 인벤토리 관리시스템 v2.0
 
 ## 📋 개요
 회사 내 임직원의 IT 자산 및 소프트웨어 인벤토리를 관리하는 웹기반 시스템입니다.
+
+**v2.0 주요 개선사항:**
+- ✅ **크로스 브라우저 데이터 공유**: PostgreSQL 데이터베이스 백엔드 도입으로 모든 브라우저에서 동일한 데이터 접근 가능
+- ✅ **데이터 영속성**: 브라우저 캐시를 삭제해도 데이터가 보존됨
+- ✅ **다중 사용자 지원**: 여러 명이 동시에 시스템 사용 가능
+- ✅ **향상된 성능**: REST API 기반 실시간 데이터 동기화
+- ❌ **localStorage 제거**: 더 이상 브라우저 로컬 스토리지에 의존하지 않음
 
 ## 🚀 Docker 기반 배포
 
@@ -73,6 +80,24 @@ itNswinventory/
 - **소프트웨어 인벤토리**: 라이선스 및 설치 현황 관리
 - **자산 할당 관리**: 임직원별 자산 할당/반납 이력
 - **엑셀 내보내기**: 각 항목별 데이터 엑셀 파일로 내보내기
+
+## 🏗️ 시스템 아키텍처
+
+### 서비스 구성
+- **프론트엔드 (it-inventory)**: Nginx 기반 웹 서버 - 포트 8080
+- **백엔드 API (it-inventory-api)**: Node.js + Express REST API - 포트 3000
+- **데이터베이스 (it-inventory-db)**: PostgreSQL 15 - 포트 5432
+- **데이터베이스 관리도구 (it-inventory-pgadmin)**: pgAdmin 4 - 포트 5050
+
+### 접근 URL
+- **웹 애플리케이션**: http://localhost:8080
+- **API 문서**: http://localhost:3000/api/health
+- **데이터베이스 관리**: http://localhost:5050 (admin@itinventory.com / admin123)
+
+### 데이터베이스
+- **사용자**: inventory_user
+- **데이터베이스명**: inventory_db
+- **기본 관리자 계정**: admin / admin123
 
 ## 🛠️ 관리 명령어
 

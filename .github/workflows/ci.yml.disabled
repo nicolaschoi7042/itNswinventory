@@ -26,7 +26,7 @@ jobs:
           ls -la
           echo "✅ Core files present:"
           test -f index.html && echo "  ✓ index.html"
-          test -f styles.css && echo "  ✓ styles.css" 
+          test -f styles.css && echo "  ✓ styles.css"
           test -f script.js && echo "  ✓ script.js"
           test -f Dockerfile && echo "  ✓ Dockerfile"
           test -f docker-compose.yml && echo "  ✓ docker-compose.yml"
@@ -93,11 +93,11 @@ jobs:
           echo "🚀 Starting container for testing..."
           docker run -d --name test-container -p 8080:80 it-inventory:test
           sleep 15
-          
+
           echo "🔍 Testing container health..."
           # Container 로그 확인
           docker logs test-container
-          
+
           # HTTP 요청 테스트 (더 관대한 조건)
           if curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/index.html | grep -q "200"; then
             echo "✅ Container is serving content correctly"
@@ -112,7 +112,7 @@ jobs:
               exit 1
             fi
           fi
-          
+
           echo "🛑 Stopping test container..."
           docker stop test-container || true
           docker rm test-container || true
@@ -192,7 +192,7 @@ jobs:
           npm start &
           SERVER_PID=$!
           sleep 10
-          
+
           echo "🔍 Testing API endpoints..."
           # Health check
           if curl -f http://localhost:3000/api/health; then
@@ -201,7 +201,7 @@ jobs:
             echo "❌ API health check failed"
             exit 1
           fi
-          
+
           echo "🛑 Stopping API server..."
           kill $SERVER_PID
 
@@ -230,7 +230,7 @@ jobs:
             docker compose logs
             exit 1
           fi
-          
+
           echo "🔍 Testing service connectivity..."
           docker compose ps
 
@@ -296,7 +296,7 @@ jobs:
 
   # 실패시 알림
   notify-failure:
-    name: ❌ Deployment Failed  
+    name: ❌ Deployment Failed
     runs-on: ubuntu-latest
     needs: [code-quality, docker-build, security-scan, backend-test, integration-test]
     if: failure()

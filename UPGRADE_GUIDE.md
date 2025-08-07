@@ -46,7 +46,7 @@ const exportData = () => {
         assignments: JSON.parse(localStorage.getItem('inventory_assignments') || '[]'),
         activities: JSON.parse(localStorage.getItem('inventory_activities') || '[]')
     };
-    
+
     const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -112,12 +112,12 @@ psql -U inventory_user -d inventory_db -f validation/data_check.sql
 #### 🔑 초기 계정 생성
 ```sql
 -- 관리자 계정 생성
-INSERT INTO users (username, password_hash, full_name, email, role) 
+INSERT INTO users (username, password_hash, full_name, email, role)
 VALUES ('admin', '$2a$10$...', '시스템관리자', 'admin@company.com', 'admin');
 
 -- 매니저 계정들 생성
-INSERT INTO users (username, password_hash, full_name, email, role) 
-VALUES 
+INSERT INTO users (username, password_hash, full_name, email, role)
+VALUES
 ('manager1', '$2a$10$...', '개발팀장', 'dev_mgr@company.com', 'manager'),
 ('manager2', '$2a$10$...', 'IT팀장', 'it_mgr@company.com', 'manager');
 ```

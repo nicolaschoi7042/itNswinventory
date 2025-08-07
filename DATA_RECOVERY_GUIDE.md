@@ -53,7 +53,7 @@ pg_restore -U inventory_user -d inventory_db -t employees backup_file.sql
 
 # 3. 데이터 정합성 확인
 docker exec it-inventory-db psql -U inventory_user -d inventory_db -c "
-SELECT 
+SELECT
   (SELECT COUNT(*) FROM employees) as employee_count,
   (SELECT COUNT(*) FROM assignments WHERE employee_id NOT IN (SELECT id FROM employees)) as orphaned_assignments;
 "
@@ -114,34 +114,34 @@ docker exec it-inventory-db pg_dump -U inventory_user -d inventory_db -t hardwar
 ### 복구 후 필수 검증 항목
 ```sql
 -- 1. 기본 테이블 레코드 수 확인
-SELECT 
+SELECT
   'employees' as table_name, COUNT(*) as record_count FROM employees
 UNION ALL
-SELECT 'hardware', COUNT(*) FROM hardware  
+SELECT 'hardware', COUNT(*) FROM hardware
 UNION ALL
 SELECT 'software', COUNT(*) FROM software
 UNION ALL
 SELECT 'assignments', COUNT(*) FROM assignments;
 
 -- 2. 데이터 정합성 확인
-SELECT 
+SELECT
   'orphaned_assignments' as check_type,
   COUNT(*) as issue_count
-FROM assignments a 
+FROM assignments a
 WHERE a.employee_id NOT IN (SELECT id FROM employees WHERE is_active = true);
 
 -- 3. 최근 데이터 확인
-SELECT 
+SELECT
   'recent_employees' as check_type,
   COUNT(*) as count
-FROM employees 
+FROM employees
 WHERE created_at > NOW() - INTERVAL '7 days';
 
 -- 4. 중복 데이터 확인
-SELECT 
+SELECT
   email, COUNT(*) as duplicate_count
-FROM employees 
-GROUP BY email 
+FROM employees
+GROUP BY email
 HAVING COUNT(*) > 1;
 ```
 
@@ -230,7 +230,7 @@ fi
 ### 1. 담당자 연락처
 ```
 - 시스템 관리자: [연락처]
-- 백업 담당자: [연락처]  
+- 백업 담당자: [연락처]
 - IT 책임자: [연락처]
 ```
 
@@ -250,7 +250,7 @@ fi
 
 ## 🔗 관련 파일
 - `backend/backup/backup.sh` - 자동 백업 스크립트
-- `backend/backup/restore.sh` - 복원 스크립트  
+- `backend/backup/restore.sh` - 복원 스크립트
 - `docker-compose.production.yml` - 운영 환경 설정
 - `.env` - 환경 변수 설정
 

@@ -36,7 +36,7 @@ jobs:
             echo "❌ HTML DOCTYPE missing"
             exit 1
           fi
-          
+
           if grep -q "<title>" index.html; then
             echo "✅ HTML title tag found"
           else
@@ -116,7 +116,7 @@ jobs:
           else
             echo "✅ No sensitive .env files found"
           fi
-          
+
           if grep -r "password.*=" --include="*.js" --include="*.json" .; then
             echo "⚠️ Found potential hardcoded passwords"
           else
@@ -134,7 +134,7 @@ jobs:
         run: |
           echo "🎉 All checks passed successfully!"
           echo "✅ Basic file validation completed"
-          echo "✅ Docker build test passed" 
+          echo "✅ Docker build test passed"
           echo "✅ Backend structure validated"
           echo "✅ Security check completed"
           echo "🚀 IT Inventory System is ready for deployment!"

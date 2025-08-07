@@ -56,7 +56,7 @@ CREATE TABLE software (
     type VARCHAR(50),
     license_type VARCHAR(50),
     total_licenses INTEGER DEFAULT 1,
-    used_licenses INTEGER DEFAULT 0,
+    current_users INTEGER DEFAULT 0,
     purchase_date DATE,
     expiry_date DATE,
     price DECIMAL(12,2),
@@ -66,18 +66,21 @@ CREATE TABLE software (
     created_by INTEGER REFERENCES users(id)
 );
 
--- 자산 할당 테이블
+-- 자산 할당 테이블 (하드웨어 + 소프트웨어 통합)
 CREATE TABLE assignments (
     id VARCHAR(20) PRIMARY KEY, -- AS001, AS002, ...
     employee_id VARCHAR(20) NOT NULL REFERENCES employees(id),
-    hardware_id VARCHAR(20) NOT NULL REFERENCES hardware(id),
-    assign_date DATE NOT NULL,
+    asset_type VARCHAR(20) NOT NULL CHECK (asset_type IN ('hardware', 'software')),
+    asset_id VARCHAR(20) NOT NULL,
+    assigned_date DATE NOT NULL,
     return_date DATE,
-    status VARCHAR(20) DEFAULT '할당중' CHECK (status IN ('할당중', '반납완료')),
+    status VARCHAR(20) DEFAULT '사용중' CHECK (status IN ('사용중', '반납완료')),
     notes TEXT,
+    return_notes TEXT,
+    assigned_by INTEGER REFERENCES users(id),
+    is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    created_by INTEGER REFERENCES users(id)
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 활동 이력 테이블 (변경 추적)
@@ -97,7 +100,7 @@ CREATE INDEX idx_employees_department ON employees(department);
 CREATE INDEX idx_hardware_status ON hardware(status);
 CREATE INDEX idx_hardware_assigned_to ON hardware(assigned_to);
 CREATE INDEX idx_assignments_employee ON assignments(employee_id);
-CREATE INDEX idx_assignments_hardware ON assignments(hardware_id);
+CREATE INDEX idx_assignments_asset ON assignments(asset_type, asset_id);
 CREATE INDEX idx_assignments_status ON assignments(status);
 CREATE INDEX idx_activities_user ON activities(user_id);
 CREATE INDEX idx_activities_created_at ON activities(created_at);
@@ -111,31 +114,36 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
-CREATE TRIGGER update_employees_updated_at BEFORE UPDATE ON employees 
+CREATE TRIGGER update_employees_updated_at BEFORE UPDATE ON employees
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-    
-CREATE TRIGGER update_hardware_updated_at BEFORE UPDATE ON hardware 
+
+CREATE TRIGGER update_hardware_updated_at BEFORE UPDATE ON hardware
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-    
-CREATE TRIGGER update_software_updated_at BEFORE UPDATE ON software 
+
+CREATE TRIGGER update_software_updated_at BEFORE UPDATE ON software
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-    
-CREATE TRIGGER update_assignments_updated_at BEFORE UPDATE ON assignments 
+
+CREATE TRIGGER update_assignments_updated_at BEFORE UPDATE ON assignments
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- 기본 관리자 계정 생성 (비밀번호: admin123)
-INSERT INTO users (username, password_hash, full_name, email, role) VALUES 
+INSERT INTO users (username, password_hash, full_name, email, role) VALUES
 ('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMye.FuIBNQVgAoJ2h4bLEohzE8PZKG0O6K', '시스템 관리자', 'admin@company.com', 'admin');
 
 -- 샘플 데이터 (개발/테스트용)
-INSERT INTO employees (id, name, department, position, hire_date, email, phone) VALUES 
-('EMP001', '김철수', '개발팀', '과장', '2020-03-15', 'kim@company.com', '010-1234-5678'),
-('EMP002', '이영희', '마케팅팀', '대리', '2021-07-01', 'lee@company.com', '010-9876-5432');
+INSERT INTO employees (id, name, department, hire_date, email, phone) VALUES
+('EMP001', '김철수', '개발팀', '2020-03-15', 'kim@company.com', '010-1234-5678');
 
-INSERT INTO hardware (id, type, manufacturer, model, serial_number, purchase_date, price, status) VALUES 
-('HW001', '노트북', 'Dell', 'Latitude 5520', 'DL202301001', '2023-01-15', 1200000, '대기중'),
-('HW002', '모니터', 'LG', '27UP850', 'LG202301002', '2023-02-01', 450000, '대기중');
+INSERT INTO hardware (id, type, manufacturer, model, serial_number, purchase_date, price, status) VALUES
+('HW001', '노트북', 'Dell', 'Latitude 5520', 'DL202301001', '2023-01-15', 1200000, '할당중'),
+('HW002', '모니터', 'LG', '27UP850', 'LG202301002', '2023-02-01', 450000, '대기중'),
+('HW003', '키보드', 'Logitech', 'MX Keys', 'LG202301003', '2023-03-01', 150000, '대기중');
 
-INSERT INTO software (id, name, manufacturer, version, type, license_type, total_licenses, used_licenses, purchase_date, price) VALUES 
-('SW001', 'Microsoft Office 365', 'Microsoft', '2023', '오피스', '다중사용자', 10, 5, '2023-01-01', 1500000),
-('SW002', 'Windows 11 Pro', 'Microsoft', '23H2', '운영체제', '단일사용자', 20, 15, '2023-03-01', 2000000);
+INSERT INTO software (id, name, manufacturer, version, type, license_type, total_licenses, current_users, purchase_date, price) VALUES
+('SW001', 'Microsoft Office 365', 'Microsoft', '2023', '오피스', '다중사용자', 10, 1, '2023-01-01', 1500000),
+('SW002', 'Windows 11 Pro', 'Microsoft', '23H2', '운영체제', '단일사용자', 20, 1, '2023-03-01', 2000000);
+
+-- 샘플 자산 할당 데이터
+INSERT INTO assignments (id, employee_id, asset_type, asset_id, assigned_date, status, notes, assigned_by) VALUES
+('AS001', 'EMP001', 'hardware', 'HW001', '2023-01-20', '사용중', '개발용 노트북 할당', 1),
+('AS002', 'EMP001', 'software', 'SW001', '2023-01-25', '사용중', 'Office 365 라이선스 할당', 1);

@@ -9,7 +9,7 @@ docker-compose down
 
 if [ $? -eq 0 ]; then
     echo "✅ 서비스가 성공적으로 중지되었습니다."
-    
+
     # 사용하지 않는 이미지 정리 (선택사항)
     read -p "🧹 사용하지 않는 Docker 이미지를 정리하시겠습니까? (y/N): " -n 1 -r
     echo

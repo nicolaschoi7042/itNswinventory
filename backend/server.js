@@ -22,7 +22,14 @@ const pool = new Pool({
 // 미들웨어 설정
 app.use(helmet());
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:8080',
+    origin: [
+        'http://localhost:8080',
+        'http://127.0.0.1:8080',
+        'http://172.20.0.1:8080',
+        'http://it.roboetech.com:8080',
+        'http://it.roboetech.com',
+        'https://it.roboetech.com'
+    ],
     credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -78,10 +85,10 @@ const logActivity = async (userId, action, tableName = null, recordId = null, ol
 app.post('/api/auth/login', async (req, res) => {
     try {
         const { username, password } = req.body;
-        
+
         const result = await pool.query('SELECT * FROM users WHERE username = $1 AND is_active = true', [username]);
         let user = result.rows[0];
-        
+
         // 관리자 계정이 없으면 생성 (개발/테스트용)
         if (!user && username === 'admin') {
             const hashedPassword = await bcrypt.hash('admin123', 10);
@@ -92,26 +99,26 @@ app.post('/api/auth/login', async (req, res) => {
             `, [username, hashedPassword, '시스템 관리자', 'admin@company.com', 'admin']);
             user = createResult.rows[0];
         }
-        
+
         if (!user || !await bcrypt.compare(password, user.password_hash)) {
             return res.status(401).json({ error: '잘못된 사용자명 또는 비밀번호입니다.' });
         }
-        
+
         // 마지막 로그인 시간 업데이트
         await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
-        
+
         const token = jwt.sign(
-            { 
-                id: user.id, 
-                username: user.username, 
-                role: user.role 
+            {
+                id: user.id,
+                username: user.username,
+                role: user.role
             },
             process.env.JWT_SECRET || 'your-secret-key',
             { expiresIn: '8h' }
         );
-        
+
         await logActivity(user.id, '사용자 로그인');
-        
+
         res.json({
             token,
             user: {
@@ -133,10 +140,10 @@ app.post('/api/auth/login', async (req, res) => {
 app.get('/api/employees', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT e.*, u.full_name as created_by_name 
-            FROM employees e 
-            LEFT JOIN users u ON e.created_by = u.id 
-            WHERE e.is_active = true 
+            SELECT e.*, u.full_name as created_by_name
+            FROM employees e
+            LEFT JOIN users u ON e.created_by = u.id
+            WHERE e.is_active = true
             ORDER BY e.created_at DESC
         `);
         res.json(result.rows);
@@ -150,20 +157,20 @@ app.get('/api/employees', authenticateToken, async (req, res) => {
 app.post('/api/employees', authenticateToken, authorize(['admin', 'manager']), async (req, res) => {
     try {
         const { name, department, position, hire_date, email, phone } = req.body;
-        
+
         // 새 사번 생성
         const maxIdResult = await pool.query("SELECT id FROM employees WHERE id ~ '^EMP[0-9]+$' ORDER BY CAST(substring(id, 4) AS INTEGER) DESC LIMIT 1");
         const maxId = maxIdResult.rows.length > 0 ? parseInt(maxIdResult.rows[0].id.substring(3)) : 0;
         const newId = 'EMP' + String(maxId + 1).padStart(3, '0');
-        
+
         const result = await pool.query(`
             INSERT INTO employees (id, name, department, position, hire_date, email, phone, created_by)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING *
         `, [newId, name, department, position, hire_date, email, phone, req.user.id]);
-        
+
         await logActivity(req.user.id, `임직원 등록: ${name}`, 'employees', newId, null, result.rows[0]);
-        
+
         res.status(201).json(result.rows[0]);
     } catch (error) {
         console.error('Create employee error:', error);
@@ -176,24 +183,24 @@ app.put('/api/employees/:id', authenticateToken, authorize(['admin', 'manager'])
     try {
         const { id } = req.params;
         const { name, department, position, hire_date, email, phone } = req.body;
-        
+
         // 기존 데이터 조회 (로깅용)
         const oldResult = await pool.query('SELECT * FROM employees WHERE id = $1', [id]);
         const oldData = oldResult.rows[0];
-        
+
         const result = await pool.query(`
-            UPDATE employees 
+            UPDATE employees
             SET name = $1, department = $2, position = $3, hire_date = $4, email = $5, phone = $6
             WHERE id = $7 AND is_active = true
             RETURNING *
         `, [name, department, position, hire_date, email, phone, id]);
-        
+
         if (result.rows.length === 0) {
             return res.status(404).json({ error: '임직원을 찾을 수 없습니다.' });
         }
-        
+
         await logActivity(req.user.id, `임직원 수정: ${name}`, 'employees', id, oldData, result.rows[0]);
-        
+
         res.json(result.rows[0]);
     } catch (error) {
         console.error('Update employee error:', error);
@@ -205,20 +212,20 @@ app.put('/api/employees/:id', authenticateToken, authorize(['admin', 'manager'])
 app.delete('/api/employees/:id', authenticateToken, authorize(['admin']), async (req, res) => {
     try {
         const { id } = req.params;
-        
+
         const result = await pool.query(`
-            UPDATE employees 
-            SET is_active = false 
+            UPDATE employees
+            SET is_active = false
             WHERE id = $1
             RETURNING name
         `, [id]);
-        
+
         if (result.rows.length === 0) {
             return res.status(404).json({ error: '임직원을 찾을 수 없습니다.' });
         }
-        
+
         await logActivity(req.user.id, `임직원 삭제: ${result.rows[0].name}`, 'employees', id);
-        
+
         res.json({ message: '임직원이 삭제되었습니다.' });
     } catch (error) {
         console.error('Delete employee error:', error);
@@ -232,10 +239,10 @@ app.delete('/api/employees/:id', authenticateToken, authorize(['admin']), async 
 app.get('/api/hardware', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT h.*, e.name as assigned_to_name 
-            FROM hardware h 
-            LEFT JOIN employees e ON h.assigned_to = e.id 
-            WHERE h.is_active = true 
+            SELECT h.*, e.name as assigned_to_name
+            FROM hardware h
+            LEFT JOIN employees e ON h.assigned_to = e.id
+            WHERE h.is_active = true
             ORDER BY h.created_at DESC
         `);
         res.json(result.rows);
@@ -249,20 +256,20 @@ app.get('/api/hardware', authenticateToken, async (req, res) => {
 app.post('/api/hardware', authenticateToken, authorize(['admin', 'manager']), async (req, res) => {
     try {
         const { type, manufacturer, model, serial_number, purchase_date, price, notes } = req.body;
-        
+
         // 새 자산번호 생성
         const maxIdResult = await pool.query("SELECT id FROM hardware WHERE id ~ '^HW[0-9]+$' ORDER BY CAST(substring(id, 3) AS INTEGER) DESC LIMIT 1");
         const maxId = maxIdResult.rows.length > 0 ? parseInt(maxIdResult.rows[0].id.substring(2)) : 0;
         const newId = 'HW' + String(maxId + 1).padStart(3, '0');
-        
+
         const result = await pool.query(`
             INSERT INTO hardware (id, type, manufacturer, model, serial_number, purchase_date, price, notes, status, created_by)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
             RETURNING *
         `, [newId, type, manufacturer, model, serial_number, purchase_date, price, notes, '대기중', req.user.id]);
-        
+
         await logActivity(req.user.id, `하드웨어 등록: ${type} ${manufacturer} ${model}`, 'hardware', newId, null, result.rows[0]);
-        
+
         res.status(201).json(result.rows[0]);
     } catch (error) {
         console.error('Create hardware error:', error);
@@ -275,24 +282,24 @@ app.put('/api/hardware/:id', authenticateToken, authorize(['admin', 'manager']),
     try {
         const { id } = req.params;
         const { type, manufacturer, model, serial_number, purchase_date, price, notes, status } = req.body;
-        
+
         const oldResult = await pool.query('SELECT * FROM hardware WHERE id = $1', [id]);
         const oldData = oldResult.rows[0];
-        
+
         const result = await pool.query(`
-            UPDATE hardware 
-            SET type = $1, manufacturer = $2, model = $3, serial_number = $4, purchase_date = $5, 
+            UPDATE hardware
+            SET type = $1, manufacturer = $2, model = $3, serial_number = $4, purchase_date = $5,
                 price = $6, notes = $7, status = $8
             WHERE id = $9 AND is_active = true
             RETURNING *
         `, [type, manufacturer, model, serial_number, purchase_date, price, notes, status, id]);
-        
+
         if (result.rows.length === 0) {
             return res.status(404).json({ error: '하드웨어를 찾을 수 없습니다.' });
         }
-        
+
         await logActivity(req.user.id, `하드웨어 수정: ${type} ${manufacturer} ${model}`, 'hardware', id, oldData, result.rows[0]);
-        
+
         res.json(result.rows[0]);
     } catch (error) {
         console.error('Update hardware error:', error);
@@ -306,10 +313,10 @@ app.put('/api/hardware/:id', authenticateToken, authorize(['admin', 'manager']),
 app.get('/api/software', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT s.*, u.full_name as created_by_name 
-            FROM software s 
-            LEFT JOIN users u ON s.created_by = u.id 
-            WHERE s.is_active = true 
+            SELECT s.*, u.full_name as created_by_name
+            FROM software s
+            LEFT JOIN users u ON s.created_by = u.id
+            WHERE s.is_active = true
             ORDER BY s.created_at DESC
         `);
         res.json(result.rows);
@@ -323,20 +330,20 @@ app.get('/api/software', authenticateToken, async (req, res) => {
 app.post('/api/software', authenticateToken, authorize(['admin', 'manager']), async (req, res) => {
     try {
         const { name, manufacturer, version, type, license_type, total_licenses, purchase_date, expiry_date, price } = req.body;
-        
+
         // 새 소프트웨어 ID 생성
         const maxIdResult = await pool.query("SELECT id FROM software WHERE id ~ '^SW[0-9]+$' ORDER BY CAST(substring(id, 3) AS INTEGER) DESC LIMIT 1");
         const maxId = maxIdResult.rows.length > 0 ? parseInt(maxIdResult.rows[0].id.substring(2)) : 0;
         const newId = 'SW' + String(maxId + 1).padStart(3, '0');
-        
+
         const result = await pool.query(`
             INSERT INTO software (id, name, manufacturer, version, type, license_type, total_licenses, purchase_date, expiry_date, price, created_by)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
             RETURNING *
         `, [newId, name, manufacturer, version, type, license_type, total_licenses || 1, purchase_date, expiry_date, price, req.user.id]);
-        
+
         await logActivity(req.user.id, `소프트웨어 등록: ${name} ${version}`, 'software', newId, null, result.rows[0]);
-        
+
         res.status(201).json(result.rows[0]);
     } catch (error) {
         console.error('Create software error:', error);
@@ -351,7 +358,7 @@ app.get('/api/assignments', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query(`
             SELECT a.*, e.name as employee_name, u.full_name as assigned_by_name,
-                   CASE 
+                   CASE
                        WHEN a.asset_type = 'hardware' THEN CONCAT(h.type, ' ', h.brand, ' ', h.model)
                        WHEN a.asset_type = 'software' THEN CONCAT(s.name, ' ', s.version)
                        ELSE '알 수 없음'
@@ -375,37 +382,37 @@ app.get('/api/assignments', authenticateToken, async (req, res) => {
 app.post('/api/assignments', authenticateToken, authorize(['admin', 'manager']), async (req, res) => {
     try {
         const { employee_id, asset_type, asset_id, notes } = req.body;
-        
+
         // 중복 할당 확인
         const existingResult = await pool.query(`
-            SELECT * FROM assignments 
+            SELECT * FROM assignments
             WHERE employee_id = $1 AND asset_type = $2 AND asset_id = $3 AND status = '사용중' AND is_active = true
         `, [employee_id, asset_type, asset_id]);
-        
+
         if (existingResult.rows.length > 0) {
             return res.status(400).json({ error: '이미 할당된 자산입니다.' });
         }
-        
+
         // 새 할당 ID 생성
         const maxIdResult = await pool.query("SELECT id FROM assignments WHERE id ~ '^AS[0-9]+$' ORDER BY CAST(substring(id, 3) AS INTEGER) DESC LIMIT 1");
         const maxId = maxIdResult.rows.length > 0 ? parseInt(maxIdResult.rows[0].id.substring(2)) : 0;
         const newId = 'AS' + String(maxId + 1).padStart(3, '0');
-        
+
         const result = await pool.query(`
             INSERT INTO assignments (id, employee_id, asset_type, asset_id, assigned_date, status, notes, assigned_by)
             VALUES ($1, $2, $3, $4, CURRENT_DATE, '사용중', $5, $6)
             RETURNING *
         `, [newId, employee_id, asset_type, asset_id, notes, req.user.id]);
-        
+
         // 자산 상태 업데이트
         if (asset_type === 'hardware') {
             await pool.query('UPDATE hardware SET status = $1, assigned_to = $2 WHERE id = $3', ['사용중', employee_id, asset_id]);
         } else if (asset_type === 'software') {
             await pool.query('UPDATE software SET current_users = current_users + 1 WHERE id = $1', [asset_id]);
         }
-        
+
         await logActivity(req.user.id, `자산 할당: ${asset_type}/${asset_id} → ${employee_id}`, 'assignments', newId, null, result.rows[0]);
-        
+
         res.status(201).json(result.rows[0]);
     } catch (error) {
         console.error('Create assignment error:', error);
@@ -418,32 +425,32 @@ app.put('/api/assignments/:id/return', authenticateToken, authorize(['admin', 'm
     try {
         const { id } = req.params;
         const { notes } = req.body;
-        
+
         // 할당 정보 조회
         const assignmentResult = await pool.query('SELECT * FROM assignments WHERE id = $1 AND is_active = true', [id]);
         if (assignmentResult.rows.length === 0) {
             return res.status(404).json({ error: '할당 정보를 찾을 수 없습니다.' });
         }
-        
+
         const assignment = assignmentResult.rows[0];
-        
+
         // 할당 상태 업데이트
         const result = await pool.query(`
-            UPDATE assignments 
+            UPDATE assignments
             SET status = '반납완료', return_date = CURRENT_DATE, return_notes = $1
             WHERE id = $2
             RETURNING *
         `, [notes, id]);
-        
+
         // 자산 상태 업데이트
         if (assignment.asset_type === 'hardware') {
             await pool.query('UPDATE hardware SET status = $1, assigned_to = NULL WHERE id = $2', ['대기중', assignment.asset_id]);
         } else if (assignment.asset_type === 'software') {
             await pool.query('UPDATE software SET current_users = GREATEST(0, current_users - 1) WHERE id = $1', [assignment.asset_id]);
         }
-        
+
         await logActivity(req.user.id, `자산 반납: ${assignment.asset_type}/${assignment.asset_id}`, 'assignments', id);
-        
+
         res.json(result.rows[0]);
     } catch (error) {
         console.error('Return assignment error:', error);

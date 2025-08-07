@@ -25,7 +25,7 @@ services:
 
   # 백엔드 API 서버
   backend:
-    build: 
+    build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: it-inventory-api

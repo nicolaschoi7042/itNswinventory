@@ -17,6 +17,7 @@ COPY index.html /usr/share/nginx/html/
 COPY styles.css /usr/share/nginx/html/
 COPY script.js /usr/share/nginx/html/
 COPY favicon.ico /usr/share/nginx/html/
+COPY SMART_Check_Plus_User_Manual_V2.0.pdf /usr/share/nginx/html/
 
 # 포트 80 노출
 EXPOSE 80

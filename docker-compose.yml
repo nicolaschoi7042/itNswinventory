@@ -1,5 +1,5 @@
 services:
-  # IT 자산 인벤토리 웹서비스
+  # IT 자산 인벤토리 웹서비스 (Frontend)
   it-inventory:
     build: .
     container_name: it-inventory-web
@@ -13,9 +13,91 @@ services:
       - TZ=Asia/Seoul  # 시간대 설정
     networks:
       - it-inventory-network
+    depends_on:
+      - it-inventory-api
     labels:
-      - "description=IT Asset and Software Inventory Management System"
-      - "version=1.0"
+      - "description=IT Asset and Software Inventory Management System Frontend"
+      - "version=2.0"
+
+  # IT 자산 인벤토리 API 서버 (Backend)
+  it-inventory-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: it-inventory-api
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - TZ=Asia/Seoul
+      - DB_HOST=it-inventory-db
+      - DB_NAME=inventory_db
+      - DB_USER=inventory_user
+      - DB_PASSWORD=inventory_password_2024
+      - DB_PORT=5432
+      - JWT_SECRET=it-inventory-jwt-secret-key-2024
+      - FRONTEND_URL=http://localhost:8080
+    depends_on:
+      it-inventory-db:
+        condition: service_healthy
+    networks:
+      - it-inventory-network
+    restart: unless-stopped
+    labels:
+      - "description=IT Asset and Software Inventory Management System API"
+      - "version=2.0"
+
+  # PostgreSQL 데이터베이스
+  it-inventory-db:
+    image: postgres:15-alpine
+    container_name: it-inventory-postgres
+    environment:
+      - POSTGRES_DB=inventory_db
+      - POSTGRES_USER=inventory_user
+      - POSTGRES_PASSWORD=inventory_password_2024
+      - TZ=Asia/Seoul
+    ports:
+      - "5432:5432"
+    volumes:
+      - inventory_db_data:/var/lib/postgresql/data
+      - ./backend/database.sql:/docker-entrypoint-initdb.d/01-init.sql
+    networks:
+      - it-inventory-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U inventory_user -d inventory_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    labels:
+      - "description=IT Asset and Software Inventory Management System Database"
+      - "version=2.0"
+
+  # pgAdmin (데이터베이스 관리 도구 - 선택사항)
+  it-inventory-pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: it-inventory-pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@itinventory.com
+      - PGADMIN_DEFAULT_PASSWORD=admin123
+      - PGADMIN_LISTEN_PORT=80
+      - TZ=Asia/Seoul
+    ports:
+      - "5050:80"
+    depends_on:
+      - it-inventory-db
+    networks:
+      - it-inventory-network
+    volumes:
+      - inventory_pgadmin_data:/var/lib/pgadmin
+    restart: unless-stopped
+    labels:
+      - "description=IT Asset and Software Inventory Management System Database Admin"
+      - "version=2.0"
+
+volumes:
+  inventory_db_data:
+  inventory_pgadmin_data:
 
 networks:
   it-inventory-network:
