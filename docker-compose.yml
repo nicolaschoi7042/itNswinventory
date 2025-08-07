@@ -1,0 +1,22 @@
+services:
+  # IT 자산 인벤토리 웹서비스
+  it-inventory:
+    build: .
+    container_name: it-inventory-web
+    ports:
+      - "8080:80"  # 호스트:컨테이너 포트 매핑
+    restart: unless-stopped
+    volumes:
+      # 로그 파일을 호스트에 저장 (선택사항)
+      - ./logs:/var/log/nginx
+    environment:
+      - TZ=Asia/Seoul  # 시간대 설정
+    networks:
+      - it-inventory-network
+    labels:
+      - "description=IT Asset and Software Inventory Management System"
+      - "version=1.0"
+
+networks:
+  it-inventory-network:
+    driver: bridge
