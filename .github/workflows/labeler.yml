@@ -1,0 +1,54 @@
+name: 🏷️ Auto Labeler
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  label:
+    name: 🏷️ Add Labels to PR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🏷️ Apply labels based on changed files
+        uses: actions/labeler@v5
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          configuration-path: .github/labeler.yml
+
+  size-label:
+    name: 📏 Add Size Labels
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: 📏 Add size labels
+        uses: codelytv/pr-size-labeler@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          xs_label: 'size/XS'
+          xs_max_size: 10
+          s_label: 'size/S'
+          s_max_size: 30
+          m_label: 'size/M'
+          m_max_size: 100
+          l_label: 'size/L'
+          l_max_size: 500
+          xl_label: 'size/XL'
+          fail_if_xl: false
+
+  auto-assign:
+    name: 👤 Auto Assign Reviewer
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: 👤 Auto assign based on CODEOWNERS
+        uses: kentaro-m/auto-assign-action@v1.2.5
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"

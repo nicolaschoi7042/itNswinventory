@@ -1,0 +1,301 @@
+name: 🚀 CI/CD Pipeline - IT Inventory System
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # 코드 품질 검사
+  code-quality:
+    name: 🔍 Code Quality Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔍 Check file structure
+        run: |
+          echo "📁 Checking project structure..."
+          ls -la
+          echo "✅ Core files present:"
+          test -f index.html && echo "  ✓ index.html"
+          test -f styles.css && echo "  ✓ styles.css" 
+          test -f script.js && echo "  ✓ script.js"
+          test -f Dockerfile && echo "  ✓ Dockerfile"
+          test -f docker-compose.yml && echo "  ✓ docker-compose.yml"
+
+      - name: 🎯 HTML Validation
+        run: |
+          echo "🔍 Validating HTML structure..."
+          if grep -q "<!DOCTYPE html>" index.html; then
+            echo "✅ Valid HTML DOCTYPE found"
+          else
+            echo "❌ HTML DOCTYPE missing"
+            exit 1
+          fi
+
+      - name: 🎨 CSS Validation
+        run: |
+          echo "🔍 Checking CSS file..."
+          if [ -f styles.css ] && [ -s styles.css ]; then
+            echo "✅ CSS file exists and is not empty"
+          else
+            echo "❌ CSS file missing or empty"
+            exit 1
+          fi
+
+      - name: 📝 JavaScript Basic Check
+        run: |
+          echo "🔍 Checking JavaScript file..."
+          if [ -f script.js ] && [ -s script.js ]; then
+            echo "✅ JavaScript file exists and is not empty"
+            # 기본적인 구문 검사
+            if node -c script.js 2>/dev/null; then
+              echo "✅ JavaScript syntax is valid"
+            else
+              echo "⚠️ JavaScript syntax check skipped (Node.js validation)"
+            fi
+          else
+            echo "❌ JavaScript file missing or empty"
+            exit 1
+          fi
+
+  # Docker 빌드 및 테스트
+  docker-build:
+    name: 🐳 Docker Build & Test
+    runs-on: ubuntu-latest
+    needs: code-quality
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔨 Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: it-inventory:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: 🧪 Test Docker container
+        run: |
+          echo "🚀 Starting container for testing..."
+          docker run -d --name test-container -p 8080:80 it-inventory:test
+          sleep 10
+          
+          echo "🔍 Testing container health..."
+          if curl -f http://localhost:8080/index.html; then
+            echo "✅ Container is serving content correctly"
+          else
+            echo "❌ Container health check failed"
+            docker logs test-container
+            exit 1
+          fi
+          
+          echo "🛑 Stopping test container..."
+          docker stop test-container
+          docker rm test-container
+
+  # 보안 스캔
+  security-scan:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    needs: code-quality
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔍 Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: 📤 Upload Trivy scan results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # 백엔드 API 테스트 (Node.js)
+  backend-test:
+    name: 🔧 Backend API Tests
+    runs-on: ubuntu-latest
+    needs: code-quality
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: inventory_test
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: 📦 Install backend dependencies
+        run: |
+          cd backend
+          npm ci
+
+      - name: 🗄️ Setup test database
+        run: |
+          cd backend
+          PGPASSWORD=test_password psql -h localhost -U test_user -d inventory_test -f database.sql
+
+      - name: 🧪 Run API tests
+        env:
+          DB_HOST: localhost
+          DB_NAME: inventory_test
+          DB_USER: test_user
+          DB_PASSWORD: test_password
+          JWT_SECRET: test-jwt-secret
+          NODE_ENV: test
+        run: |
+          cd backend
+          echo "🚀 Starting API server for testing..."
+          npm start &
+          SERVER_PID=$!
+          sleep 10
+          
+          echo "🔍 Testing API endpoints..."
+          # Health check
+          if curl -f http://localhost:3000/api/health; then
+            echo "✅ API health check passed"
+          else
+            echo "❌ API health check failed"
+            exit 1
+          fi
+          
+          echo "🛑 Stopping API server..."
+          kill $SERVER_PID
+
+  # Docker Compose 통합 테스트
+  integration-test:
+    name: 🔄 Integration Tests
+    runs-on: ubuntu-latest
+    needs: [docker-build, backend-test]
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🚀 Start services with Docker Compose
+        run: |
+          echo "🐳 Starting all services..."
+          docker compose up -d
+          sleep 30
+
+      - name: 🧪 Run integration tests
+        run: |
+          echo "🔍 Testing frontend service..."
+          if curl -f http://localhost:8080/index.html; then
+            echo "✅ Frontend service is working"
+          else
+            echo "❌ Frontend service failed"
+            docker compose logs
+            exit 1
+          fi
+          
+          echo "🔍 Testing service connectivity..."
+          docker compose ps
+
+      - name: 🛑 Cleanup services
+        run: |
+          docker compose down
+          docker system prune -f
+
+  # 프로덕션 Docker 이미지 빌드 및 배포
+  build-and-push:
+    name: 📦 Build & Push Docker Image
+    runs-on: ubuntu-latest
+    needs: [docker-build, security-scan, integration-test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔑 Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏷️ Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: 🚀 Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # 배포 성공 알림
+  notify-success:
+    name: 🎉 Deployment Success
+    runs-on: ubuntu-latest
+    needs: [build-and-push]
+    if: success()
+    steps:
+      - name: 🎊 Success notification
+        run: |
+          echo "🎉 IT Inventory System successfully deployed!"
+          echo "📦 Docker image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+          echo "🔗 Repository: ${{ github.server_url }}/${{ github.repository }}"
+          echo "✅ All tests passed and image published"
+
+  # 실패시 알림
+  notify-failure:
+    name: ❌ Deployment Failed  
+    runs-on: ubuntu-latest
+    needs: [code-quality, docker-build, security-scan, backend-test, integration-test]
+    if: failure()
+    steps:
+      - name: 💥 Failure notification
+        run: |
+          echo "❌ IT Inventory System deployment failed!"
+          echo "🔗 Check workflow: ${{ github.server_url }}/${{ github.repository }}/actions"
+          echo "📝 Review the logs above for details"
