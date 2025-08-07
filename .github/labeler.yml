@@ -1,0 +1,88 @@
+# GitHub Auto Labeler 설정
+# 파일 변경에 따라 자동으로 라벨을 할당합니다
+
+# 프론트엔드 관련
+'area/frontend':
+  - changed-files:
+    - any-glob-to-any-file: ['*.html', '*.css', '*.js', 'nginx.conf']
+    - all-globs-to-all-files: '!backend/**'
+
+# 백엔드 관련
+'area/backend':
+  - changed-files:
+    - any-glob-to-any-file: ['backend/**/*']
+
+# 데이터베이스 관련
+'area/database':
+  - changed-files:
+    - any-glob-to-any-file: ['backend/database.sql', 'backend/backup/**/*']
+
+# Docker 관련
+'area/docker':
+  - changed-files:
+    - any-glob-to-any-file: ['**/Dockerfile', 'docker-compose*.yml', '.dockerignore']
+
+# CI/CD 관련
+'area/ci-cd':
+  - changed-files:
+    - any-glob-to-any-file: ['.github/workflows/**/*']
+
+# 문서 관련
+'area/documentation':
+  - changed-files:
+    - any-glob-to-any-file: ['*.md', '.github/ISSUE_TEMPLATE/**/*', '.github/pull_request_template.md']
+
+# 설정 파일 관련
+'area/config':
+  - changed-files:
+    - any-glob-to-any-file: ['.github/**/*', '.gitignore', '.dockerignore', '*.yml', '*.yaml', '*.json']
+    - all-globs-to-all-files: '!.github/workflows/**'
+
+# 보안 관련
+'area/security':
+  - changed-files:
+    - any-glob-to-any-file: ['.env*', 'backend/server.js']
+
+# 스크립트 관련
+'area/scripts':
+  - changed-files:
+    - any-glob-to-any-file: ['*.sh', 'backend/backup/*.sh']
+
+# 의존성 관련
+'dependencies':
+  - changed-files:
+    - any-glob-to-any-file: ['package*.json', 'backend/package*.json']
+
+# 개선사항
+'type/enhancement':
+  - head-branch: ['feature/*', 'enhancement/*', 'feat/*']
+
+# 버그 수정
+'type/bugfix':
+  - head-branch: ['fix/*', 'bugfix/*', 'hotfix/*']
+
+# 리팩터링
+'type/refactor':
+  - head-branch: ['refactor/*', 'refactoring/*']
+
+# 문서 업데이트
+'type/docs':
+  - head-branch: ['docs/*', 'doc/*', 'documentation/*']
+  - changed-files:
+    - any-glob-to-any-file: ['*.md']
+
+# 테스트 관련
+'type/test':
+  - head-branch: ['test/*', 'testing/*']
+  - changed-files:
+    - any-glob-to-any-file: ['**/*test*', '**/*spec*']
+
+# 성능 개선
+'type/performance':
+  - head-branch: ['perf/*', 'performance/*', 'optimization/*']
+
+# UI/UX 개선
+'type/ui-ux':
+  - changed-files:
+    - any-glob-to-any-file: ['*.css', '*.html']
+  - head-branch: ['ui/*', 'ux/*', 'design/*', 'style/*']

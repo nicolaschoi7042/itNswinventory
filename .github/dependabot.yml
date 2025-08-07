@@ -1,0 +1,85 @@
+# GitHub Dependabot 설정
+# 자동으로 의존성 업데이트 PR을 생성합니다
+
+version: 2
+updates:
+  # Node.js 백엔드 의존성 모니터링
+  - package-ecosystem: "npm"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "nicolaschoi7042"
+    assignees:
+      - "nicolaschoi7042"
+    commit-message:
+      prefix: "🔧 deps"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "backend"
+    ignore:
+      # 메이저 버전 업데이트는 수동으로 처리
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  # GitHub Actions 워크플로우 의존성 모니터링
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "nicolaschoi7042"
+    assignees:
+      - "nicolaschoi7042"
+    commit-message:
+      prefix: "🔄 ci"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "github-actions"
+
+  # Docker 베이스 이미지 모니터링
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "nicolaschoi7042"
+    assignees:
+      - "nicolaschoi7042"
+    commit-message:
+      prefix: "🐳 docker"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  # 백엔드 Docker 이미지 모니터링
+  - package-ecosystem: "docker"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "10:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "nicolaschoi7042"
+    assignees:
+      - "nicolaschoi7042"
+    commit-message:
+      prefix: "🐳 backend"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "backend"

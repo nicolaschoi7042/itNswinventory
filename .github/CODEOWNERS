@@ -1,0 +1,45 @@
+# IT Asset & Software Inventory Management System
+# 코드 소유자 설정 파일
+# 
+# 이 파일은 각 디렉터리와 파일의 소유자를 지정하여
+# Pull Request 시 자동으로 리뷰어를 할당합니다.
+
+# 전체 프로젝트의 기본 소유자
+* @nicolaschoi7042
+
+# 프론트엔드 관련 파일들
+*.html @nicolaschoi7042
+*.css @nicolaschoi7042
+*.js @nicolaschoi7042
+
+# 백엔드 API 관련
+/backend/ @nicolaschoi7042
+/backend/**/*.js @nicolaschoi7042
+/backend/package.json @nicolaschoi7042
+/backend/database.sql @nicolaschoi7042
+
+# Docker 관련 설정
+Dockerfile @nicolaschoi7042
+/backend/Dockerfile @nicolaschoi7042
+docker-compose*.yml @nicolaschoi7042
+nginx.conf @nicolaschoi7042
+
+# CI/CD 및 GitHub 설정
+/.github/ @nicolaschoi7042
+/.github/workflows/ @nicolaschoi7042
+/.github/ISSUE_TEMPLATE/ @nicolaschoi7042
+
+# 보안 및 환경 설정
+.env* @nicolaschoi7042
+.gitignore @nicolaschoi7042
+.dockerignore @nicolaschoi7042
+
+# 문서 및 가이드
+README.md @nicolaschoi7042
+UPGRADE_GUIDE.md @nicolaschoi7042
+*.md @nicolaschoi7042
+
+# 배포 및 운영 스크립트
+start.sh @nicolaschoi7042
+stop.sh @nicolaschoi7042
+/backend/backup/ @nicolaschoi7042

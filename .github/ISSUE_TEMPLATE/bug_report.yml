@@ -1,0 +1,104 @@
+name: 🐛 Bug Report
+description: 버그나 예상치 못한 동작을 신고해주세요
+title: "[BUG] "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        IT 자산 관리 시스템의 버그를 신고해 주셔서 감사합니다! 
+        가능한 한 자세한 정보를 제공해주시면 더 빠르게 문제를 해결할 수 있습니다.
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: 🐛 버그 설명
+      description: 발생한 버그에 대해 명확하고 간결하게 설명해주세요.
+      placeholder: 예) 임직원 등록 시 이메일 필드에 한글 입력이 안됩니다.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: 🔄 재현 단계
+      description: 버그를 재현하는 단계를 순서대로 작성해주세요.
+      placeholder: |
+        1. '임직원 관리' 탭으로 이동
+        2. '신규 등록' 버튼 클릭
+        3. 이메일 필드에 '홍길동@회사.com' 입력
+        4. 오류 발생
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: ✅ 예상된 동작
+      description: 어떤 일이 일어날 것으로 예상했나요?
+      placeholder: 이메일이 정상적으로 입력되어야 합니다.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: ❌ 실제 동작
+      description: 실제로 어떤 일이 일어났나요?
+      placeholder: 오류 메시지가 표시되거나 입력이 되지 않습니다.
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 📸 스크린샷
+      description: 가능하다면 스크린샷을 첨부해주세요.
+      placeholder: 이미지를 드래그 앤 드롭하거나 붙여넣기하세요.
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: 🌐 환경 정보
+      description: 어떤 환경에서 사용하고 계신가요?
+      options:
+        - Docker (로컬 환경)
+        - Docker Compose (프로덕션)
+        - 로컬 파일 (브라우저 직접 열기)
+        - 기타 (추가 설명에 작성)
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: 🌍 브라우저
+      description: 사용 중인 브라우저와 버전을 알려주세요.
+      placeholder: 예) Chrome 118.0, Firefox 119.0, Safari 17.0
+
+  - type: input
+    id: os
+    attributes:
+      label: 💻 운영체제
+      description: 사용 중인 운영체제를 알려주세요.
+      placeholder: 예) Windows 11, macOS 13, Ubuntu 22.04
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📝 추가 정보
+      description: 이 버그와 관련된 추가 정보나 컨텍스트가 있다면 작성해주세요.
+      placeholder: 로그 파일, 오류 메시지, 관련된 다른 이슈 등
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: 확인사항
+      description: 버그 신고 전 확인해주세요.
+      options:
+        - label: 기존 이슈에서 동일한 버그가 신고되지 않았는지 확인했습니다.
+          required: true
+        - label: 최신 버전을 사용하고 있습니다.
+          required: false
+        - label: 브라우저 캐시를 지우고 다시 시도해봤습니다.
+          required: false
