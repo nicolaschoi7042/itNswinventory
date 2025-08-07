@@ -49,6 +49,6 @@ jobs:
       pull-requests: write
     steps:
       - name: 👤 Auto assign based on CODEOWNERS
-        uses: kentaro-m/auto-assign-action@v1.2.5
+        uses: kentaro-m/auto-assign-action@v2.0.0
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
