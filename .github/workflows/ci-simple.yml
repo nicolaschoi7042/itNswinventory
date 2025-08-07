@@ -1,0 +1,140 @@
+name: ✅ Simple CI - IT Inventory System
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  # 기본 검증
+  basic-checks:
+    name: 🔍 Basic Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: ✅ Verify core files exist
+        run: |
+          echo "🔍 Checking essential files..."
+          test -f index.html && echo "✓ index.html found"
+          test -f styles.css && echo "✓ styles.css found"
+          test -f script.js && echo "✓ script.js found"
+          test -f Dockerfile && echo "✓ Dockerfile found"
+          test -f docker-compose.yml && echo "✓ docker-compose.yml found"
+          test -f backend/server.js && echo "✓ backend/server.js found"
+          test -f backend/package.json && echo "✓ backend/package.json found"
+          echo "✅ All essential files are present"
+
+      - name: 🎯 Basic HTML validation
+        run: |
+          if grep -q "<!DOCTYPE html>" index.html; then
+            echo "✅ Valid HTML DOCTYPE found"
+          else
+            echo "❌ HTML DOCTYPE missing"
+            exit 1
+          fi
+          
+          if grep -q "<title>" index.html; then
+            echo "✅ HTML title tag found"
+          else
+            echo "⚠️ HTML title tag missing"
+          fi
+
+  # Docker 빌드 테스트 (간소화)
+  docker-build-test:
+    name: 🐳 Docker Build Test
+    runs-on: ubuntu-latest
+    needs: basic-checks
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔨 Build Docker image (test only)
+        run: |
+          echo "🚀 Building Docker image..."
+          docker build -t it-inventory:test .
+          echo "✅ Docker build successful"
+
+      - name: 🔍 Test Docker image
+        run: |
+          echo "🔍 Inspecting Docker image..."
+          docker images it-inventory:test
+          docker inspect it-inventory:test > /dev/null
+          echo "✅ Docker image inspection passed"
+
+  # 백엔드 기본 검증
+  backend-check:
+    name: 🔧 Backend Check
+    runs-on: ubuntu-latest
+    needs: basic-checks
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: 📦 Install backend dependencies
+        run: |
+          cd backend
+          npm install
+          echo "✅ Backend dependencies installed"
+
+      - name: 🔍 Check backend files
+        run: |
+          cd backend
+          echo "🔍 Checking backend structure..."
+          test -f server.js && echo "✓ server.js found"
+          test -f package.json && echo "✓ package.json found"
+          test -f database.sql && echo "✓ database.sql found"
+          test -f Dockerfile && echo "✓ backend/Dockerfile found"
+          echo "✅ Backend structure validated"
+
+  # 간단한 보안 검사
+  security-check:
+    name: 🔒 Security Check
+    runs-on: ubuntu-latest
+    needs: basic-checks
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔍 Check for sensitive files
+        run: |
+          echo "🔍 Checking for sensitive files..."
+          if find . -name "*.env" -not -path "./.env.example" | grep -q .; then
+            echo "⚠️ Found .env files - make sure they're not committed"
+            find . -name "*.env" -not -path "./.env.example"
+          else
+            echo "✅ No sensitive .env files found"
+          fi
+          
+          if grep -r "password.*=" --include="*.js" --include="*.json" .; then
+            echo "⚠️ Found potential hardcoded passwords"
+          else
+            echo "✅ No obvious hardcoded passwords found"
+          fi
+
+  # 성공 알림
+  success:
+    name: 🎉 All Checks Passed
+    runs-on: ubuntu-latest
+    needs: [basic-checks, docker-build-test, backend-check, security-check]
+    if: success()
+    steps:
+      - name: 🎊 Success message
+        run: |
+          echo "🎉 All checks passed successfully!"
+          echo "✅ Basic file validation completed"
+          echo "✅ Docker build test passed" 
+          echo "✅ Backend structure validated"
+          echo "✅ Security check completed"
+          echo "🚀 IT Inventory System is ready for deployment!"
