@@ -10,6 +10,9 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy for rate limiting in production
+app.set('trust proxy', 1);
+
 // 데이터베이스 연결
 const pool = new Pool({
     user: process.env.DB_USER || 'inventory_user',
@@ -34,12 +37,20 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 
-// Rate Limiting
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15분
-    max: 100 // 요청 제한
-});
-app.use(limiter);
+// Rate Limiting (개발 환경에서는 비활성화)
+if (process.env.NODE_ENV === 'production') {
+    const limiter = rateLimit({
+        windowMs: 15 * 60 * 1000, // 15분
+        max: 500, // 요청 제한
+        message: {
+            error: '너무 많은 요청이 발생했습니다. 잠시 후 다시 시도해주세요.',
+            retryAfter: 900
+        }
+    });
+    app.use(limiter);
+} else {
+    console.log('🔧 Rate limiting disabled for development environment');
+}
 
 // JWT 인증 미들웨어
 const authenticateToken = (req, res, next) => {
@@ -307,6 +318,32 @@ app.put('/api/hardware/:id', authenticateToken, authorize(['admin', 'manager']),
     }
 });
 
+// 하드웨어 삭제 (소프트 삭제)
+app.delete('/api/hardware/:id', authenticateToken, authorize(['admin']), async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const result = await pool.query(`
+            UPDATE hardware
+            SET is_active = false
+            WHERE id = $1
+            RETURNING type, manufacturer, model
+        `, [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: '하드웨어를 찾을 수 없습니다.' });
+        }
+
+        const hardware = result.rows[0];
+        await logActivity(req.user.id, `하드웨어 삭제: ${hardware.type} ${hardware.manufacturer} ${hardware.model}`, 'hardware', id);
+
+        res.json({ message: '하드웨어가 삭제되었습니다.' });
+    } catch (error) {
+        console.error('Delete hardware error:', error);
+        res.status(500).json({ error: '하드웨어 삭제 중 오류가 발생했습니다.' });
+    }
+});
+
 // === 소프트웨어 자산 API ===
 
 // 소프트웨어 목록 조회
@@ -348,6 +385,62 @@ app.post('/api/software', authenticateToken, authorize(['admin', 'manager']), as
     } catch (error) {
         console.error('Create software error:', error);
         res.status(500).json({ error: '소프트웨어 등록 중 오류가 발생했습니다.' });
+    }
+});
+
+// 소프트웨어 수정
+app.put('/api/software/:id', authenticateToken, authorize(['admin', 'manager']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, manufacturer, version, type, license_type, total_licenses, purchase_date, expiry_date, price } = req.body;
+
+        const oldResult = await pool.query('SELECT * FROM software WHERE id = $1', [id]);
+        const oldData = oldResult.rows[0];
+
+        const result = await pool.query(`
+            UPDATE software
+            SET name = $1, manufacturer = $2, version = $3, type = $4, license_type = $5,
+                total_licenses = $6, purchase_date = $7, expiry_date = $8, price = $9
+            WHERE id = $10 AND is_active = true
+            RETURNING *
+        `, [name, manufacturer, version, type, license_type, total_licenses || 1, purchase_date || null, expiry_date || null, price, id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: '소프트웨어를 찾을 수 없습니다.' });
+        }
+
+        await logActivity(req.user.id, `소프트웨어 수정: ${name} ${version}`, 'software', id, oldData, result.rows[0]);
+
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Update software error:', error);
+        res.status(500).json({ error: '소프트웨어 수정 중 오류가 발생했습니다.' });
+    }
+});
+
+// 소프트웨어 삭제 (소프트 삭제)
+app.delete('/api/software/:id', authenticateToken, authorize(['admin']), async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const result = await pool.query(`
+            UPDATE software
+            SET is_active = false
+            WHERE id = $1
+            RETURNING name, version
+        `, [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: '소프트웨어를 찾을 수 없습니다.' });
+        }
+
+        const software = result.rows[0];
+        await logActivity(req.user.id, `소프트웨어 삭제: ${software.name} ${software.version}`, 'software', id);
+
+        res.json({ message: '소프트웨어가 삭제되었습니다.' });
+    } catch (error) {
+        console.error('Delete software error:', error);
+        res.status(500).json({ error: '소프트웨어 삭제 중 오류가 발생했습니다.' });
     }
 });
 

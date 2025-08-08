@@ -542,9 +542,9 @@ function renderLicenseStatus() {
     const windows = dataStore.software.find(sw => sw.name.includes('Windows'));
     const adobe = dataStore.software.find(sw => sw.name.includes('Adobe'));
 
-    document.getElementById('officeCount').textContent = office ? office.usedLicenses : 0;
-    document.getElementById('windowsCount').textContent = windows ? windows.usedLicenses : 0;
-    document.getElementById('adobeCount').textContent = adobe ? adobe.usedLicenses : 0;
+    document.getElementById('officeCount').textContent = office ? (office.current_users || office.usedLicenses || 0) : 0;
+    document.getElementById('windowsCount').textContent = windows ? (windows.current_users || windows.usedLicenses || 0) : 0;
+    document.getElementById('adobeCount').textContent = adobe ? (adobe.current_users || adobe.usedLicenses || 0) : 0;
 }
 
 function renderRecentActivities() {
@@ -566,7 +566,14 @@ function renderRecentActivities() {
 
 function renderAssetChart() {
     const canvas = document.getElementById('assetChart');
+    if (!canvas) {
+        console.error('assetChart 캔버스를 찾을 수 없습니다.');
+        return;
+    }
+    
     const ctx = canvas.getContext('2d');
+    console.log('📊 자산현황 차트 렌더링 시작');
+    console.log('📊 전체 하드웨어 개수:', dataStore.hardware.length);
 
     // 간단한 도넛 차트
     const data = {
@@ -576,10 +583,23 @@ function renderAssetChart() {
         '폐기': dataStore.hardware.filter(hw => hw.status === '폐기').length
     };
 
+    console.log('📊 자산 상태별 데이터:', data);
+    
     const colors = ['#28a745', '#ffc107', '#dc3545', '#6c757d'];
     const total = Object.values(data).reduce((sum, val) => sum + val, 0);
+    
+    console.log('📊 총 자산 수:', total);
 
-    if (total === 0) return;
+    if (total === 0) {
+        console.log('📊 자산이 없어서 차트를 그리지 않습니다.');
+        // 자산이 없을 때도 "데이터 없음" 메시지 표시
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#666';
+        ctx.font = '14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('자산 데이터 없음', canvas.width/2, canvas.height/2);
+        return;
+    }
 
     let currentAngle = 0;
     const centerX = canvas.width / 2;
@@ -636,7 +656,6 @@ function renderEmployees() {
                 <td>${emp.id}</td>
                 <td>${emp.name}</td>
                 <td>${emp.department}</td>
-                <td>${formatDate(emp.hireDate)}</td>
                 <td><span class="status-badge status-assigned">${assignedAssets}개</span></td>
                 <td>
                     <button class="btn btn-sm" onclick="editEmployee('${emp.id}')">
@@ -696,26 +715,33 @@ function renderSoftware() {
         return;
     }
 
-    tbody.innerHTML = software.map(sw => `
-        <tr>
-            <td>${sw.name}</td>
-            <td>${sw.manufacturer}</td>
-            <td>${sw.version}</td>
-            <td>${sw.type}</td>
-            <td>${sw.licenseType}</td>
-            <td>${sw.totalLicenses}</td>
-            <td>${sw.usedLicenses}</td>
-            <td>${sw.totalLicenses - sw.usedLicenses}</td>
-            <td>
-                <button class="btn btn-sm" onclick="editSoftware('${sw.id}')">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn btn-danger btn-sm" onclick="deleteSoftwareConfirm('${sw.id}')">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        </tr>
-    `).join('');
+    tbody.innerHTML = software.map(sw => {
+        const licenseType = sw.license_type || sw.licenseType || '';
+        const totalLicenses = sw.total_licenses || sw.totalLicenses || 0;
+        const currentUsers = sw.current_users || sw.usedLicenses || 0;
+        const remainingLicenses = totalLicenses - currentUsers;
+        
+        return `
+            <tr>
+                <td>${sw.name || ''}</td>
+                <td>${sw.manufacturer || ''}</td>
+                <td>${sw.version || ''}</td>
+                <td>${sw.type || ''}</td>
+                <td>${licenseType}</td>
+                <td>${totalLicenses}</td>
+                <td>${currentUsers}</td>
+                <td>${remainingLicenses}</td>
+                <td>
+                    <button class="btn btn-sm" onclick="editSoftware('${sw.id}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteSoftwareConfirm('${sw.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
 }
 
 function renderAssignments() {
@@ -800,7 +826,6 @@ function showEmployeeModal(employeeId = null) {
 
             document.getElementById('empName').value = employee.name;
             document.getElementById('empDepartment').value = employee.department;
-            document.getElementById('empHireDate').value = employee.hireDate;
             document.getElementById('empEmail').value = employee.email || '';
             document.getElementById('empPhone').value = employee.phone || '';
         }
@@ -842,21 +867,33 @@ function showSoftwareModal(softwareId = null) {
     const modal = document.getElementById('softwareModal');
     const form = document.getElementById('softwareForm');
 
+    // 폼 초기화
+    form.reset();
+
     if (softwareId) {
         const software = dataStore.software.find(sw => sw.id === softwareId);
+        console.log('편집할 소프트웨어 데이터:', software);
+        
         if (software) {
-            document.getElementById('swName').value = software.name;
-            document.getElementById('swManufacturer').value = software.manufacturer;
-            document.getElementById('swVersion').value = software.version;
-            document.getElementById('swType').value = software.type;
-            document.getElementById('swLicenseType').value = software.licenseType;
-            document.getElementById('swTotalLicenses').value = software.totalLicenses;
-            document.getElementById('swPurchaseDate').value = software.purchaseDate;
-            document.getElementById('swExpiryDate').value = software.expiryDate;
-            document.getElementById('swPrice').value = software.price;
+            // 편집 모드임을 표시
+            form.setAttribute('data-software-id', software.id);
+            
+            document.getElementById('swName').value = software.name || '';
+            document.getElementById('swManufacturer').value = software.manufacturer || '';
+            document.getElementById('swVersion').value = software.version || '';
+            document.getElementById('swType').value = software.type || '';
+            // API 필드명이 license_type이므로 이를 사용
+            document.getElementById('swLicenseType').value = software.license_type || software.licenseType || '';
+            document.getElementById('swTotalLicenses').value = software.total_licenses || software.totalLicenses || 1;
+            document.getElementById('swPurchaseDate').value = software.purchase_date || software.purchaseDate || '';
+            document.getElementById('swExpiryDate').value = software.expiry_date || software.expiryDate || '';
+            document.getElementById('swPrice').value = software.price || '';
+            
+            console.log('라이선스 유형 설정:', software.license_type || software.licenseType);
         }
     } else {
-        form.reset();
+        // 신규 생성 모드
+        form.removeAttribute('data-software-id');
     }
 
     modal.style.display = 'block';
@@ -1121,7 +1158,6 @@ async function handleEmployeeSubmit(event) {
     // Get form elements with null checking
     const empNameEl = document.getElementById('empName');
     const empDepartmentEl = document.getElementById('empDepartment');
-    const empHireDateEl = document.getElementById('empHireDate');
     const empEmailEl = document.getElementById('empEmail');
     const empPhoneEl = document.getElementById('empPhone');
 
@@ -1135,7 +1171,6 @@ async function handleEmployeeSubmit(event) {
         name: empNameEl.value.trim(),
         department: empDepartmentEl.value,
         position: '직원', // Default position since form doesn't have this field
-        hire_date: empHireDateEl ? empHireDateEl.value : null,
         email: empEmailEl ? empEmailEl.value.trim() : '',
         phone: empPhoneEl ? empPhoneEl.value.trim() : ''
     };
@@ -1203,27 +1238,66 @@ async function handleHardwareSubmit(event) {
 async function handleSoftwareSubmit(event) {
     event.preventDefault();
 
+    const form = document.getElementById('softwareForm');
+    const softwareId = form.getAttribute('data-software-id');
+    const isEditMode = !!softwareId;
+
     const formData = {
         name: document.getElementById('swName').value,
         manufacturer: document.getElementById('swManufacturer').value,
         version: document.getElementById('swVersion').value,
         type: document.getElementById('swType').value,
-        licenseType: document.getElementById('swLicenseType').value,
-        totalLicenses: parseInt(document.getElementById('swTotalLicenses').value) || 1,
-        purchaseDate: document.getElementById('swPurchaseDate').value,
-        expiryDate: document.getElementById('swExpiryDate').value,
+        license_type: document.getElementById('swLicenseType').value,  // API 필드명 맞춤
+        total_licenses: parseInt(document.getElementById('swTotalLicenses').value) || 1,  // API 필드명 맞춤
+        purchase_date: document.getElementById('swPurchaseDate').value,  // API 필드명 맞춤
+        expiry_date: document.getElementById('swExpiryDate').value,  // API 필드명 맞춤
         price: parseInt(document.getElementById('swPrice').value) || 0
     };
 
+    console.log('소프트웨어 제출:', { isEditMode, softwareId, formData });
+
     try {
-        await dataStore.addSoftware(formData);
+        if (isEditMode) {
+            // 편집 모드 - PUT 요청
+            const response = await fetch(`${dataStore.api.baseUrl}/software/${softwareId}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${dataStore.api.token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || '소프트웨어 수정에 실패했습니다.');
+            }
+        } else {
+            // 신규 생성 모드 - POST 요청
+            const response = await fetch(`${dataStore.api.baseUrl}/software`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${dataStore.api.token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || '소프트웨어 생성에 실패했습니다.');
+            }
+        }
+
+        // 데이터 다시 로드
+        await dataStore.loadAllData();
 
         closeModal('softwareModal');
         renderSoftware();
         updateStatistics();
-        showAlert('소프트웨어 정보가 저장되었습니다.', 'success');
+        showAlert(`소프트웨어 정보가 ${isEditMode ? '수정' : '저장'}되었습니다.`, 'success');
     } catch (error) {
-        showAlert('소프트웨어 정보 처리 중 오류가 발생했습니다.', 'error');
+        showAlert(error.message || '소프트웨어 정보 처리 중 오류가 발생했습니다.', 'error');
         console.error('Software submit error:', error);
     }
 }
@@ -1295,22 +1369,58 @@ function deleteEmployeeConfirm(employeeId) {
     }
 }
 
-function deleteHardwareConfirm(hardwareId) {
+async function deleteHardwareConfirm(hardwareId) {
     if (confirm('정말로 이 하드웨어 자산을 삭제하시겠습니까?')) {
-        if (dataStore.deleteHardware(hardwareId)) {
-            renderHardware();
-            updateStatistics();
-            showAlert('하드웨어 자산이 삭제되었습니다.', 'success');
+        try {
+            const response = await fetch(`${dataStore.api.baseUrl}/hardware/${hardwareId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${dataStore.api.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                // 데이터 다시 로드
+                await dataStore.loadAllData();
+                renderHardware();
+                updateStatistics();
+                showAlert('하드웨어 자산이 삭제되었습니다.', 'success');
+            } else {
+                const errorData = await response.json();
+                showAlert(errorData.error || '하드웨어 삭제에 실패했습니다.', 'error');
+            }
+        } catch (error) {
+            console.error('Hardware delete error:', error);
+            showAlert('하드웨어 삭제 중 오류가 발생했습니다.', 'error');
         }
     }
 }
 
-function deleteSoftwareConfirm(softwareId) {
+async function deleteSoftwareConfirm(softwareId) {
     if (confirm('정말로 이 소프트웨어를 삭제하시겠습니까?')) {
-        if (dataStore.deleteSoftware(softwareId)) {
-            renderSoftware();
-            updateStatistics();
-            showAlert('소프트웨어가 삭제되었습니다.', 'success');
+        try {
+            const response = await fetch(`${dataStore.api.baseUrl}/software/${softwareId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${dataStore.api.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                // 데이터 다시 로드
+                await dataStore.loadAllData();
+                renderSoftware();
+                updateStatistics();
+                showAlert('소프트웨어가 삭제되었습니다.', 'success');
+            } else {
+                const errorData = await response.json();
+                showAlert(errorData.error || '소프트웨어 삭제에 실패했습니다.', 'error');
+            }
+        } catch (error) {
+            console.error('Software delete error:', error);
+            showAlert('소프트웨어 삭제 중 오류가 발생했습니다.', 'error');
         }
     }
 }
@@ -1438,7 +1548,6 @@ function renderFilteredEmployees(employees) {
                 <td>${emp.name}</td>
                 <td>${emp.department}</td>
                 <td>${emp.position}</td>
-                <td>${formatDate(emp.hireDate)}</td>
                 <td><span class="status-badge status-assigned">${assignedAssets}개</span></td>
                 <td>
                     <button class="btn btn-sm" onclick="editEmployee('${emp.id}')">
@@ -1496,26 +1605,33 @@ function renderFilteredSoftware(software) {
         return;
     }
 
-    tbody.innerHTML = software.map(sw => `
-        <tr>
-            <td>${sw.name}</td>
-            <td>${sw.manufacturer}</td>
-            <td>${sw.version}</td>
-            <td>${sw.type}</td>
-            <td>${sw.licenseType}</td>
-            <td>${sw.totalLicenses}</td>
-            <td>${sw.usedLicenses}</td>
-            <td>${sw.totalLicenses - sw.usedLicenses}</td>
-            <td>
-                <button class="btn btn-sm" onclick="editSoftware('${sw.id}')">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn btn-danger btn-sm" onclick="deleteSoftwareConfirm('${sw.id}')">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        </tr>
-    `).join('');
+    tbody.innerHTML = software.map(sw => {
+        const licenseType = sw.license_type || sw.licenseType || '';
+        const totalLicenses = sw.total_licenses || sw.totalLicenses || 0;
+        const currentUsers = sw.current_users || sw.usedLicenses || 0;
+        const remainingLicenses = totalLicenses - currentUsers;
+        
+        return `
+            <tr>
+                <td>${sw.name || ''}</td>
+                <td>${sw.manufacturer || ''}</td>
+                <td>${sw.version || ''}</td>
+                <td>${sw.type || ''}</td>
+                <td>${licenseType}</td>
+                <td>${totalLicenses}</td>
+                <td>${currentUsers}</td>
+                <td>${remainingLicenses}</td>
+                <td>
+                    <button class="btn btn-sm" onclick="editSoftware('${sw.id}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteSoftwareConfirm('${sw.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
 }
 
 function renderFilteredAssignments(assignments) {
@@ -1668,7 +1784,6 @@ function prepareEmployeeData() {
             '사번': emp.id,
             '이름': emp.name,
             '부서': emp.department,
-            '입사일': emp.hireDate,
             '이메일': emp.email || '',
             '연락처': emp.phone || '',
             '할당된 자산 수': assignedAssets
@@ -1700,18 +1815,20 @@ function prepareHardwareData() {
 // 소프트웨어 데이터 준비
 function prepareSoftwareData() {
     return dataStore.software.map(sw => {
-        const remainingLicenses = sw.totalLicenses - sw.usedLicenses;
-        const usageRate = sw.totalLicenses > 0 ?
-            Math.round((sw.usedLicenses / sw.totalLicenses) * 100) : 0;
+        const totalLicenses = sw.total_licenses || sw.totalLicenses || 0;
+        const currentUsers = sw.current_users || sw.usedLicenses || 0;
+        const remainingLicenses = totalLicenses - currentUsers;
+        const usageRate = totalLicenses > 0 ?
+            Math.round((currentUsers / totalLicenses) * 100) : 0;
 
         return {
             '소프트웨어명': sw.name,
             '제조사': sw.manufacturer || '',
             '버전': sw.version || '',
             '유형': sw.type,
-            '라이선스 유형': sw.licenseType,
-            '총 라이선스': sw.totalLicenses,
-            '사용중 라이선스': sw.usedLicenses,
+            '라이선스 유형': sw.license_type || sw.licenseType || '',
+            '총 라이선스': totalLicenses,
+            '사용중 라이선스': currentUsers,
             '남은 라이선스': remainingLicenses,
             '사용률(%)': usageRate,
             '구입일': sw.purchaseDate || '',
