@@ -1,4 +1,4 @@
-// IT Inventory System - Updated at 2025-08-07 08:27 UTC
+// IT Inventory System - REVERSE PROXY FIX - 2025-08-08 01:43 UTC - v6 - SAME ORIGIN API
 // API 서비스 클래스
 class ApiService {
     constructor() {
@@ -19,8 +19,13 @@ class ApiService {
 
         this.baseUrl = apiUrl + '/api';
         this.token = localStorage.getItem('inventory_token');
-        console.log('API Base URL:', this.baseUrl);
+        console.log('=== API URL CONSTRUCTION DEBUG ===');
         console.log('Current origin:', origin);
+        console.log('Contains :8080?', origin.includes(':8080'));
+        console.log('Contains it.roboetech.com?', origin.includes('it.roboetech.com'));
+        console.log('Constructed apiUrl:', apiUrl);
+        console.log('Final API Base URL:', this.baseUrl);
+        console.log('================================');
     }
 
     async request(endpoint, options = {}) {
@@ -190,12 +195,18 @@ class DataStore {
                 this.api.getAssignments()
             ]);
 
+            console.log('🔄 데이터 로드 완료:');
+            console.log('  - 임직원:', this.employees.length, '개');
+            console.log('  - 하드웨어:', this.hardware.length, '개', this.hardware);
+            console.log('  - 소프트웨어:', this.software.length, '개');
+            console.log('  - 할당:', this.assignments.length, '개');
+
             // 데이터가 로드되면 화면 업데이트
-            if (window.updateStats) {
-                updateStats();
+            if (typeof updateStatistics === 'function') {
+                updateStatistics();
             }
-            if (window.loadCurrentTab) {
-                loadCurrentTab();
+            if (typeof renderDashboard === 'function') {
+                renderDashboard();
             }
         } catch (error) {
             console.error('데이터 로드 중 오류:', error);
@@ -435,8 +446,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeApp() {
     setupEventListeners();
     showTab('dashboard');
-    updateStatistics();
-    renderDashboard();
+    // 통계와 대시보드는 데이터 로드 후 자동으로 업데이트됨
 }
 
 function setupEventListeners() {
@@ -503,12 +513,6 @@ function showTab(tabName) {
         case 'software':
             renderSoftware();
             break;
-        case 'manual':
-            // PDF 스크롤 개선 기능 초기화
-            setTimeout(() => {
-                initializePdfScrollFix();
-            }, 100);
-            break;
         case 'assignment':
             renderAssignments();
             break;
@@ -526,6 +530,11 @@ function renderDashboard() {
     renderLicenseStatus();
     renderRecentActivities();
     renderAssetChart();
+    
+    // 대시보드의 PDF 뷰어 초기화
+    setTimeout(() => {
+        initializePdfScrollFix();
+    }, 100);
 }
 
 function renderLicenseStatus() {
@@ -714,9 +723,10 @@ function renderAssignments() {
     console.log('전체 assignments:', dataStore.assignments);
 
     const tbody = document.querySelector('#assignmentTable tbody');
-    const assignments = dataStore.assignments.filter(as => as.status === '할당중');
+    // API에서는 '사용중' 상태를 사용함
+    const assignments = dataStore.assignments.filter(as => as.status === '사용중');
 
-    console.log('할당중인 assignments:', assignments);
+    console.log('사용중인 assignments:', assignments);
 
     if (assignments.length === 0) {
         tbody.innerHTML = '<tr><td colspan="8" class="empty-state">현재 할당된 자산이 없습니다.</td></tr>';
@@ -724,38 +734,44 @@ function renderAssignments() {
     }
 
     tbody.innerHTML = assignments.map(assignment => {
-        const employee = dataStore.employees.find(emp => emp.id === assignment.employeeId);
+        // API 필드명 매핑: employee_id, asset_type, assigned_date
+        const employee = dataStore.employees.find(emp => emp.id === assignment.employee_id);
 
         let asset = null;
         let assetType = '';
-        let assetId = '';
+        let assetId = assignment.asset_id;
         let assetName = '';
 
-        // 기존 데이터 호환성 (hardwareId가 있는 경우)
-        if (assignment.hardwareId || assignment.type === 'hardware') {
-            const hwId = assignment.assetId || assignment.hardwareId;
-            asset = dataStore.hardware.find(hw => hw.id === hwId);
+        console.log('🔍 할당 정보:', {
+            id: assignment.id,
+            employee_id: assignment.employee_id,
+            asset_type: assignment.asset_type,
+            asset_id: assignment.asset_id,
+            employee_name: assignment.employee_name
+        });
+
+        // API 응답 기준으로 수정
+        if (assignment.asset_type === 'hardware') {
+            asset = dataStore.hardware.find(hw => hw.id === assignment.asset_id);
             assetType = asset ? asset.type : '하드웨어';
-            assetId = hwId;
-            assetName = asset ? asset.model : '-';
-        } else if (assignment.type === 'software') {
-            asset = dataStore.software.find(sw => sw.id === assignment.assetId);
+            assetName = asset ? `${asset.manufacturer} ${asset.model}` : assignment.asset_description || '-';
+        } else if (assignment.asset_type === 'software') {
+            asset = dataStore.software.find(sw => sw.id === assignment.asset_id);
             assetType = '소프트웨어';
-            assetId = assignment.assetId;
-            assetName = asset ? asset.name : '-';
+            assetName = asset ? asset.name : assignment.asset_description || '-';
         }
 
         return `
             <tr>
-                <td>${formatDate(assignment.assignDate)}</td>
-                <td>${employee ? employee.name : '알 수 없음'}</td>
+                <td>${formatDate(assignment.assigned_date)}</td>
+                <td>${assignment.employee_name || (employee ? employee.name : '알 수 없음')}</td>
                 <td>${employee ? employee.department : '-'}</td>
                 <td>${assetType}</td>
                 <td>${assetId || '알 수 없음'}</td>
                 <td>${assetName}</td>
-                <td><span class="status-badge status-assigned">할당중</span></td>
+                <td><span class="status-badge status-assigned">사용중</span></td>
                 <td>
-                    <button class="btn btn-success btn-sm" onclick="returnHardware('${assignment.id}')">
+                    <button class="btn btn-success btn-sm" onclick="returnAsset('${assignment.id}')">
                         <i class="fas fa-undo"></i> 반납
                     </button>
                 </td>
@@ -846,18 +862,26 @@ function showSoftwareModal(softwareId = null) {
     modal.style.display = 'block';
 }
 
-function showAssignmentModal() {
+async function showAssignmentModal() {
     const modal = document.getElementById('assignmentModal');
     document.getElementById('assignmentForm').reset();
     document.getElementById('assignDate').value = new Date().toISOString().split('T')[0];
 
     // 자산 선택 드롭다운 초기화
-    document.getElementById('assignHardware').parentElement.style.display = 'none';
-    document.getElementById('assignSoftware').parentElement.style.display = 'none';
+    document.getElementById('hardwareGroup').style.display = 'none';
+    document.getElementById('softwareGroup').style.display = 'none';
     document.getElementById('assignHardware').required = false;
     document.getElementById('assignSoftware').required = false;
 
-    updateAssignmentDropdowns();
+    // 최신 데이터를 로드한 후 드롭다운 업데이트
+    try {
+        await dataStore.loadAllData();
+        updateAssignmentDropdowns();
+    } catch (error) {
+        console.error('데이터 로드 중 오류:', error);
+        updateAssignmentDropdowns(); // 실패 시에도 기존 데이터로 시도
+    }
+    
     modal.style.display = 'block';
 }
 
@@ -874,29 +898,69 @@ function updateAssignmentDropdowns() {
     }
 
     if (hardwareSelect) {
-        const availableHardware = dataStore.hardware.filter(hw => hw.status === '대기중');
+        console.log('🔧 전체 하드웨어 데이터:', dataStore.hardware);
+        
+        // 할당 가능한 하드웨어: 대기중이거나 assigned_to가 null인 경우
+        const availableHardware = dataStore.hardware.filter(hw => 
+            hw.status === '대기중' || hw.status === '사용가능' || 
+            (hw.assigned_to === null && hw.status !== '폐기' && hw.status !== '수리중')
+        );
+        console.log('🔧 할당 가능한 하드웨어:', availableHardware);
+        
+        // 응급 상황을 위해 아무것도 없으면 모든 하드웨어 표시 (폐기 제외)
+        let finalHardware = availableHardware;
+        if (availableHardware.length === 0) {
+            finalHardware = dataStore.hardware.filter(hw => hw.status !== '폐기');
+            console.log('🚨 응급 모드: 모든 하드웨어 표시 (폐기 제외):', finalHardware);
+        }
+        
         hardwareSelect.innerHTML = '<option value="">선택하세요</option>' +
-            availableHardware.map(hw =>
-                `<option value="${hw.id}">${hw.id} - ${hw.type} ${hw.model}</option>`
+            finalHardware.map(hw =>
+                `<option value="${hw.id}">${hw.id} - ${hw.type} ${hw.manufacturer} ${hw.model} (${hw.status})</option>`
             ).join('');
+            
+        console.log('🔧 최종 하드웨어 드롭다운 옵션 수:', finalHardware.length);
     }
 
     if (softwareSelect) {
-        const availableSoftware = dataStore.software.filter(sw => sw.usedLicenses < sw.totalLicenses);
+        console.log('🔧 전체 소프트웨어 데이터:', dataStore.software);
+        
+        // API에서는 current_users 필드를 사용하므로 수정
+        const availableSoftware = dataStore.software.filter(sw => {
+            const currentUsers = sw.current_users || 0;
+            const totalLicenses = sw.total_licenses || sw.totalLicenses || 1;
+            return currentUsers < totalLicenses;
+        });
+        console.log('🔧 할당 가능한 소프트웨어:', availableSoftware);
+        
+        // 응급 상황을 위해 아무것도 없으면 모든 소프트웨어 표시
+        let finalSoftware = availableSoftware;
+        if (availableSoftware.length === 0) {
+            finalSoftware = dataStore.software;
+            console.log('🚨 응급 모드: 모든 소프트웨어 표시:', finalSoftware);
+        }
+        
         softwareSelect.innerHTML = '<option value="">선택하세요</option>' +
-            availableSoftware.map(sw =>
-                `<option value="${sw.id}">${sw.name} (${sw.totalLicenses - sw.usedLicenses}개 라이선스 남음)</option>`
-            ).join('');
+            finalSoftware.map(sw => {
+                const currentUsers = sw.current_users || 0;
+                const totalLicenses = sw.total_licenses || sw.totalLicenses || 1;
+                const remainingLicenses = totalLicenses - currentUsers;
+                return `<option value="${sw.id}">${sw.name} (${remainingLicenses}개 라이선스 남음)</option>`;
+            }).join('');
+            
+        console.log('🔧 최종 소프트웨어 드롭다운 옵션 수:', finalSoftware.length);
     }
 }
 
 // 자산 유형에 따라 선택 옵션 업데이트
 function updateAssetOptions() {
     const assetType = document.getElementById('assetType').value;
-    const hardwareGroup = document.getElementById('assignHardware').parentElement;
-    const softwareGroup = document.getElementById('assignSoftware').parentElement;
+    const hardwareGroup = document.getElementById('hardwareGroup');
+    const softwareGroup = document.getElementById('softwareGroup');
     const hardwareSelect = document.getElementById('assignHardware');
     const softwareSelect = document.getElementById('assignSoftware');
+
+    console.log('🔄 자산 유형 변경:', assetType);
 
     if (assetType === 'hardware') {
         hardwareGroup.style.display = 'block';
@@ -904,12 +968,20 @@ function updateAssetOptions() {
         hardwareSelect.required = true;
         softwareSelect.required = false;
         softwareSelect.value = '';
+        
+        // 하드웨어 드롭다운 옵션 강제 업데이트
+        console.log('🔄 하드웨어 선택 - 드롭다운 표시 및 데이터 업데이트');
+        updateAssignmentDropdowns();
     } else if (assetType === 'software') {
         hardwareGroup.style.display = 'none';
         softwareGroup.style.display = 'block';
         hardwareSelect.required = false;
         softwareSelect.required = true;
         hardwareSelect.value = '';
+        
+        // 소프트웨어 드롭다운 옵션 강제 업데이트
+        console.log('🔄 소프트웨어 선택 - 드롭다운 표시 및 데이터 업데이트');
+        updateAssignmentDropdowns();
     } else {
         hardwareGroup.style.display = 'none';
         softwareGroup.style.display = 'none';
@@ -917,6 +989,7 @@ function updateAssetOptions() {
         softwareSelect.required = false;
         hardwareSelect.value = '';
         softwareSelect.value = '';
+        console.log('🔄 자산 유형 선택 해제 - 모든 드롭다운 숨김');
     }
 }
 
@@ -1204,13 +1277,23 @@ function filterAssignments() {
     const searchTerm = document.getElementById('assignmentSearch').value.toLowerCase();
 
     const filtered = dataStore.assignments.filter(assignment => {
-        const employee = dataStore.employees.find(emp => emp.id === assignment.employeeId);
-        const hardware = dataStore.hardware.find(hw => hw.id === assignment.hardwareId);
+        // API 필드명 사용: employee_id, asset_id, employee_name
+        const employee = dataStore.employees.find(emp => emp.id === assignment.employee_id);
+        
+        let asset = null;
+        if (assignment.asset_type === 'hardware') {
+            asset = dataStore.hardware.find(hw => hw.id === assignment.asset_id);
+        } else if (assignment.asset_type === 'software') {
+            asset = dataStore.software.find(sw => sw.id === assignment.asset_id);
+        }
 
-        const matchesSearch = (employee && employee.name.toLowerCase().includes(searchTerm)) ||
-                            (hardware && hardware.id.toLowerCase().includes(searchTerm));
+        const matchesSearch = (assignment.employee_name && assignment.employee_name.toLowerCase().includes(searchTerm)) ||
+                            (employee && employee.name.toLowerCase().includes(searchTerm)) ||
+                            (assignment.asset_id && assignment.asset_id.toLowerCase().includes(searchTerm)) ||
+                            (asset && asset.name && asset.name.toLowerCase().includes(searchTerm));
 
-        return matchesSearch && assignment.status === '할당중';
+        // API에서는 '사용중' 상태 사용
+        return matchesSearch && assignment.status === '사용중';
     });
 
     renderFilteredAssignments(filtered);
@@ -1325,20 +1408,34 @@ function renderFilteredAssignments(assignments) {
     }
 
     tbody.innerHTML = assignments.map(assignment => {
-        const employee = dataStore.employees.find(emp => emp.id === assignment.employeeId);
-        const hardware = dataStore.hardware.find(hw => hw.id === assignment.hardwareId);
+        // API 필드명 사용: employee_id, asset_type, asset_id
+        const employee = dataStore.employees.find(emp => emp.id === assignment.employee_id);
+
+        let asset = null;
+        let assetType = '';
+        let assetName = '';
+
+        if (assignment.asset_type === 'hardware') {
+            asset = dataStore.hardware.find(hw => hw.id === assignment.asset_id);
+            assetType = asset ? asset.type : '하드웨어';
+            assetName = asset ? `${asset.manufacturer} ${asset.model}` : assignment.asset_description || '-';
+        } else if (assignment.asset_type === 'software') {
+            asset = dataStore.software.find(sw => sw.id === assignment.asset_id);
+            assetType = '소프트웨어';
+            assetName = asset ? asset.name : assignment.asset_description || '-';
+        }
 
         return `
             <tr>
-                <td>${formatDate(assignment.assignDate)}</td>
-                <td>${employee ? employee.name : '알 수 없음'}</td>
+                <td>${formatDate(assignment.assigned_date)}</td>
+                <td>${assignment.employee_name || (employee ? employee.name : '알 수 없음')}</td>
                 <td>${employee ? employee.department : '-'}</td>
-                <td>${hardware ? hardware.type : '알 수 없음'}</td>
-                <td>${hardware ? hardware.id : '알 수 없음'}</td>
-                <td>${hardware ? hardware.model : '-'}</td>
-                <td><span class="status-badge status-assigned">할당중</span></td>
+                <td>${assetType}</td>
+                <td>${assignment.asset_id || '알 수 없음'}</td>
+                <td>${assetName}</td>
+                <td><span class="status-badge status-assigned">사용중</span></td>
                 <td>
-                    <button class="btn btn-success btn-sm" onclick="returnHardware('${assignment.id}')">
+                    <button class="btn btn-success btn-sm" onclick="returnAsset('${assignment.id}')">
                         <i class="fas fa-undo"></i> 반납
                     </button>
                 </td>

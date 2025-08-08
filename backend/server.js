@@ -167,7 +167,7 @@ app.post('/api/employees', authenticateToken, authorize(['admin', 'manager']), a
             INSERT INTO employees (id, name, department, position, hire_date, email, phone, created_by)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING *
-        `, [newId, name, department, position, hire_date, email, phone, req.user.id]);
+        `, [newId, name, department, position, hire_date || null, email, phone, req.user.id]);
 
         await logActivity(req.user.id, `임직원 등록: ${name}`, 'employees', newId, null, result.rows[0]);
 
@@ -193,7 +193,7 @@ app.put('/api/employees/:id', authenticateToken, authorize(['admin', 'manager'])
             SET name = $1, department = $2, position = $3, hire_date = $4, email = $5, phone = $6
             WHERE id = $7 AND is_active = true
             RETURNING *
-        `, [name, department, position, hire_date, email, phone, id]);
+        `, [name, department, position, hire_date || null, email, phone, id]);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ error: '임직원을 찾을 수 없습니다.' });
@@ -266,7 +266,7 @@ app.post('/api/hardware', authenticateToken, authorize(['admin', 'manager']), as
             INSERT INTO hardware (id, type, manufacturer, model, serial_number, purchase_date, price, notes, status, created_by)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
             RETURNING *
-        `, [newId, type, manufacturer, model, serial_number, purchase_date, price, notes, '대기중', req.user.id]);
+        `, [newId, type, manufacturer, model, serial_number, purchase_date || null, price, notes, '대기중', req.user.id]);
 
         await logActivity(req.user.id, `하드웨어 등록: ${type} ${manufacturer} ${model}`, 'hardware', newId, null, result.rows[0]);
 
@@ -292,7 +292,7 @@ app.put('/api/hardware/:id', authenticateToken, authorize(['admin', 'manager']),
                 price = $6, notes = $7, status = $8
             WHERE id = $9 AND is_active = true
             RETURNING *
-        `, [type, manufacturer, model, serial_number, purchase_date, price, notes, status, id]);
+        `, [type, manufacturer, model, serial_number, purchase_date || null, price, notes, status, id]);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ error: '하드웨어를 찾을 수 없습니다.' });
@@ -340,7 +340,7 @@ app.post('/api/software', authenticateToken, authorize(['admin', 'manager']), as
             INSERT INTO software (id, name, manufacturer, version, type, license_type, total_licenses, purchase_date, expiry_date, price, created_by)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
             RETURNING *
-        `, [newId, name, manufacturer, version, type, license_type, total_licenses || 1, purchase_date, expiry_date, price, req.user.id]);
+        `, [newId, name, manufacturer, version, type, license_type, total_licenses || 1, purchase_date || null, expiry_date || null, price, req.user.id]);
 
         await logActivity(req.user.id, `소프트웨어 등록: ${name} ${version}`, 'software', newId, null, result.rows[0]);
 
@@ -359,7 +359,7 @@ app.get('/api/assignments', authenticateToken, async (req, res) => {
         const result = await pool.query(`
             SELECT a.*, e.name as employee_name, u.full_name as assigned_by_name,
                    CASE
-                       WHEN a.asset_type = 'hardware' THEN CONCAT(h.type, ' ', h.brand, ' ', h.model)
+                       WHEN a.asset_type = 'hardware' THEN CONCAT(h.type, ' ', h.manufacturer, ' ', h.model)
                        WHEN a.asset_type = 'software' THEN CONCAT(s.name, ' ', s.version)
                        ELSE '알 수 없음'
                    END as asset_description

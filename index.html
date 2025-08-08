@@ -44,9 +44,6 @@
             <button class="nav-tab" data-tab="software">
                 <i class="fas fa-compact-disc"></i> 소프트웨어
             </button>
-            <button class="nav-tab" data-tab="manual">
-                <i class="fas fa-book-open"></i> SW 라이선스 점검 매뉴얼
-            </button>
             <button class="nav-tab" data-tab="assignment">
                 <i class="fas fa-exchange-alt"></i> 자산 할당
             </button>
@@ -76,6 +73,80 @@
                 <div class="dashboard-card">
                     <h3>최근 활동</h3>
                     <div id="recentActivities"></div>
+                </div>
+            </div>
+            
+            <!-- SW 라이선스 점검 매뉴얼 섹션 -->
+            <div class="dashboard-manual-section">
+                <div class="section-header">
+                    <h2>SW 라이선스 점검 매뉴얼</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-primary" onclick="openPdfInNewTab()">
+                            <i class="fas fa-external-link-alt"></i> 새 창에서 열기
+                        </button>
+                        <button class="btn btn-secondary" onclick="downloadPdf()">
+                            <i class="fas fa-download"></i> PDF 다운로드
+                        </button>
+                    </div>
+                </div>
+
+                <div class="manual-container">
+                    <div class="manual-description">
+                        <h3><i class="fas fa-info-circle"></i> 소프트웨어 라이선스 개별 점검 가이드</h3>
+                        <p>이 매뉴얼은 직원들이 개별적으로 자신의 PC에 설치된 소프트웨어의 라이선스를 점검할 수 있도록 도와주는 가이드입니다.</p>
+                        <ul>
+                            <li>SMART Check Plus 프로그램 사용법</li>
+                            <li>소프트웨어 라이선스 확인 절차</li>
+                            <li>점검 결과 해석 및 조치사항</li>
+                            <li>문제 발생 시 대응 방법</li>
+                        </ul>
+                    </div>
+
+                    <!-- PDF 뷰어 -->
+                    <div class="pdf-viewer-container">
+                        <div class="pdf-viewer-tabs">
+                            <button class="pdf-tab active" onclick="showPdfEmbed()">
+                                <i class="fas fa-file-pdf"></i> 내장 뷰어
+                            </button>
+                            <button class="pdf-tab" onclick="showPdfObject()">
+                                <i class="fas fa-window-restore"></i> 브라우저 뷰어
+                            </button>
+                        </div>
+
+                        <!-- 내장 iframe 뷰어 -->
+                        <div id="embedViewer" class="pdf-viewer">
+                            <iframe id="pdfViewer"
+                                    src="SMART_Check_Plus_User_Manual_V2.0.pdf#toolbar=1&navpanes=1&scrollbar=1"
+                                    width="100%"
+                                    height="700px"
+                                    frameborder="0"
+                                    scrolling="auto">
+                                <p>PDF를 표시할 수 없습니다.
+                                   <a href="SMART_Check_Plus_User_Manual_V2.0.pdf" target="_blank">여기를 클릭하여 PDF를 다운로드하세요.</a>
+                                </p>
+                            </iframe>
+                        </div>
+
+                        <!-- 브라우저 object 뷰어 -->
+                        <div id="objectViewer" class="pdf-viewer" style="display: none;">
+                            <object data="SMART_Check_Plus_User_Manual_V2.0.pdf#toolbar=1&navpanes=1&scrollbar=1"
+                                    type="application/pdf"
+                                    width="100%"
+                                    height="700px">
+                                <p>PDF를 표시할 수 없습니다.
+                                   <a href="SMART_Check_Plus_User_Manual_V2.0.pdf" target="_blank">여기를 클릭하여 PDF를 다운로드하세요.</a>
+                                </p>
+                            </object>
+                        </div>
+
+                        <!-- PDF 뷰어 안내 -->
+                        <div class="pdf-viewer-help">
+                            <p><i class="fas fa-info-circle"></i>
+                               <strong>스크롤이 안되는 경우:</strong>
+                               "브라우저 뷰어" 탭을 클릭하거나 "새 창에서 열기" 버튼을 사용하세요.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -216,79 +287,6 @@
             </div>
         </div>
 
-        <!-- SW 라이선스 점검 매뉴얼 탭 -->
-        <div id="manual" class="tab-content">
-            <div class="section-header">
-                <h2>SW 라이선스 점검 매뉴얼</h2>
-                <div class="section-actions">
-                    <button class="btn btn-primary" onclick="openPdfInNewTab()">
-                        <i class="fas fa-external-link-alt"></i> 새 창에서 열기
-                    </button>
-                    <button class="btn btn-secondary" onclick="downloadPdf()">
-                        <i class="fas fa-download"></i> PDF 다운로드
-                    </button>
-                </div>
-            </div>
-
-            <div class="manual-container">
-                <div class="manual-description">
-                    <h3><i class="fas fa-info-circle"></i> 소프트웨어 라이선스 개별 점검 가이드</h3>
-                    <p>이 매뉴얼은 직원들이 개별적으로 자신의 PC에 설치된 소프트웨어의 라이선스를 점검할 수 있도록 도와주는 가이드입니다.</p>
-                    <ul>
-                        <li>SMART Check Plus 프로그램 사용법</li>
-                        <li>소프트웨어 라이선스 확인 절차</li>
-                        <li>점검 결과 해석 및 조치사항</li>
-                        <li>문제 발생 시 대응 방법</li>
-                    </ul>
-                </div>
-
-                <!-- PDF 뷰어 -->
-                <div class="pdf-viewer-container">
-                    <div class="pdf-viewer-tabs">
-                        <button class="pdf-tab active" onclick="showPdfEmbed()">
-                            <i class="fas fa-file-pdf"></i> 내장 뷰어
-                        </button>
-                        <button class="pdf-tab" onclick="showPdfObject()">
-                            <i class="fas fa-window-restore"></i> 브라우저 뷰어
-                        </button>
-                    </div>
-
-                    <!-- 내장 iframe 뷰어 -->
-                    <div id="embedViewer" class="pdf-viewer">
-                        <iframe id="pdfViewer"
-                                src="SMART_Check_Plus_User_Manual_V2.0.pdf#toolbar=1&navpanes=1&scrollbar=1"
-                                width="100%"
-                                height="700px"
-                                frameborder="0"
-                                scrolling="auto">
-                            <p>PDF를 표시할 수 없습니다.
-                               <a href="SMART_Check_Plus_User_Manual_V2.0.pdf" target="_blank">여기를 클릭하여 PDF를 다운로드하세요.</a>
-                            </p>
-                        </iframe>
-                    </div>
-
-                    <!-- 브라우저 object 뷰어 -->
-                    <div id="objectViewer" class="pdf-viewer" style="display: none;">
-                        <object data="SMART_Check_Plus_User_Manual_V2.0.pdf#toolbar=1&navpanes=1&scrollbar=1"
-                                type="application/pdf"
-                                width="100%"
-                                height="700px">
-                            <p>PDF를 표시할 수 없습니다.
-                               <a href="SMART_Check_Plus_User_Manual_V2.0.pdf" target="_blank">여기를 클릭하여 PDF를 다운로드하세요.</a>
-                            </p>
-                        </object>
-                    </div>
-
-                    <!-- PDF 뷰어 안내 -->
-                    <div class="pdf-viewer-help">
-                        <p><i class="fas fa-info-circle"></i>
-                           <strong>스크롤이 안되는 경우:</strong>
-                           "브라우저 뷰어" 탭을 클릭하거나 "새 창에서 열기" 버튼을 사용하세요.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- 자산 할당 탭 -->
         <div id="assignment" class="tab-content">
@@ -519,15 +517,15 @@
                         <option value="software">소프트웨어</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group" id="hardwareGroup" style="display: none;">
                     <label>하드웨어 자산 *</label>
-                    <select id="assignHardware" style="display: none;">
+                    <select id="assignHardware">
                         <option value="">선택하세요</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group" id="softwareGroup" style="display: none;">
                     <label>소프트웨어 자산 *</label>
-                    <select id="assignSoftware" style="display: none;">
+                    <select id="assignSoftware">
                         <option value="">선택하세요</option>
                     </select>
                 </div>
@@ -547,6 +545,6 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=20250808031000"></script>
 </body>
 </html>
