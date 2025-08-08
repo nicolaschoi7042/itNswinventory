@@ -885,20 +885,36 @@ async function showAssignmentModal() {
     modal.style.display = 'block';
 }
 
-function updateAssignmentDropdowns() {
+function updateAssignmentDropdowns(updateEmployee = true) {
     const employeeSelect = document.getElementById('assignEmployee');
     const hardwareSelect = document.getElementById('assignHardware');
     const softwareSelect = document.getElementById('assignSoftware');
 
-    if (employeeSelect) {
+    // updateEmployee가 true일 때만 임직원 드롭다운 업데이트
+    if (employeeSelect && updateEmployee) {
+        // 현재 선택된 값을 보존
+        const currentEmployeeValue = employeeSelect.value;
+        console.log('🔍 updateAssignmentDropdowns - 임직원 현재 값:', currentEmployeeValue);
+        
         employeeSelect.innerHTML = '<option value="">선택하세요</option>' +
             dataStore.employees.map(emp =>
                 `<option value="${emp.id}">${emp.name} (${emp.department})</option>`
             ).join('');
+            
+        // 이전 선택 값 복원
+        if (currentEmployeeValue) {
+            employeeSelect.value = currentEmployeeValue;
+            console.log('🔍 updateAssignmentDropdowns - 임직원 값 복원:', employeeSelect.value);
+        }
+    } else if (employeeSelect && !updateEmployee) {
+        console.log('🔍 updateAssignmentDropdowns - 임직원 드롭다운 스킵 (현재 값 유지):', employeeSelect.value);
     }
 
     if (hardwareSelect) {
         console.log('🔧 전체 하드웨어 데이터:', dataStore.hardware);
+        
+        // 현재 선택된 값을 보존
+        const currentHardwareValue = hardwareSelect.value;
         
         // 할당 가능한 하드웨어: 대기중이거나 assigned_to가 null인 경우
         const availableHardware = dataStore.hardware.filter(hw => 
@@ -919,11 +935,19 @@ function updateAssignmentDropdowns() {
                 `<option value="${hw.id}">${hw.id} - ${hw.type} ${hw.manufacturer} ${hw.model} (${hw.status})</option>`
             ).join('');
             
+        // 이전 선택 값 복원 (해당 하드웨어가 여전히 available한 경우)
+        if (currentHardwareValue && finalHardware.find(hw => hw.id === currentHardwareValue)) {
+            hardwareSelect.value = currentHardwareValue;
+        }
+            
         console.log('🔧 최종 하드웨어 드롭다운 옵션 수:', finalHardware.length);
     }
 
     if (softwareSelect) {
         console.log('🔧 전체 소프트웨어 데이터:', dataStore.software);
+        
+        // 현재 선택된 값을 보존
+        const currentSoftwareValue = softwareSelect.value;
         
         // API에서는 current_users 필드를 사용하므로 수정
         const availableSoftware = dataStore.software.filter(sw => {
@@ -948,6 +972,11 @@ function updateAssignmentDropdowns() {
                 return `<option value="${sw.id}">${sw.name} (${remainingLicenses}개 라이선스 남음)</option>`;
             }).join('');
             
+        // 이전 선택 값 복원 (해당 소프트웨어가 여전히 available한 경우)
+        if (currentSoftwareValue && finalSoftware.find(sw => sw.id === currentSoftwareValue)) {
+            softwareSelect.value = currentSoftwareValue;
+        }
+            
         console.log('🔧 최종 소프트웨어 드롭다운 옵션 수:', finalSoftware.length);
     }
 }
@@ -959,8 +988,10 @@ function updateAssetOptions() {
     const softwareGroup = document.getElementById('softwareGroup');
     const hardwareSelect = document.getElementById('assignHardware');
     const softwareSelect = document.getElementById('assignSoftware');
+    const employeeSelect = document.getElementById('assignEmployee');
 
     console.log('🔄 자산 유형 변경:', assetType);
+    console.log('🔍 자산 유형 변경 전 임직원 선택 값:', employeeSelect ? employeeSelect.value : 'NULL');
 
     if (assetType === 'hardware') {
         hardwareGroup.style.display = 'block';
@@ -969,9 +1000,10 @@ function updateAssetOptions() {
         softwareSelect.required = false;
         softwareSelect.value = '';
         
-        // 하드웨어 드롭다운 옵션 강제 업데이트
-        console.log('🔄 하드웨어 선택 - 드롭다운 표시 및 데이터 업데이트');
-        updateAssignmentDropdowns();
+        // 하드웨어 드롭다운만 직접 업데이트 (임직원 드롭다운은 절대 건드리지 않음)
+        console.log('🔄 하드웨어 선택 - 하드웨어 드롭다운만 업데이트');
+        updateOnlyHardwareDropdown();
+        console.log('🔍 하드웨어 선택 후 임직원 선택 값:', employeeSelect ? employeeSelect.value : 'NULL');
     } else if (assetType === 'software') {
         hardwareGroup.style.display = 'none';
         softwareGroup.style.display = 'block';
@@ -979,9 +1011,10 @@ function updateAssetOptions() {
         softwareSelect.required = true;
         hardwareSelect.value = '';
         
-        // 소프트웨어 드롭다운 옵션 강제 업데이트
-        console.log('🔄 소프트웨어 선택 - 드롭다운 표시 및 데이터 업데이트');
-        updateAssignmentDropdowns();
+        // 소프트웨어 드롭다운만 직접 업데이트 (임직원 드롭다운은 절대 건드리지 않음)
+        console.log('🔄 소프트웨어 선택 - 소프트웨어 드롭다운만 업데이트');
+        updateOnlySoftwareDropdown();
+        console.log('🔍 소프트웨어 선택 후 임직원 선택 값:', employeeSelect ? employeeSelect.value : 'NULL');
     } else {
         hardwareGroup.style.display = 'none';
         softwareGroup.style.display = 'none';
@@ -990,6 +1023,86 @@ function updateAssetOptions() {
         hardwareSelect.value = '';
         softwareSelect.value = '';
         console.log('🔄 자산 유형 선택 해제 - 모든 드롭다운 숨김');
+    }
+}
+
+// 하드웨어 드롭다운만 업데이트 (임직원 드롭다운은 절대 건드리지 않음)
+function updateOnlyHardwareDropdown() {
+    const hardwareSelect = document.getElementById('assignHardware');
+    
+    if (hardwareSelect) {
+        console.log('🔧 하드웨어 드롭다운만 업데이트 - 전체 하드웨어 데이터:', dataStore.hardware.length, '개');
+        
+        // 현재 선택된 값을 보존
+        const currentHardwareValue = hardwareSelect.value;
+        
+        // 할당 가능한 하드웨어: 대기중이거나 assigned_to가 null인 경우
+        const availableHardware = dataStore.hardware.filter(hw => 
+            hw.status === '대기중' || hw.status === '사용가능' || 
+            (hw.assigned_to === null && hw.status !== '폐기' && hw.status !== '수리중')
+        );
+        console.log('🔧 할당 가능한 하드웨어:', availableHardware.length, '개');
+        
+        // 응급 상황을 위해 아무것도 없으면 모든 하드웨어 표시 (폐기 제외)
+        let finalHardware = availableHardware;
+        if (availableHardware.length === 0) {
+            finalHardware = dataStore.hardware.filter(hw => hw.status !== '폐기');
+            console.log('🚨 응급 모드: 모든 하드웨어 표시 (폐기 제외):', finalHardware.length, '개');
+        }
+        
+        hardwareSelect.innerHTML = '<option value="">선택하세요</option>' +
+            finalHardware.map(hw =>
+                `<option value="${hw.id}">${hw.id} - ${hw.type} ${hw.manufacturer} ${hw.model} (${hw.status})</option>`
+            ).join('');
+            
+        // 이전 선택 값 복원 (해당 하드웨어가 여전히 available한 경우)
+        if (currentHardwareValue && finalHardware.find(hw => hw.id === currentHardwareValue)) {
+            hardwareSelect.value = currentHardwareValue;
+        }
+            
+        console.log('🔧 최종 하드웨어 드롭다운 옵션 수:', finalHardware.length, '개');
+    }
+}
+
+// 소프트웨어 드롭다운만 업데이트 (임직원 드롭다운은 절대 건드리지 않음)
+function updateOnlySoftwareDropdown() {
+    const softwareSelect = document.getElementById('assignSoftware');
+    
+    if (softwareSelect) {
+        console.log('🔧 소프트웨어 드롭다운만 업데이트 - 전체 소프트웨어 데이터:', dataStore.software.length, '개');
+        
+        // 현재 선택된 값을 보존
+        const currentSoftwareValue = softwareSelect.value;
+        
+        // API에서는 current_users 필드를 사용하므로 수정
+        const availableSoftware = dataStore.software.filter(sw => {
+            const currentUsers = sw.current_users || 0;
+            const totalLicenses = sw.total_licenses || sw.totalLicenses || 1;
+            return currentUsers < totalLicenses;
+        });
+        console.log('🔧 할당 가능한 소프트웨어:', availableSoftware.length, '개');
+        
+        // 응급 상황을 위해 아무것도 없으면 모든 소프트웨어 표시
+        let finalSoftware = availableSoftware;
+        if (availableSoftware.length === 0) {
+            finalSoftware = dataStore.software;
+            console.log('🚨 응급 모드: 모든 소프트웨어 표시:', finalSoftware.length, '개');
+        }
+        
+        softwareSelect.innerHTML = '<option value="">선택하세요</option>' +
+            finalSoftware.map(sw => {
+                const currentUsers = sw.current_users || 0;
+                const totalLicenses = sw.total_licenses || sw.totalLicenses || 1;
+                const remainingLicenses = totalLicenses - currentUsers;
+                return `<option value="${sw.id}">${sw.name} ${sw.version || ''} (남은 라이선스: ${remainingLicenses}개)</option>`;
+            }).join('');
+            
+        // 이전 선택 값 복원 (해당 소프트웨어가 여전히 available한 경우)
+        if (currentSoftwareValue && finalSoftware.find(sw => sw.id === currentSoftwareValue)) {
+            softwareSelect.value = currentSoftwareValue;
+        }
+            
+        console.log('🔧 최종 소프트웨어 드롭다운 옵션 수:', finalSoftware.length, '개');
     }
 }
 
@@ -1202,8 +1315,9 @@ function deleteSoftwareConfirm(softwareId) {
     }
 }
 
-async function returnHardware(assignmentId) {
-    console.log('반납 처리 시작:', assignmentId);
+// 글로벌 자산 반납 함수 (HTML onclick에서 호출)
+async function returnAsset(assignmentId) {
+    console.log('자산 반납 처리 시작:', assignmentId);
 
     if (confirm('이 자산을 반납 처리하시겠습니까?')) {
         try {
@@ -1221,6 +1335,11 @@ async function returnHardware(assignmentId) {
             showAlert('반납 처리 중 오류가 발생했습니다: ' + error.message, 'error');
         }
     }
+}
+
+// 하위 호환성을 위한 별칭
+async function returnHardware(assignmentId) {
+    return await returnAsset(assignmentId);
 }
 
 // 필터링 함수들
