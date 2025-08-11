@@ -862,6 +862,68 @@ form {
     }
 }
 
+/* 로그인 모달 스타일 */
+#loginModal {
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+#loginModal .modal-content {
+    margin: 10% auto;
+    max-width: 400px;
+    border: 2px solid #667eea;
+    animation: loginModalSlideIn 0.4s ease-out;
+}
+
+@keyframes loginModalSlideIn {
+    from {
+        transform: translateY(-100px) scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+#loginModal .modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom: none;
+}
+
+#loginModal .modal-header h3 {
+    color: white;
+    margin: 0;
+}
+
+#loginModal .modal-header .close {
+    display: none; /* 로그인이 필요하므로 닫기 버튼 숨김 */
+}
+
+#loginModal form {
+    padding: 2rem 2rem 1rem;
+}
+
+#loginModal .form-actions {
+    padding: 0 2rem 2rem;
+    margin-top: 1rem;
+    border-top: none;
+    justify-content: center;
+}
+
+#loginModal .btn-primary {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+#loginModal .alert-error {
+    margin: 0 2rem 1rem;
+    border-left-color: #dc3545;
+}
+
 /* 대시보드 매뉴얼 섹션 스타일 */
 .dashboard-manual-section {
     margin-top: 2rem;

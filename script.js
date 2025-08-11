@@ -34,6 +34,9 @@ class ApiService {
             ...options,
             headers: {
                 'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0',
                 ...(this.token && { 'Authorization': `Bearer ${this.token}` }),
                 ...options.headers
             }
@@ -151,6 +154,11 @@ class ApiService {
             body: JSON.stringify({ notes })
         });
     }
+
+    // 활동 로그 API
+    async getActivities(limit = 20) {
+        return await this.request(`/activities?limit=${limit}`);
+    }
 }
 
 // 데이터 저장소 (API 기반)
@@ -169,15 +177,23 @@ class DataStore {
 
     async initializeData() {
         try {
-            // 토큰이 없으면 자동 로그인 시도
+            // 토큰이 없으면 로그인 모달 표시
             if (!this.api.token) {
-                await this.api.login();
+                showLoginModal();
+                return; // 로그인 완료 후 다시 시도
             }
 
             await this.loadAllData();
         } catch (error) {
-            console.error('API 연결 실패. 백엔드 서버가 실행되고 있는지 확인하세요:', error);
-            // 빈 배열로 초기화
+            console.error('API 연결 실패:', error);
+            // 인증 오류인 경우 로그인 모달 표시
+            if (error.message && error.message.includes('401')) {
+                localStorage.removeItem('inventory_token');
+                showLoginModal();
+                return;
+            }
+            
+            // 다른 오류인 경우 빈 배열로 초기화
             this.employees = [];
             this.hardware = [];
             this.software = [];
@@ -188,11 +204,12 @@ class DataStore {
 
     async loadAllData() {
         try {
-            [this.employees, this.hardware, this.software, this.assignments] = await Promise.all([
+            [this.employees, this.hardware, this.software, this.assignments, this.activities] = await Promise.all([
                 this.api.getEmployees(),
                 this.api.getHardware(),
                 this.api.getSoftware(),
-                this.api.getAssignments()
+                this.api.getAssignments(),
+                this.api.getActivities()
             ]);
 
             console.log('🔄 데이터 로드 완료:');
@@ -200,6 +217,7 @@ class DataStore {
             console.log('  - 하드웨어:', this.hardware.length, '개', this.hardware);
             console.log('  - 소프트웨어:', this.software.length, '개');
             console.log('  - 할당:', this.assignments.length, '개');
+            console.log('  - 활동:', this.activities.length, '개');
 
             // 데이터가 로드되면 화면 업데이트
             if (typeof updateStatistics === 'function') {
@@ -445,6 +463,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function initializeApp() {
     setupEventListeners();
+    setupLoginModal();
     showTab('dashboard');
     // 통계와 대시보드는 데이터 로드 후 자동으로 업데이트됨
 }
@@ -556,12 +575,24 @@ function renderRecentActivities() {
         return;
     }
 
-    container.innerHTML = activities.map(activity => `
-        <div class="activity-item">
-            <div>${activity.action}</div>
-            <div class="activity-time">${formatDateTime(activity.timestamp)} by ${activity.user}</div>
-        </div>
-    `).join('');
+    container.innerHTML = activities.map(activity => {
+        const date = activity.created_at ? new Date(activity.created_at) : new Date(activity.timestamp);
+        const timeString = date.toLocaleString('ko-KR', {
+            month: '2-digit',
+            day: '2-digit', 
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        const userName = activity.user_name || activity.user || '시스템';
+        
+        return `
+            <div class="activity-item">
+                <div>${activity.action}</div>
+                <div class="activity-time">${timeString} - ${userName}</div>
+            </div>
+        `;
+    }).join('');
 }
 
 function renderAssetChart() {
@@ -1956,4 +1987,93 @@ function initializePdfScrollFix() {
             return;
         }
     }, { passive: true });
+}
+
+// 로그인 모달 관련 함수들
+function setupLoginModal() {
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
+}
+
+function showLoginModal() {
+    const modal = document.getElementById('loginModal');
+    if (modal) {
+        modal.style.display = 'block';
+        // 포커스를 사용자명 입력 필드로 이동
+        const usernameField = document.getElementById('loginUsername');
+        if (usernameField) {
+            setTimeout(() => usernameField.focus(), 100);
+        }
+    }
+}
+
+function hideLoginModal() {
+    const modal = document.getElementById('loginModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function showLoginError(message) {
+    const errorDiv = document.getElementById('loginError');
+    if (errorDiv) {
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+    }
+}
+
+function hideLoginError() {
+    const errorDiv = document.getElementById('loginError');
+    if (errorDiv) {
+        errorDiv.style.display = 'none';
+    }
+}
+
+async function handleLogin(e) {
+    e.preventDefault();
+    
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    
+    if (!username || !password) {
+        showLoginError('사용자명과 비밀번호를 입력하세요.');
+        return;
+    }
+    
+    try {
+        hideLoginError();
+        
+        // 로그인 버튼 비활성화
+        const submitButton = e.target.querySelector('button[type="submit"]');
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = '로그인 중...';
+        }
+        
+        // API 로그인 시도
+        await dataStore.api.login(username, password);
+        
+        // 로그인 성공 시 데이터 로드 및 모달 숨기기
+        await dataStore.loadAllData();
+        hideLoginModal();
+        
+        // 통계 업데이트
+        updateStatistics();
+        renderDashboard();
+        
+        showAlert('로그인되었습니다.', 'success');
+        
+    } catch (error) {
+        console.error('Login error:', error);
+        showLoginError('로그인에 실패했습니다. 사용자명과 비밀번호를 확인하세요.');
+    } finally {
+        // 로그인 버튼 활성화
+        const submitButton = e.target.querySelector('button[type="submit"]');
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = '로그인';
+        }
+    }
 }

@@ -551,6 +551,26 @@ app.put('/api/assignments/:id/return', authenticateToken, authorize(['admin', 'm
     }
 });
 
+// === 활동 로그 API ===
+
+// 최근 활동 조회
+app.get('/api/activities', authenticateToken, async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 20;
+        const result = await pool.query(`
+            SELECT a.*, u.full_name as user_name
+            FROM activities a
+            LEFT JOIN users u ON a.user_id = u.id
+            ORDER BY a.created_at DESC
+            LIMIT $1
+        `, [limit]);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Get activities error:', error);
+        res.status(500).json({ error: '활동 내역 조회 중 오류가 발생했습니다.' });
+    }
+});
+
 // 기본 상태 확인
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', message: 'IT Inventory API Server is running' });
