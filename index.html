@@ -550,6 +550,7 @@
                 <div class="form-group">
                     <label>사용자명 *</label>
                     <input type="text" id="loginUsername" value="admin" required>
+                    <small class="form-help">LDAP 사용자명 또는 로컬 계정</small>
                 </div>
                 <div class="form-group">
                     <label>비밀번호 *</label>
@@ -557,12 +558,16 @@
                 </div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">로그인</button>
+                    <button type="button" class="btn btn-secondary" onclick="showLdapStatus()">
+                        <i class="fas fa-info-circle"></i> 인증 정보
+                    </button>
                 </div>
             </form>
             <div id="loginError" class="alert alert-error" style="display: none;"></div>
+            <div id="loginInfo" class="alert alert-info" style="display: none;"></div>
         </div>
     </div>
 
-    <script src="script.js?v=20250808055000"></script>
+    <script src="script.js?v=20250808060000"></script>
 </body>
 </html>

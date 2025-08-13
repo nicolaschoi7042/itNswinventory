@@ -5,6 +5,7 @@ const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
+const { LDAPAuth } = require('./lib/ldapAuth');
 require('dotenv').config();
 
 const app = express();
@@ -21,6 +22,32 @@ const pool = new Pool({
     password: process.env.DB_PASSWORD || 'your_password',
     port: process.env.DB_PORT || 5432,
 });
+
+// LDAP 인증 설정
+const ldapEnabled = process.env.LDAP_ENABLED === 'true';
+let ldapAuth = null;
+
+if (ldapEnabled) {
+    console.log('🔧 LDAP authentication enabled');
+    ldapAuth = new LDAPAuth({
+        server: process.env.LDAP_SERVER,
+        bindDN: process.env.LDAP_BIND_DN,
+        bindPassword: process.env.LDAP_BIND_PASSWORD,
+        userBase: process.env.LDAP_USER_BASE,
+        groupBase: process.env.LDAP_GROUP_BASE,
+        userFilter: process.env.LDAP_USER_FILTER,
+        groupFilter: process.env.LDAP_GROUP_FILTER,
+        userFullnameAttr: process.env.LDAP_USER_FULLNAME_ATTR,
+        userEmailAttr: process.env.LDAP_USER_EMAIL_ATTR
+    });
+
+    // Test LDAP connection on startup
+    ldapAuth.testConnection().catch(error => {
+        console.error('❌ LDAP: Initial connection test failed:', error.message);
+    });
+} else {
+    console.log('🔧 LDAP authentication disabled, using local authentication only');
+}
 
 // 미들웨어 설정
 app.use(helmet());
@@ -90,6 +117,48 @@ const logActivity = async (userId, action, tableName = null, recordId = null, ol
     }
 };
 
+// LDAP 사용자를 로컬 데이터베이스에서 찾거나 생성하는 함수
+const findOrCreateLdapUser = async (ldapUser) => {
+    try {
+        // 먼저 username으로 기존 사용자 찾기
+        let result = await pool.query('SELECT * FROM users WHERE username = $1', [ldapUser.username]);
+        
+        if (result.rows.length > 0) {
+            let user = result.rows[0];
+            
+            // LDAP에서 온 정보로 사용자 정보 업데이트
+            const updateResult = await pool.query(`
+                UPDATE users 
+                SET full_name = $1, email = $2, role = $3, is_active = true, updated_at = CURRENT_TIMESTAMP
+                WHERE id = $4
+                RETURNING *
+            `, [ldapUser.fullName, ldapUser.email, ldapUser.role, user.id]);
+            
+            console.log(`✅ Updated existing LDAP user: ${ldapUser.username}`);
+            return updateResult.rows[0];
+        } else {
+            // 새 LDAP 사용자 생성
+            const createResult = await pool.query(`
+                INSERT INTO users (username, password_hash, full_name, email, role, is_active, created_at, updated_at)
+                VALUES ($1, $2, $3, $4, $5, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                RETURNING *
+            `, [
+                ldapUser.username,
+                '', // LDAP 사용자는 비밀번호가 비어있음
+                ldapUser.fullName,
+                ldapUser.email,
+                ldapUser.role
+            ]);
+            
+            console.log(`✅ Created new LDAP user: ${ldapUser.username}`);
+            return createResult.rows[0];
+        }
+    } catch (error) {
+        console.error('Error finding/creating LDAP user:', error);
+        throw new Error('사용자 정보 처리 중 오류가 발생했습니다.');
+    }
+};
+
 // === 인증 API ===
 
 // 로그인
@@ -97,6 +166,60 @@ app.post('/api/auth/login', async (req, res) => {
     try {
         const { username, password } = req.body;
 
+        // LDAP 인증 시도 (LDAP가 활성화된 경우)
+        if (ldapEnabled && ldapAuth && username !== 'admin') {
+            try {
+                console.log(`🔍 LDAP: Attempting authentication for user: ${username}`);
+                const ldapUser = await ldapAuth.authenticate(username, password);
+                
+                if (ldapUser) {
+                    // LDAP 인증 성공 - 로컬 데이터베이스에서 사용자 찾기 또는 생성
+                    let user = await findOrCreateLdapUser(ldapUser);
+                    
+                    // 마지막 로그인 시간 업데이트
+                    await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
+
+                    const token = jwt.sign(
+                        {
+                            id: user.id,
+                            username: user.username,
+                            role: user.role,
+                            ldap: true
+                        },
+                        process.env.JWT_SECRET || 'your-secret-key',
+                        { expiresIn: '8h' }
+                    );
+
+                    await logActivity(user.id, `LDAP 사용자 로그인: ${ldapUser.fullName}`);
+
+                    return res.json({
+                        token,
+                        user: {
+                            id: user.id,
+                            username: user.username,
+                            full_name: user.full_name,
+                            role: user.role,
+                            authMethod: 'LDAP'
+                        }
+                    });
+                } else {
+                    // LDAP에서 사용자를 찾지 못함
+                    console.log(`🔍 LDAP: User ${username} not found in LDAP`);
+                    return res.status(401).json({ error: 'LDAP 인증에 실패했습니다. 사용자명과 비밀번호를 확인하세요.' });
+                }
+            } catch (ldapError) {
+                console.error('LDAP authentication error:', ldapError.message);
+                // LDAP 연결 오류인 경우 로컬 인증으로 폴백
+                if (ldapError.message.includes('getaddrinfo ENOTFOUND') || ldapError.message.includes('ECONNREFUSED')) {
+                    console.log(`⚠️ LDAP: Connection failed, falling back to local authentication for ${username}`);
+                } else {
+                    return res.status(401).json({ error: 'LDAP 인증에 실패했습니다. 사용자명과 비밀번호를 확인하세요.' });
+                }
+            }
+        }
+
+        // 로컬 데이터베이스 인증 (LDAP 비활성화이거나 LDAP 인증 실패 시)
+        console.log(`🔍 Local: Attempting local authentication for user: ${username}`);
         const result = await pool.query('SELECT * FROM users WHERE username = $1 AND is_active = true', [username]);
         let user = result.rows[0];
 
@@ -122,13 +245,14 @@ app.post('/api/auth/login', async (req, res) => {
             {
                 id: user.id,
                 username: user.username,
-                role: user.role
+                role: user.role,
+                ldap: false
             },
             process.env.JWT_SECRET || 'your-secret-key',
             { expiresIn: '8h' }
         );
 
-        await logActivity(user.id, '사용자 로그인');
+        await logActivity(user.id, '로컬 사용자 로그인');
 
         res.json({
             token,
@@ -136,12 +260,43 @@ app.post('/api/auth/login', async (req, res) => {
                 id: user.id,
                 username: user.username,
                 full_name: user.full_name,
-                role: user.role
+                role: user.role,
+                authMethod: 'Local'
             }
         });
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ error: '서버 오류가 발생했습니다.' });
+    }
+});
+
+// LDAP 연결 테스트 (관리자 전용)
+app.get('/api/auth/ldap/test', authenticateToken, authorize(['admin']), async (req, res) => {
+    try {
+        if (!ldapEnabled || !ldapAuth) {
+            return res.json({
+                enabled: false,
+                message: 'LDAP authentication is disabled'
+            });
+        }
+
+        const isConnected = await ldapAuth.testConnection();
+        res.json({
+            enabled: true,
+            connected: isConnected,
+            config: {
+                server: process.env.LDAP_SERVER,
+                userBase: process.env.LDAP_USER_BASE,
+                groupBase: process.env.LDAP_GROUP_BASE
+            }
+        });
+    } catch (error) {
+        console.error('LDAP test error:', error);
+        res.status(500).json({ 
+            enabled: true,
+            connected: false,
+            error: error.message 
+        });
     }
 });
 
