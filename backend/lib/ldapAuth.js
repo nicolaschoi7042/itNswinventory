@@ -1,0 +1,234 @@
+const { Client } = require('ldapts');
+
+class LDAPAuth {
+    constructor(config) {
+        this.config = {
+            server: config.server || process.env.LDAP_SERVER,
+            bindDN: config.bindDN || process.env.LDAP_BIND_DN,
+            bindPassword: config.bindPassword || process.env.LDAP_BIND_PASSWORD,
+            userBase: config.userBase || process.env.LDAP_USER_BASE,
+            groupBase: config.groupBase || process.env.LDAP_GROUP_BASE,
+            userFilter: config.userFilter || process.env.LDAP_USER_FILTER || '(|(cn=%s)(uid=%s)(sAMAccountName=%s)(mail=%s))',
+            groupFilter: config.groupFilter || process.env.LDAP_GROUP_FILTER || '(member=%s)',
+            userFullnameAttr: config.userFullnameAttr || process.env.LDAP_USER_FULLNAME_ATTR || 'cn',
+            userEmailAttr: config.userEmailAttr || process.env.LDAP_USER_EMAIL_ATTR || 'mail'
+        };
+    }
+
+    /**
+     * Authenticate user against LDAP
+     * @param {string} username - Username to authenticate
+     * @param {string} password - Password to verify
+     * @returns {Object|null} User object if authenticated, null otherwise
+     */
+    async authenticate(username, password) {
+        if (!username || !password) {
+            throw new Error('Username and password are required');
+        }
+
+        const client = new Client({
+            url: this.config.server,
+            timeout: 10000,
+            connectTimeout: 10000,
+        });
+
+        try {
+            // Bind with admin credentials to search for user
+            await client.bind(this.config.bindDN, this.config.bindPassword);
+
+            // Search for user
+            const userFilter = this.config.userFilter.replace(/%s/g, username);
+            console.log(`🔍 LDAP: Searching for user with filter: ${userFilter}`);
+            
+            const searchOptions = {
+                scope: 'sub',
+                filter: userFilter,
+                attributes: [
+                    'dn', 
+                    'uid', 
+                    'cn', 
+                    'sn', 
+                    'givenName',
+                    this.config.userFullnameAttr,
+                    this.config.userEmailAttr,
+                    'memberOf',
+                    'objectClass'
+                ]
+            };
+
+            const searchResult = await client.search(this.config.userBase, searchOptions);
+            const users = searchResult.searchEntries;
+
+            if (users.length === 0) {
+                console.log(`❌ LDAP: User ${username} not found`);
+                return null;
+            }
+
+            if (users.length > 1) {
+                console.log(`⚠️ LDAP: Multiple users found for ${username}, using first match`);
+            }
+
+            const user = users[0];
+            const userDN = user.dn;
+            console.log(`✅ LDAP: Found user: ${userDN}`);
+
+            // Unbind admin connection
+            await client.unbind();
+
+            // Create new connection to authenticate the user
+            const userClient = new Client({
+                url: this.config.server,
+                timeout: 10000,
+                connectTimeout: 10000,
+            });
+
+            try {
+                // Try to bind with user credentials
+                await userClient.bind(userDN, password);
+                console.log(`✅ LDAP: User ${username} authenticated successfully`);
+                
+                // Get user groups
+                const groups = await this.getUserGroups(userDN);
+                
+                // Build user object
+                const authenticatedUser = {
+                    username: user.uid || user.cn || username,
+                    dn: userDN,
+                    fullName: user[this.config.userFullnameAttr] || `${user.givenName || ''} ${user.sn || ''}`.trim() || user.cn,
+                    email: user[this.config.userEmailAttr] || '',
+                    groups: groups,
+                    role: this.determineRole(groups),
+                    ldapAttributes: {
+                        cn: user.cn,
+                        uid: user.uid,
+                        sn: user.sn,
+                        givenName: user.givenName,
+                        memberOf: user.memberOf
+                    }
+                };
+
+                await userClient.unbind();
+                return authenticatedUser;
+
+            } catch (bindError) {
+                console.log(`❌ LDAP: Authentication failed for ${username}: ${bindError.message}`);
+                await userClient.unbind();
+                return null;
+            }
+
+        } catch (error) {
+            console.error(`❌ LDAP: Error during authentication for ${username}:`, error.message);
+            throw new Error(`LDAP authentication failed: ${error.message}`);
+        } finally {
+            try {
+                await client.unbind();
+            } catch (unbindError) {
+                console.warn('LDAP: Warning during unbind:', unbindError.message);
+            }
+        }
+    }
+
+    /**
+     * Get user groups from LDAP
+     * @param {string} userDN - User Distinguished Name
+     * @returns {Array} Array of group names
+     */
+    async getUserGroups(userDN) {
+        if (!this.config.groupBase) {
+            console.log('🔍 LDAP: No group base configured, skipping group lookup');
+            return [];
+        }
+
+        const client = new Client({
+            url: this.config.server,
+            timeout: 10000,
+            connectTimeout: 10000,
+        });
+
+        try {
+            await client.bind(this.config.bindDN, this.config.bindPassword);
+
+            const groupFilter = this.config.groupFilter.replace(/%s/g, userDN);
+            console.log(`🔍 LDAP: Searching for groups with filter: ${groupFilter}`);
+
+            const searchOptions = {
+                scope: 'sub',
+                filter: groupFilter,
+                attributes: ['cn', 'description']
+            };
+
+            const searchResult = await client.search(this.config.groupBase, searchOptions);
+            const groups = searchResult.searchEntries.map(group => group.cn);
+
+            console.log(`✅ LDAP: Found ${groups.length} groups for user: ${groups.join(', ')}`);
+            return groups;
+
+        } catch (error) {
+            console.warn(`⚠️ LDAP: Could not retrieve groups for ${userDN}:`, error.message);
+            return [];
+        } finally {
+            try {
+                await client.unbind();
+            } catch (unbindError) {
+                console.warn('LDAP: Warning during unbind:', unbindError.message);
+            }
+        }
+    }
+
+    /**
+     * Determine user role based on group membership
+     * @param {Array} groups - Array of group names
+     * @returns {string} User role
+     */
+    determineRole(groups) {
+        // Define role mapping based on group membership
+        const roleMapping = {
+            'admin': ['administrators', 'it-admin', 'domain admins', 'inventory-admin'],
+            'manager': ['managers', 'it-managers', 'inventory-managers', 'supervisors'],
+            'user': ['users', 'employees', 'staff', 'inventory-users']
+        };
+
+        // Check for admin role first
+        for (const group of groups) {
+            const groupLower = group.toLowerCase();
+            if (roleMapping.admin.some(adminGroup => groupLower.includes(adminGroup.toLowerCase()))) {
+                return 'admin';
+            }
+        }
+
+        // Check for manager role
+        for (const group of groups) {
+            const groupLower = group.toLowerCase();
+            if (roleMapping.manager.some(managerGroup => groupLower.includes(managerGroup.toLowerCase()))) {
+                return 'manager';
+            }
+        }
+
+        // Default to user role
+        return 'user';
+    }
+
+    /**
+     * Test LDAP connection
+     * @returns {boolean} True if connection successful
+     */
+    async testConnection() {
+        const client = new Client({
+            url: this.config.server,
+            timeout: 5000,
+            connectTimeout: 5000,
+        });
+
+        try {
+            await client.bind(this.config.bindDN, this.config.bindPassword);
+            console.log('✅ LDAP: Connection test successful');
+            await client.unbind();
+            return true;
+        } catch (error) {
+            console.error('❌ LDAP: Connection test failed:', error.message);
+            return false;
+        }
+    }
+}
+
+module.exports = { LDAPAuth };

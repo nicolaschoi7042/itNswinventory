@@ -176,9 +176,12 @@ class DataStore {
     }
 
     async initializeData() {
+        console.log('🔧 initializeData() called');
+        console.log('🔧 Current token:', this.api.token);
         try {
             // 토큰이 없으면 로그인 모달 표시
             if (!this.api.token) {
+                console.log('🔧 No token found, showing login modal');
                 showLoginModal();
                 return; // 로그인 완료 후 다시 시도
             }
@@ -462,9 +465,14 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeApp() {
+    console.log('🔧 initializeApp() called');
     setupEventListeners();
     setupLoginModal();
     showTab('dashboard');
+    
+    // 인증 상태 확인 및 데이터 로드
+    console.log('🔧 Calling dataStore.initializeData()');
+    dataStore.initializeData();
     // 통계와 대시보드는 데이터 로드 후 자동으로 업데이트됨
 }
 
@@ -2075,5 +2083,34 @@ async function handleLogin(e) {
             submitButton.disabled = false;
             submitButton.textContent = '로그인';
         }
+    }
+}
+
+// LDAP 상태 표시 함수
+async function showLdapStatus() {
+    const infoDiv = document.getElementById('loginInfo');
+    
+    try {
+        // 토큰 없이 시도할 수 있는 공개 정보만 표시
+        infoDiv.innerHTML = `
+            <h4><i class="fas fa-info-circle"></i> 인증 시스템 정보</h4>
+            <ul>
+                <li><strong>로컬 인증:</strong> 시스템 관리자 계정 (admin/admin123)</li>
+                <li><strong>LDAP 인증:</strong> 도메인 자격 증명으로 로그인 가능</li>
+                <li><strong>지원 형식:</strong> 사용자명, UID, 이메일</li>
+            </ul>
+            <p><small>LDAP가 설정된 경우 도메인 계정으로 자동 인증됩니다.</small></p>
+        `;
+        infoDiv.style.display = 'block';
+        
+        // 5초 후 자동 숨김
+        setTimeout(() => {
+            infoDiv.style.display = 'none';
+        }, 5000);
+        
+    } catch (error) {
+        console.error('Error showing LDAP status:', error);
+        infoDiv.innerHTML = '<p>인증 정보를 가져올 수 없습니다.</p>';
+        infoDiv.style.display = 'block';
     }
 }
