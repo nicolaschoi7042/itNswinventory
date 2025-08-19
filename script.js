@@ -52,6 +52,13 @@ class ApiService {
             console.log('API Response data:', data);
 
             if (!response.ok) {
+                // 토큰 만료 또는 인증 오류 시 자동 로그아웃
+                if (response.status === 401 || response.status === 403) {
+                    console.log('🔒 Token expired or unauthorized, logging out...');
+                    this.logout();
+                    showLoginModal();
+                    throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+                }
                 throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
             }
 
@@ -77,6 +84,22 @@ class ApiService {
         } catch (error) {
             console.error('Login failed:', error);
             throw error;
+        }
+    }
+
+    logout() {
+        console.log('🔒 Logging out user...');
+        this.token = null;
+        localStorage.removeItem('inventory_token');
+        localStorage.removeItem('inventory_user');
+        
+        // 데이터 스토어 초기화
+        if (window.dataStore) {
+            dataStore.employees = [];
+            dataStore.hardware = [];
+            dataStore.software = [];
+            dataStore.assignments = [];
+            dataStore.activities = [];
         }
     }
 
@@ -189,9 +212,10 @@ class DataStore {
             await this.loadAllData();
         } catch (error) {
             console.error('API 연결 실패:', error);
-            // 인증 오류인 경우 로그인 모달 표시
-            if (error.message && error.message.includes('401')) {
-                localStorage.removeItem('inventory_token');
+            // 인증 오류인 경우 로그인 모달 표시 (ApiService에서 이미 처리되지만 추가 안전장치)
+            if (error.message && (error.message.includes('401') || error.message.includes('세션이 만료'))) {
+                console.log('🔒 Authentication failed, clearing token and showing login modal');
+                this.api.logout();
                 showLoginModal();
                 return;
             }

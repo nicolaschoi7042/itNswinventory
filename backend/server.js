@@ -187,7 +187,7 @@ app.post('/api/auth/login', async (req, res) => {
                             ldap: true
                         },
                         process.env.JWT_SECRET || 'your-secret-key',
-                        { expiresIn: '8h' }
+                        { expiresIn: '24h' }
                     );
 
                     await logActivity(user.id, `LDAP 사용자 로그인: ${ldapUser.fullName}`);
