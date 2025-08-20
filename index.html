@@ -568,6 +568,24 @@
         </div>
     </div>
 
-    <script src="script-new.js?v=20250820012000"></script>
+    <script>
+        // 강제 로그인 모달 표시
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🧪 INLINE SCRIPT: Force showing login modal');
+            localStorage.removeItem('inventory_token');
+            localStorage.removeItem('inventory_user');
+            
+            setTimeout(() => {
+                const modal = document.getElementById('loginModal');
+                if (modal) {
+                    modal.style.display = 'block';
+                    console.log('✅ Login modal forced to show');
+                } else {
+                    console.error('❌ Login modal not found');
+                }
+            }, 500);
+        });
+    </script>
+    <script src="script.js?v=20250808049000"></script>
 </body>
 </html>
