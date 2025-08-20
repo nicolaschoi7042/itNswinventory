@@ -1142,7 +1142,7 @@ form {
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
     padding: 3rem;
     width: 100%;
-    max-width: 420px;
+    max-width: 520px;
     text-align: center;
 }
 
@@ -1269,10 +1269,11 @@ form {
 }
 
 /* 반응형 로그인 페이지 */
-@media (max-width: 480px) {
+@media (max-width: 600px) {
     .login-container {
         padding: 2rem 1.5rem;
         margin: 10px;
+        max-width: 90%;
     }
     
     .login-header h1 {
