@@ -126,10 +126,10 @@ const findOrCreateLdapUser = async (ldapUser) => {
         if (result.rows.length > 0) {
             let user = result.rows[0];
             
-            // LDAP에서 온 정보로 사용자 정보 업데이트
+            // LDAP에서 온 정보로 사용자 정보 업데이트 (is_active 상태는 유지)
             const updateResult = await pool.query(`
                 UPDATE users 
-                SET full_name = $1, email = $2, role = $3, is_active = true, updated_at = CURRENT_TIMESTAMP
+                SET full_name = $1, email = $2, role = $3, updated_at = CURRENT_TIMESTAMP
                 WHERE id = $4
                 RETURNING *
             `, [ldapUser.fullName, ldapUser.email, ldapUser.role, user.id]);
@@ -175,6 +175,11 @@ app.post('/api/auth/login', async (req, res) => {
                 if (ldapUser) {
                     // LDAP 인증 성공 - 로컬 데이터베이스에서 사용자 찾기 또는 생성
                     let user = await findOrCreateLdapUser(ldapUser);
+                    
+                    // 사용자가 비활성화된 상태인지 확인
+                    if (!user.is_active) {
+                        return res.status(401).json({ error: '비활성화된 계정입니다. 관리자에게 문의하세요.' });
+                    }
                     
                     // 마지막 로그인 시간 업데이트
                     await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
