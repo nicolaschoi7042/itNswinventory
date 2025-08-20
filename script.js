@@ -485,6 +485,11 @@ const dataStore = new DataStore();
 
 // DOM이 로드된 후 초기화
 document.addEventListener('DOMContentLoaded', function() {
+    // 테스트용: 강제로 토큰 제거해서 로그인 모달 테스트
+    console.log('🧪 Testing: Clearing localStorage to force login modal');
+    localStorage.removeItem('inventory_token');
+    localStorage.removeItem('inventory_user');
+    
     initializeApp();
 });
 
