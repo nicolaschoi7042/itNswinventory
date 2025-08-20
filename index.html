@@ -6,26 +6,36 @@
     <title> Roboe Technology inc IT 자산 및 SW 인벤토리 관리시스템</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20250820160000">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
     <div class="container">
         <!-- 헤더 -->
         <header class="header">
-            <h1><i class="fas fa-laptop"></i> Roboe Technology inc IT 자산 및 SW 인벤토리 관리시스템</h1>
-            <div class="header-stats">
-                <div class="stat-item">
-                    <span class="stat-number" id="totalEmployees">0</span>
-                    <span class="stat-label">임직원</span>
+            <h1><i class="fas fa-laptop"></i> IT 자산 및 SW 인벤토리 관리시스템</h1>
+            <div class="header-right">
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalEmployees">0</span>
+                        <span class="stat-label">임직원</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalAssets">0</span>
+                        <span class="stat-label">하드웨어 자산</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalSoftware">0</span>
+                        <span class="stat-label">소프트웨어</span>
+                    </div>
                 </div>
-                <div class="stat-item">
-                    <span class="stat-number" id="totalAssets">0</span>
-                    <span class="stat-label">하드웨어 자산</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number" id="totalSoftware">0</span>
-                    <span class="stat-label">소프트웨어</span>
+                <div class="header-user" id="headerUser" style="display: none;">
+                    <div class="user-info">
+                        <span class="user-name" id="userName">사용자</span>
+                        <button class="btn btn-logout" onclick="handleLogout()">
+                            <i class="fas fa-sign-out-alt"></i> 로그아웃
+                        </button>
+                    </div>
                 </div>
             </div>
         </header>
@@ -46,6 +56,9 @@
             </button>
             <button class="nav-tab" data-tab="assignment">
                 <i class="fas fa-exchange-alt"></i> 자산 할당
+            </button>
+            <button class="nav-tab admin-only" data-tab="admin" style="display: none;">
+                <i class="fas fa-user-shield"></i> 사용자 관리
             </button>
         </nav>
 
@@ -321,6 +334,52 @@
                 </table>
             </div>
         </div>
+
+        <!-- 사용자 관리 탭 (관리자 전용) -->
+        <div id="admin" class="tab-content">
+            <div class="section-header">
+                <h2>사용자 관리</h2>
+                <div class="section-actions">
+                    <button class="btn btn-success" onclick="exportToExcel('users')">
+                        <i class="fas fa-file-excel"></i> 엑셀 내보내기
+                    </button>
+                    <button class="btn btn-primary" onclick="showUserModal()">
+                        <i class="fas fa-plus"></i> 신규 사용자
+                    </button>
+                </div>
+            </div>
+            <div class="search-filter">
+                <input type="text" id="userSearch" placeholder="사용자명, 이름으로 검색..." class="search-input">
+                <select id="roleFilter" class="filter-select">
+                    <option value="">전체 권한</option>
+                    <option value="admin">관리자</option>
+                    <option value="manager">매니저</option>
+                    <option value="user">사용자</option>
+                </select>
+                <select id="statusFilter2" class="filter-select">
+                    <option value="">전체 상태</option>
+                    <option value="true">활성</option>
+                    <option value="false">비활성</option>
+                </select>
+            </div>
+            <div class="table-container">
+                <table id="userTable">
+                    <thead>
+                        <tr>
+                            <th>사용자명</th>
+                            <th>이름</th>
+                            <th>이메일</th>
+                            <th>권한</th>
+                            <th>상태</th>
+                            <th>생성일</th>
+                            <th>최근 로그인</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <!-- 임직원 모달 -->
@@ -558,9 +617,6 @@
                 </div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">로그인</button>
-                    <button type="button" class="btn btn-secondary" onclick="showLdapStatus()">
-                        <i class="fas fa-info-circle"></i> 인증 정보
-                    </button>
                 </div>
             </form>
             <div id="loginError" class="alert alert-error" style="display: none;"></div>
@@ -568,24 +624,130 @@
         </div>
     </div>
 
+    <!-- 사용자 모달 -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>사용자 정보</h3>
+                <span class="close" onclick="closeModal('userModal')">&times;</span>
+            </div>
+            <form id="userForm">
+                <div class="form-group">
+                    <label>사용자명 *</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group" id="passwordGroup">
+                    <label>비밀번호 *</label>
+                    <input type="password" id="password" required>
+                    <small class="form-help">최소 6자 이상</small>
+                </div>
+                <div class="form-group">
+                    <label>이름 *</label>
+                    <input type="text" id="fullName" required>
+                </div>
+                <div class="form-group">
+                    <label>이메일</label>
+                    <input type="email" id="email">
+                </div>
+                <div class="form-group">
+                    <label>권한 *</label>
+                    <select id="role" required>
+                        <option value="">선택하세요</option>
+                        <option value="admin">관리자</option>
+                        <option value="manager">매니저</option>
+                        <option value="user">사용자</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('userModal')">취소</button>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 권한 변경 모달 -->
+    <div id="roleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>권한 변경</h3>
+                <span class="close" onclick="closeModal('roleModal')">&times;</span>
+            </div>
+            <form id="roleForm">
+                <div class="form-group">
+                    <label>사용자: <span id="roleUsername"></span></label>
+                </div>
+                <div class="form-group">
+                    <label>새 권한 *</label>
+                    <select id="newRole" required>
+                        <option value="admin">관리자</option>
+                        <option value="manager">매니저</option>
+                        <option value="user">사용자</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('roleModal')">취소</button>
+                    <button type="submit" class="btn btn-primary">변경</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 비밀번호 재설정 모달 -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>비밀번호 재설정</h3>
+                <span class="close" onclick="closeModal('passwordModal')">&times;</span>
+            </div>
+            <form id="passwordForm">
+                <div class="form-group">
+                    <label>사용자: <span id="passwordUsername"></span></label>
+                </div>
+                <div class="form-group">
+                    <label>새 비밀번호 *</label>
+                    <input type="password" id="newPassword" required>
+                    <small class="form-help">최소 6자 이상</small>
+                </div>
+                <div class="form-group">
+                    <label>비밀번호 확인 *</label>
+                    <input type="password" id="confirmPassword" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('passwordModal')">취소</button>
+                    <button type="submit" class="btn btn-primary">재설정</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
-        // 강제 로그인 모달 표시
+        // 로그인 상태 확인 및 모달 표시
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🧪 INLINE SCRIPT: Force showing login modal');
-            localStorage.removeItem('inventory_token');
-            localStorage.removeItem('inventory_user');
+            console.log('🔐 INLINE SCRIPT: Checking login status');
             
-            setTimeout(() => {
-                const modal = document.getElementById('loginModal');
+            // 기존 토큰 확인
+            const token = localStorage.getItem('inventory_token');
+            const modal = document.getElementById('loginModal');
+            
+            if (!token) {
+                // 토큰이 없으면 로그인 모달 표시
+                console.log('🔐 No token found, showing login modal');
                 if (modal) {
                     modal.style.display = 'block';
-                    console.log('✅ Login modal forced to show');
-                } else {
-                    console.error('❌ Login modal not found');
+                    modal.style.zIndex = '9999';
+                    console.log('✅ Login modal displayed');
                 }
-            }, 500);
+            } else {
+                // 토큰이 있으면 모달 숨김
+                console.log('🔐 Token found, hiding login modal');
+                if (modal) {
+                    modal.style.setProperty('display', 'none', 'important');
+                    console.log('✅ Login modal hidden');
+                }
+            }
         });
     </script>
-    <script src="script.js?v=20250808049000"></script>
+    <script src="script.js?v=20250820015600"></script>
 </body>
 </html>

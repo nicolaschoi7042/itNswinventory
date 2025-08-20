@@ -706,6 +706,189 @@ app.put('/api/assignments/:id/return', authenticateToken, authorize(['admin', 'm
     }
 });
 
+// === 사용자 관리 API (관리자 전용) ===
+
+// 모든 사용자 목록 조회
+app.get('/api/admin/users', authenticateToken, authorize(['admin']), async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT id, username, full_name, email, role, is_active, created_at, last_login
+            FROM users
+            ORDER BY created_at DESC
+        `);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Get users error:', error);
+        res.status(500).json({ error: '사용자 목록 조회 중 오류가 발생했습니다.' });
+    }
+});
+
+// 사용자 권한 변경
+app.put('/api/admin/users/:id/role', authenticateToken, authorize(['admin']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { role } = req.body;
+
+        // 유효한 role 확인
+        if (!['admin', 'manager', 'user'].includes(role)) {
+            return res.status(400).json({ error: '유효하지 않은 권한입니다.' });
+        }
+
+        // 자기 자신의 권한은 변경할 수 없음
+        if (parseInt(id) === req.user.id) {
+            return res.status(400).json({ error: '자신의 권한은 변경할 수 없습니다.' });
+        }
+
+        // 기존 사용자 정보 조회
+        const oldResult = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+        if (oldResult.rows.length === 0) {
+            return res.status(404).json({ error: '사용자를 찾을 수 없습니다.' });
+        }
+        const oldUser = oldResult.rows[0];
+
+        // 권한 업데이트
+        const result = await pool.query(`
+            UPDATE users
+            SET role = $1, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $2
+            RETURNING id, username, full_name, email, role, is_active
+        `, [role, id]);
+
+        await logActivity(
+            req.user.id, 
+            `사용자 권한 변경: ${oldUser.username} (${oldUser.role} → ${role})`, 
+            'users', 
+            id, 
+            { role: oldUser.role }, 
+            { role }
+        );
+
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Update user role error:', error);
+        res.status(500).json({ error: '사용자 권한 변경 중 오류가 발생했습니다.' });
+    }
+});
+
+// 사용자 활성화/비활성화
+app.put('/api/admin/users/:id/status', authenticateToken, authorize(['admin']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { is_active } = req.body;
+
+        // 자기 자신은 비활성화할 수 없음
+        if (parseInt(id) === req.user.id) {
+            return res.status(400).json({ error: '자신의 계정은 비활성화할 수 없습니다.' });
+        }
+
+        // 기존 사용자 정보 조회
+        const oldResult = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+        if (oldResult.rows.length === 0) {
+            return res.status(404).json({ error: '사용자를 찾을 수 없습니다.' });
+        }
+        const oldUser = oldResult.rows[0];
+
+        // 상태 업데이트
+        const result = await pool.query(`
+            UPDATE users
+            SET is_active = $1, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $2
+            RETURNING id, username, full_name, email, role, is_active
+        `, [is_active, id]);
+
+        await logActivity(
+            req.user.id, 
+            `사용자 ${is_active ? '활성화' : '비활성화'}: ${oldUser.username}`, 
+            'users', 
+            id, 
+            { is_active: oldUser.is_active }, 
+            { is_active }
+        );
+
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Update user status error:', error);
+        res.status(500).json({ error: '사용자 상태 변경 중 오류가 발생했습니다.' });
+    }
+});
+
+// 새 사용자 생성 (관리자 전용)
+app.post('/api/admin/users', authenticateToken, authorize(['admin']), async (req, res) => {
+    try {
+        const { username, password, full_name, email, role } = req.body;
+
+        // 필수 필드 확인
+        if (!username || !password || !full_name || !role) {
+            return res.status(400).json({ error: '필수 필드가 누락되었습니다.' });
+        }
+
+        // 유효한 role 확인
+        if (!['admin', 'manager', 'user'].includes(role)) {
+            return res.status(400).json({ error: '유효하지 않은 권한입니다.' });
+        }
+
+        // 사용자명 중복 확인
+        const existingUser = await pool.query('SELECT id FROM users WHERE username = $1', [username]);
+        if (existingUser.rows.length > 0) {
+            return res.status(400).json({ error: '이미 존재하는 사용자명입니다.' });
+        }
+
+        // 비밀번호 해시화
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // 새 사용자 생성
+        const result = await pool.query(`
+            INSERT INTO users (username, password_hash, full_name, email, role, is_active)
+            VALUES ($1, $2, $3, $4, $5, true)
+            RETURNING id, username, full_name, email, role, is_active, created_at
+        `, [username, hashedPassword, full_name, email, role]);
+
+        await logActivity(req.user.id, `새 사용자 생성: ${username} (${role})`, 'users', result.rows[0].id, null, result.rows[0]);
+
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        console.error('Create user error:', error);
+        if (error.code === '23505') { // 중복 키 오류
+            res.status(400).json({ error: '이미 존재하는 사용자명 또는 이메일입니다.' });
+        } else {
+            res.status(500).json({ error: '사용자 생성 중 오류가 발생했습니다.' });
+        }
+    }
+});
+
+// 사용자 비밀번호 재설정 (관리자 전용)
+app.put('/api/admin/users/:id/reset-password', authenticateToken, authorize(['admin']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { new_password } = req.body;
+
+        if (!new_password || new_password.length < 6) {
+            return res.status(400).json({ error: '비밀번호는 최소 6자 이상이어야 합니다.' });
+        }
+
+        // 사용자 확인
+        const userResult = await pool.query('SELECT username FROM users WHERE id = $1', [id]);
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ error: '사용자를 찾을 수 없습니다.' });
+        }
+
+        // 비밀번호 해시화 및 업데이트
+        const hashedPassword = await bcrypt.hash(new_password, 10);
+        await pool.query(`
+            UPDATE users
+            SET password_hash = $1, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $2
+        `, [hashedPassword, id]);
+
+        await logActivity(req.user.id, `비밀번호 재설정: ${userResult.rows[0].username}`, 'users', id);
+
+        res.json({ message: '비밀번호가 재설정되었습니다.' });
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({ error: '비밀번호 재설정 중 오류가 발생했습니다.' });
+    }
+});
+
 // === 활동 로그 API ===
 
 // 최근 활동 조회

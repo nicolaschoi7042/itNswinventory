@@ -52,8 +52,8 @@ class ApiService {
             console.log('API Response data:', data);
 
             if (!response.ok) {
-                // 토큰 만료 또는 인증 오류 시 자동 로그아웃
-                if (response.status === 401 || response.status === 403) {
+                // 토큰 만료 또는 인증 오류 시 자동 로그아웃 (로그인 시도 중이 아닐 때만)
+                if (response.status === 401 || response.status === 403 && !endpoint.includes('/auth/login')) {
                     console.log('🔒 Token expired or unauthorized, logging out...');
                     this.logout();
                     showLoginModal();
@@ -182,6 +182,39 @@ class ApiService {
     async getActivities(limit = 20) {
         return await this.request(`/activities?limit=${limit}`);
     }
+
+    // 사용자 관리 API
+    async getUsers() {
+        return this.request('/admin/users');
+    }
+
+    async createUser(userData) {
+        return this.request('/admin/users', {
+            method: 'POST',
+            body: JSON.stringify(userData)
+        });
+    }
+
+    async updateUserRole(userId, role) {
+        return this.request(`/admin/users/${userId}/role`, {
+            method: 'PUT',
+            body: JSON.stringify({ role })
+        });
+    }
+
+    async updateUserStatus(userId, is_active) {
+        return this.request(`/admin/users/${userId}/status`, {
+            method: 'PUT',
+            body: JSON.stringify({ is_active })
+        });
+    }
+
+    async resetPassword(userId, new_password) {
+        return this.request(`/admin/users/${userId}/reset-password`, {
+            method: 'PUT',
+            body: JSON.stringify({ new_password })
+        });
+    }
 }
 
 // 데이터 저장소 (API 기반)
@@ -193,6 +226,7 @@ class DataStore {
         this.software = [];
         this.assignments = [];
         this.activities = [];
+        this.users = [];
 
         // 자동 로그인 시도 후 데이터 로드
         this.initializeData();
@@ -205,8 +239,20 @@ class DataStore {
             // 토큰이 없으면 로그인 모달 표시
             if (!this.api.token) {
                 console.log('🔧 No token found, showing login modal');
+                hideUserInfo();
                 showLoginModal();
                 return; // 로그인 완료 후 다시 시도
+            }
+
+            // 기존 토큰이 있으면 저장된 사용자 정보 표시
+            const savedUser = localStorage.getItem('inventory_user');
+            if (savedUser) {
+                try {
+                    const user = JSON.parse(savedUser);
+                    showUserInfo(user);
+                } catch (e) {
+                    console.warn('Failed to parse saved user info');
+                }
             }
 
             await this.loadAllData();
@@ -226,18 +272,37 @@ class DataStore {
             this.software = [];
             this.assignments = [];
             this.activities = [];
+            this.users = [];
         }
     }
 
     async loadAllData() {
         try {
-            [this.employees, this.hardware, this.software, this.assignments, this.activities] = await Promise.all([
-                this.api.getEmployees(),
-                this.api.getHardware(),
-                this.api.getSoftware(),
-                this.api.getAssignments(),
-                this.api.getActivities()
-            ]);
+            console.log('🔄 loadAllData: Starting data load...');
+            
+            // 관리자 권한이 있는 경우에만 사용자 데이터도 로드
+            const currentUser = getCurrentUser();
+            const isAdmin = currentUser && currentUser.role === 'admin';
+            
+            if (isAdmin) {
+                [this.employees, this.hardware, this.software, this.assignments, this.activities, this.users] = await Promise.all([
+                    this.api.getEmployees(),
+                    this.api.getHardware(),
+                    this.api.getSoftware(),
+                    this.api.getAssignments(),
+                    this.api.getActivities(),
+                    this.api.getUsers()
+                ]);
+            } else {
+                [this.employees, this.hardware, this.software, this.assignments, this.activities] = await Promise.all([
+                    this.api.getEmployees(),
+                    this.api.getHardware(),
+                    this.api.getSoftware(),
+                    this.api.getAssignments(),
+                    this.api.getActivities()
+                ]);
+                this.users = [];
+            }
 
             console.log('🔄 데이터 로드 완료:');
             console.log('  - 임직원:', this.employees.length, '개');
@@ -485,11 +550,7 @@ const dataStore = new DataStore();
 
 // DOM이 로드된 후 초기화
 document.addEventListener('DOMContentLoaded', function() {
-    // 테스트용: 강제로 토큰 제거해서 로그인 모달 테스트
-    console.log('🧪 Testing: Clearing localStorage to force login modal');
-    localStorage.removeItem('inventory_token');
-    localStorage.removeItem('inventory_user');
-    
+    console.log('🔧 DOM Content Loaded - Initializing app');
     initializeApp();
 });
 
@@ -1813,6 +1874,10 @@ function exportToExcel(dataType) {
             data = prepareAssignmentData();
             filename = `자산할당현황_${getCurrentDate()}.xlsx`;
             break;
+        case 'users':
+            data = prepareUserData();
+            filename = `사용자목록_${getCurrentDate()}.xlsx`;
+            break;
         default:
             showAlert('알 수 없는 데이터 유형입니다.', 'error');
             return;
@@ -2046,10 +2111,54 @@ function showLoginModal() {
     }
 }
 
+function forceShowLoginModal() {
+    const modal = document.getElementById('loginModal');
+    if (modal) {
+        // 모든 가능한 방법으로 모달 표시
+        modal.style.setProperty('display', 'block', 'important');
+        modal.style.visibility = 'visible';
+        modal.style.opacity = '1';
+        modal.style.zIndex = '10000';
+        modal.classList.remove('hidden');
+        
+        // body에 모달 관련 클래스 추가 (스크롤 방지 등)
+        document.body.style.overflow = 'hidden';
+        
+        console.log('🔒 LOGOUT: Login modal forcefully displayed');
+        
+        // 입력 필드 초기화 및 포커스
+        const usernameField = document.getElementById('loginUsername');
+        const passwordField = document.getElementById('loginPassword');
+        
+        if (usernameField && passwordField) {
+            usernameField.value = 'admin';
+            passwordField.value = 'admin123';
+            
+            setTimeout(() => {
+                usernameField.focus();
+                usernameField.select();
+            }, 100);
+        }
+        
+        // 에러 메시지 숨기기
+        hideLoginError();
+        
+    } else {
+        console.error('🔒 LOGOUT: Login modal not found');
+    }
+}
+
 function hideLoginModal() {
     const modal = document.getElementById('loginModal');
     if (modal) {
-        modal.style.display = 'none';
+        modal.style.setProperty('display', 'none', 'important');
+        
+        // body 스타일 복원
+        document.body.style.overflow = '';
+        
+        console.log('🔐 LOGIN: Modal hidden successfully');
+    } else {
+        console.error('🔐 LOGIN: Login modal not found when trying to hide');
     }
 }
 
@@ -2081,6 +2190,7 @@ async function handleLogin(e) {
     
     try {
         hideLoginError();
+        console.log('🔐 LOGIN: Starting login process for user:', username);
         
         // 로그인 버튼 비활성화
         const submitButton = e.target.querySelector('button[type="submit"]');
@@ -2090,16 +2200,27 @@ async function handleLogin(e) {
         }
         
         // API 로그인 시도
-        await dataStore.api.login(username, password);
+        console.log('🔐 LOGIN: Calling dataStore.api.login...');
+        const loginResponse = await dataStore.api.login(username, password);
+        console.log('🔐 LOGIN: API login successful, token saved');
+        
+        // 사용자 정보 표시
+        if (loginResponse && loginResponse.user) {
+            showUserInfo(loginResponse.user);
+        }
         
         // 로그인 성공 시 데이터 로드 및 모달 숨기기
+        console.log('🔐 LOGIN: Loading all data...');
         await dataStore.loadAllData();
+        console.log('🔐 LOGIN: Data loaded, hiding modal...');
         hideLoginModal();
         
         // 통계 업데이트
+        console.log('🔐 LOGIN: Updating statistics and dashboard...');
         updateStatistics();
         renderDashboard();
         
+        console.log('🔐 LOGIN: Login process completed successfully');
         showAlert('로그인되었습니다.', 'success');
         
     } catch (error) {
@@ -2112,6 +2233,79 @@ async function handleLogin(e) {
             submitButton.disabled = false;
             submitButton.textContent = '로그인';
         }
+    }
+}
+
+// 로그아웃 함수
+function handleLogout() {
+    if (confirm('로그아웃 하시겠습니까?')) {
+        console.log('🔒 LOGOUT: User initiated logout');
+        
+        // API 로그아웃 호출
+        dataStore.api.logout();
+        
+        // 강제로 토큰 삭제 (확실히 삭제)
+        localStorage.removeItem('inventory_token');
+        localStorage.removeItem('inventory_user');
+        console.log('🔒 LOGOUT: Tokens forcefully removed');
+        
+        // 화면 초기화
+        clearAllData();
+        
+        // 사용자 UI 숨기기
+        hideUserInfo();
+        
+        // 로그인 모달 즉시 표시
+        forceShowLoginModal();
+        
+        // 알림 표시
+        showAlert('로그아웃되었습니다.', 'info');
+        console.log('🔒 LOGOUT: Logout completed successfully');
+    }
+}
+
+// 모든 데이터 및 화면 초기화
+function clearAllData() {
+    // 데이터 초기화
+    dataStore.reset();
+    
+    // 통계 초기화
+    document.getElementById('totalEmployees').textContent = '0';
+    document.getElementById('totalAssets').textContent = '0';
+    document.getElementById('totalSoftware').textContent = '0';
+    
+    // 테이블 초기화
+    const employeeTable = document.querySelector('#employeeTable tbody');
+    const hardwareTable = document.querySelector('#hardwareTable tbody');
+    const softwareTable = document.querySelector('#softwareTable tbody');
+    const assignmentTable = document.querySelector('#assignmentTable tbody');
+    
+    if (employeeTable) employeeTable.innerHTML = '';
+    if (hardwareTable) hardwareTable.innerHTML = '';
+    if (softwareTable) softwareTable.innerHTML = '';
+    if (assignmentTable) assignmentTable.innerHTML = '';
+    
+    console.log('🔒 LOGOUT: All data and UI cleared');
+}
+
+// 사용자 정보 표시
+function showUserInfo(user) {
+    const headerUser = document.getElementById('headerUser');
+    const userName = document.getElementById('userName');
+    
+    if (headerUser && userName) {
+        userName.textContent = user.full_name || user.username || '사용자';
+        headerUser.style.display = 'block';
+        console.log('👤 USER: User info displayed for', user.username);
+    }
+}
+
+// 사용자 정보 숨기기
+function hideUserInfo() {
+    const headerUser = document.getElementById('headerUser');
+    if (headerUser) {
+        headerUser.style.display = 'none';
+        console.log('👤 USER: User info hidden');
     }
 }
 
@@ -2143,3 +2337,324 @@ async function showLdapStatus() {
         infoDiv.style.display = 'block';
     }
 }
+
+// === 사용자 관리 함수들 ===
+
+// 현재 사용자 정보 가져오기
+function getCurrentUser() {
+    const userStr = localStorage.getItem('inventory_user');
+    return userStr ? JSON.parse(userStr) : null;
+}
+
+// 사용자 권한 확인
+function hasAdminRole() {
+    const user = getCurrentUser();
+    return user && user.role === 'admin';
+}
+
+// 관리자 전용 UI 표시/숨김
+function toggleAdminUI() {
+    const isAdmin = hasAdminRole();
+    const adminElements = document.querySelectorAll('.admin-only');
+    
+    adminElements.forEach(element => {
+        element.style.display = isAdmin ? 'block' : 'none';
+    });
+}
+
+// 사용자 테이블 렌더링
+function renderUserTable() {
+    const tbody = document.querySelector('#userTable tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    dataStore.users.forEach(user => {
+        const row = document.createElement('tr');
+        
+        const statusBadge = user.is_active ? 
+            '<span class="badge badge-success">활성</span>' : 
+            '<span class="badge badge-danger">비활성</span>';
+            
+        const roleBadge = `<span class="badge badge-${getRoleBadgeClass(user.role)}">${getRoleDisplayName(user.role)}</span>`;
+        
+        row.innerHTML = `
+            <td>${user.username}</td>
+            <td>${user.full_name}</td>
+            <td>${user.email || '-'}</td>
+            <td>${roleBadge}</td>
+            <td>${statusBadge}</td>
+            <td>${formatDate(user.created_at)}</td>
+            <td>${user.last_login ? formatDateTime(user.last_login) : '-'}</td>
+            <td>
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-primary" onclick="showRoleModal(${user.id}, '${user.username}', '${user.role}')" 
+                            title="권한 변경">
+                        <i class="fas fa-user-cog"></i>
+                    </button>
+                    <button class="btn btn-sm btn-warning" onclick="showPasswordModal(${user.id}, '${user.username}')" 
+                            title="비밀번호 재설정">
+                        <i class="fas fa-key"></i>
+                    </button>
+                    <button class="btn btn-sm ${user.is_active ? 'btn-danger' : 'btn-success'}" 
+                            onclick="toggleUserStatus(${user.id}, ${!user.is_active})" 
+                            title="${user.is_active ? '비활성화' : '활성화'}">
+                        <i class="fas fa-${user.is_active ? 'ban' : 'check'}"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        
+        tbody.appendChild(row);
+    });
+}
+
+// 권한별 배지 클래스
+function getRoleBadgeClass(role) {
+    switch(role) {
+        case 'admin': return 'danger';
+        case 'manager': return 'warning';
+        case 'user': return 'info';
+        default: return 'secondary';
+    }
+}
+
+// 권한 표시명
+function getRoleDisplayName(role) {
+    switch(role) {
+        case 'admin': return '관리자';
+        case 'manager': return '매니저';
+        case 'user': return '사용자';
+        default: return role;
+    }
+}
+
+// 사용자 모달 표시
+function showUserModal(userId = null) {
+    const modal = document.getElementById('userModal');
+    const form = document.getElementById('userForm');
+    const passwordGroup = document.getElementById('passwordGroup');
+    
+    // 폼 초기화
+    form.reset();
+    
+    if (userId) {
+        // 수정 모드
+        const user = dataStore.users.find(u => u.id === userId);
+        if (user) {
+            document.getElementById('username').value = user.username;
+            document.getElementById('fullName').value = user.full_name;
+            document.getElementById('email').value = user.email || '';
+            document.getElementById('role').value = user.role;
+            
+            // 수정 시에는 비밀번호 필드 숨김
+            passwordGroup.style.display = 'none';
+            document.getElementById('password').required = false;
+            
+            form.dataset.userId = userId;
+        }
+    } else {
+        // 생성 모드
+        passwordGroup.style.display = 'block';
+        document.getElementById('password').required = true;
+        delete form.dataset.userId;
+    }
+    
+    modal.style.display = 'block';
+}
+
+// 권한 변경 모달 표시
+function showRoleModal(userId, username, currentRole) {
+    const modal = document.getElementById('roleModal');
+    const form = document.getElementById('roleForm');
+    
+    document.getElementById('roleUsername').textContent = username;
+    document.getElementById('newRole').value = currentRole;
+    
+    form.dataset.userId = userId;
+    modal.style.display = 'block';
+}
+
+// 비밀번호 재설정 모달 표시
+function showPasswordModal(userId, username) {
+    const modal = document.getElementById('passwordModal');
+    const form = document.getElementById('passwordForm');
+    
+    document.getElementById('passwordUsername').textContent = username;
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+    
+    form.dataset.userId = userId;
+    modal.style.display = 'block';
+}
+
+// 사용자 생성/수정
+async function handleUserSubmit(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    const userId = form.dataset.userId;
+    
+    const userData = {
+        username: formData.get('username') || document.getElementById('username').value,
+        full_name: formData.get('fullName') || document.getElementById('fullName').value,
+        email: formData.get('email') || document.getElementById('email').value,
+        role: formData.get('role') || document.getElementById('role').value
+    };
+    
+    if (!userId) {
+        // 새 사용자 생성
+        userData.password = formData.get('password') || document.getElementById('password').value;
+    }
+    
+    try {
+        if (userId) {
+            // 사용자 수정 (현재는 권한 변경만 지원)
+            await dataStore.api.updateUserRole(userId, userData.role);
+            showAlert('사용자 정보가 수정되었습니다.');
+        } else {
+            // 새 사용자 생성
+            await dataStore.api.createUser(userData);
+            showAlert('새 사용자가 생성되었습니다.');
+        }
+        
+        // 데이터 다시 로드
+        dataStore.users = await dataStore.api.getUsers();
+        renderUserTable();
+        
+        closeModal('userModal');
+    } catch (error) {
+        showAlert(error.message, 'error');
+    }
+}
+
+// 권한 변경
+async function handleRoleSubmit(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const userId = form.dataset.userId;
+    const newRole = document.getElementById('newRole').value;
+    
+    try {
+        await dataStore.api.updateUserRole(userId, newRole);
+        showAlert('사용자 권한이 변경되었습니다.');
+        
+        // 데이터 다시 로드
+        dataStore.users = await dataStore.api.getUsers();
+        renderUserTable();
+        
+        closeModal('roleModal');
+    } catch (error) {
+        showAlert(error.message, 'error');
+    }
+}
+
+// 비밀번호 재설정
+async function handlePasswordSubmit(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const userId = form.dataset.userId;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (newPassword !== confirmPassword) {
+        showAlert('비밀번호가 일치하지 않습니다.', 'error');
+        return;
+    }
+    
+    if (newPassword.length < 6) {
+        showAlert('비밀번호는 최소 6자 이상이어야 합니다.', 'error');
+        return;
+    }
+    
+    try {
+        await dataStore.api.resetPassword(userId, newPassword);
+        showAlert('비밀번호가 재설정되었습니다.');
+        
+        closeModal('passwordModal');
+    } catch (error) {
+        showAlert(error.message, 'error');
+    }
+}
+
+// 사용자 상태 토글
+async function toggleUserStatus(userId, isActive) {
+    try {
+        await dataStore.api.updateUserStatus(userId, isActive);
+        showAlert(`사용자가 ${isActive ? '활성화' : '비활성화'}되었습니다.`);
+        
+        // 데이터 다시 로드
+        dataStore.users = await dataStore.api.getUsers();
+        renderUserTable();
+    } catch (error) {
+        showAlert(error.message, 'error');
+    }
+}
+
+// 사용자 엑셀 내보내기 데이터 준비
+function prepareUserData() {
+    return dataStore.users.map(user => ({
+        '사용자명': user.username,
+        '이름': user.full_name,
+        '이메일': user.email || '',
+        '권한': getRoleDisplayName(user.role),
+        '상태': user.is_active ? '활성' : '비활성',
+        '생성일': formatDate(user.created_at),
+        '최근 로그인': user.last_login ? formatDateTime(user.last_login) : ''
+    }));
+}
+
+// 이벤트 리스너 추가
+document.addEventListener('DOMContentLoaded', function() {
+    // 사용자 폼 이벤트 리스너
+    const userForm = document.getElementById('userForm');
+    if (userForm) {
+        userForm.addEventListener('submit', handleUserSubmit);
+    }
+    
+    const roleForm = document.getElementById('roleForm');
+    if (roleForm) {
+        roleForm.addEventListener('submit', handleRoleSubmit);
+    }
+    
+    const passwordForm = document.getElementById('passwordForm');
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', handlePasswordSubmit);
+    }
+    
+    // 탭 전환 이벤트에 admin 탭 추가
+    const navTabs = document.querySelectorAll('.nav-tab');
+    navTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const tabName = this.dataset.tab;
+            
+            // 기존 탭 전환 로직
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            this.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            
+            // admin 탭인 경우 사용자 테이블 렌더링
+            if (tabName === 'admin') {
+                renderUserTable();
+            }
+        });
+    });
+    
+    // 로그인 후 관리자 UI 업데이트
+    const originalUpdateStatistics = updateStatistics;
+    updateStatistics = function() {
+        originalUpdateStatistics();
+        toggleAdminUI();
+    };
+    
+    // 로그인 상태 확인 후 관리자 UI 표시
+    const user = getCurrentUser();
+    if (user) {
+        toggleAdminUI();
+    }
+});
