@@ -52,12 +52,16 @@ class ApiService {
             console.log('API Response data:', data);
 
             if (!response.ok) {
-                // 토큰 만료 또는 인증 오류 시 자동 로그아웃 (로그인 시도 중이 아닐 때만)
-                if (response.status === 401 || response.status === 403 && !endpoint.includes('/auth/login')) {
-                    console.log('🔒 Token expired or unauthorized, logging out...');
+                // 401 인증 오류 시에만 자동 로그아웃 (로그인 시도 중이 아닐 때만)
+                if (response.status === 401 && !endpoint.includes('/auth/login')) {
+                    console.log('🔒 Token expired, logging out...');
                     this.logout();
                     showLoginModal();
                     throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+                }
+                // 403 권한 오류는 로그아웃하지 않고 에러만 표시
+                if (response.status === 403) {
+                    throw new Error(data.error || '이 작업을 수행할 권한이 없습니다.');
                 }
                 throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
             }
@@ -801,9 +805,9 @@ function renderEmployees() {
                     <button class="btn btn-sm" onclick="editEmployee('${emp.id}')">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteEmployeeConfirm('${emp.id}')">
+                    ${hasAdminRole() ? `<button class="btn btn-danger btn-sm" onclick="deleteEmployeeConfirm('${emp.id}')">
                         <i class="fas fa-trash"></i>
-                    </button>
+                    </button>` : ''}
                 </td>
             </tr>
         `;
@@ -837,9 +841,9 @@ function renderHardware() {
                     <button class="btn btn-sm" onclick="editHardware('${hw.id}')">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteHardwareConfirm('${hw.id}')">
+                    ${hasAdminRole() ? `<button class="btn btn-danger btn-sm" onclick="deleteHardwareConfirm('${hw.id}')">
                         <i class="fas fa-trash"></i>
-                    </button>
+                    </button>` : ''}
                 </td>
             </tr>
         `;
@@ -875,9 +879,9 @@ function renderSoftware() {
                     <button class="btn btn-sm" onclick="editSoftware('${sw.id}')">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteSoftwareConfirm('${sw.id}')">
+                    ${hasAdminRole() ? `<button class="btn btn-danger btn-sm" onclick="deleteSoftwareConfirm('${sw.id}')">
                         <i class="fas fa-trash"></i>
-                    </button>
+                    </button>` : ''}
                 </td>
             </tr>
         `;
@@ -1499,12 +1503,16 @@ function editSoftware(softwareId) {
 }
 
 // 삭제 함수들
-function deleteEmployeeConfirm(employeeId) {
+async function deleteEmployeeConfirm(employeeId) {
     if (confirm('정말로 이 임직원을 삭제하시겠습니까?')) {
-        if (dataStore.deleteEmployee(employeeId)) {
+        try {
+            await dataStore.deleteEmployee(employeeId);
             renderEmployees();
             updateStatistics();
             showAlert('임직원이 삭제되었습니다.', 'success');
+        } catch (error) {
+            console.error('임직원 삭제 중 오류:', error);
+            showAlert(error.message || '임직원 삭제 중 오류가 발생했습니다.', 'error');
         }
     }
 }
@@ -1512,27 +1520,18 @@ function deleteEmployeeConfirm(employeeId) {
 async function deleteHardwareConfirm(hardwareId) {
     if (confirm('정말로 이 하드웨어 자산을 삭제하시겠습니까?')) {
         try {
-            const response = await fetch(`${dataStore.api.baseUrl}/hardware/${hardwareId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${dataStore.api.token}`,
-                    'Content-Type': 'application/json'
-                }
+            await dataStore.api.request(`/hardware/${hardwareId}`, {
+                method: 'DELETE'
             });
-
-            if (response.ok) {
-                // 데이터 다시 로드
-                await dataStore.loadAllData();
-                renderHardware();
-                updateStatistics();
-                showAlert('하드웨어 자산이 삭제되었습니다.', 'success');
-            } else {
-                const errorData = await response.json();
-                showAlert(errorData.error || '하드웨어 삭제에 실패했습니다.', 'error');
-            }
+            
+            // 데이터 다시 로드
+            await dataStore.loadAllData();
+            renderHardware();
+            updateStatistics();
+            showAlert('하드웨어 자산이 삭제되었습니다.', 'success');
         } catch (error) {
             console.error('Hardware delete error:', error);
-            showAlert('하드웨어 삭제 중 오류가 발생했습니다.', 'error');
+            showAlert(error.message || '하드웨어 삭제 중 오류가 발생했습니다.', 'error');
         }
     }
 }
@@ -1540,27 +1539,18 @@ async function deleteHardwareConfirm(hardwareId) {
 async function deleteSoftwareConfirm(softwareId) {
     if (confirm('정말로 이 소프트웨어를 삭제하시겠습니까?')) {
         try {
-            const response = await fetch(`${dataStore.api.baseUrl}/software/${softwareId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${dataStore.api.token}`,
-                    'Content-Type': 'application/json'
-                }
+            await dataStore.api.request(`/software/${softwareId}`, {
+                method: 'DELETE'
             });
-
-            if (response.ok) {
-                // 데이터 다시 로드
-                await dataStore.loadAllData();
-                renderSoftware();
-                updateStatistics();
-                showAlert('소프트웨어가 삭제되었습니다.', 'success');
-            } else {
-                const errorData = await response.json();
-                showAlert(errorData.error || '소프트웨어 삭제에 실패했습니다.', 'error');
-            }
+            
+            // 데이터 다시 로드
+            await dataStore.loadAllData();
+            renderSoftware();
+            updateStatistics();
+            showAlert('소프트웨어가 삭제되었습니다.', 'success');
         } catch (error) {
             console.error('Software delete error:', error);
-            showAlert('소프트웨어 삭제 중 오류가 발생했습니다.', 'error');
+            showAlert(error.message || '소프트웨어 삭제 중 오류가 발생했습니다.', 'error');
         }
     }
 }
@@ -1693,9 +1683,9 @@ function renderFilteredEmployees(employees) {
                     <button class="btn btn-sm" onclick="editEmployee('${emp.id}')">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteEmployeeConfirm('${emp.id}')">
+                    ${hasAdminRole() ? `<button class="btn btn-danger btn-sm" onclick="deleteEmployeeConfirm('${emp.id}')">
                         <i class="fas fa-trash"></i>
-                    </button>
+                    </button>` : ''}
                 </td>
             </tr>
         `;
@@ -1728,9 +1718,9 @@ function renderFilteredHardware(hardware) {
                     <button class="btn btn-sm" onclick="editHardware('${hw.id}')">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteHardwareConfirm('${hw.id}')">
+                    ${hasAdminRole() ? `<button class="btn btn-danger btn-sm" onclick="deleteHardwareConfirm('${hw.id}')">
                         <i class="fas fa-trash"></i>
-                    </button>
+                    </button>` : ''}
                 </td>
             </tr>
         `;
@@ -1765,9 +1755,9 @@ function renderFilteredSoftware(software) {
                     <button class="btn btn-sm" onclick="editSoftware('${sw.id}')">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteSoftwareConfirm('${sw.id}')">
+                    ${hasAdminRole() ? `<button class="btn btn-danger btn-sm" onclick="deleteSoftwareConfirm('${sw.id}')">
                         <i class="fas fa-trash"></i>
-                    </button>
+                    </button>` : ''}
                 </td>
             </tr>
         `;
