@@ -6,11 +6,56 @@
     <title> Roboe Technology inc IT 자산 및 SW 인벤토리 관리시스템</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=20250820060000">
+    <link rel="stylesheet" href="styles.css?v=20250820070000">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
-    <div class="container">
+    <!-- 로그인 페이지 -->
+    <div id="loginPage" class="login-page">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="login-logo">
+                    <i class="fas fa-laptop"></i>
+                </div>
+                <h1>IT 자산 및 SW 인벤토리 관리시스템</h1>
+                <p class="login-subtitle">시스템에 로그인하여 자산 관리를 시작하세요</p>
+            </div>
+            
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="loginUsername">
+                        <i class="fas fa-user"></i>
+                        사용자명
+                    </label>
+                    <input type="text" id="loginUsername" value="admin" required>
+                    <small class="form-help">LDAP 사용자명 또는 로컬 계정</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="loginPassword">
+                        <i class="fas fa-lock"></i>
+                        비밀번호
+                    </label>
+                    <input type="password" id="loginPassword" value="admin123" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-login">
+                    <i class="fas fa-sign-in-alt"></i>
+                    로그인
+                </button>
+            </form>
+            
+            <div id="loginError" class="alert alert-error" style="display: none;"></div>
+            <div id="loginInfo" class="alert alert-info" style="display: none;"></div>
+            
+            <div class="login-footer">
+                <p><i class="fas fa-info-circle"></i> 시스템 관리자에게 문의하세요</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 메인 애플리케이션 -->
+    <div id="mainApp" class="container" style="display: none;">
         <!-- 헤더 -->
         <header class="header">
             <h1><i class="fas fa-laptop"></i> IT 자산 및 SW 인벤토리 관리시스템</h1>
@@ -599,30 +644,7 @@
         </div>
     </div>
 
-    <!-- 로그인 모달 -->
-    <div id="loginModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-sign-in-alt"></i> 로그인</h3>
-            </div>
-            <form id="loginForm">
-                <div class="form-group">
-                    <label>사용자명 *</label>
-                    <input type="text" id="loginUsername" value="admin" required>
-                    <small class="form-help">LDAP 사용자명 또는 로컬 계정</small>
-                </div>
-                <div class="form-group">
-                    <label>비밀번호 *</label>
-                    <input type="password" id="loginPassword" value="admin123" required>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">로그인</button>
-                </div>
-            </form>
-            <div id="loginError" class="alert alert-error" style="display: none;"></div>
-            <div id="loginInfo" class="alert alert-info" style="display: none;"></div>
-        </div>
-    </div>
+    </div> <!-- mainApp 닫기 -->
 
     <!-- 사용자 모달 -->
     <div id="userModal" class="modal">
@@ -721,33 +743,6 @@
         </div>
     </div>
 
-    <script>
-        // 로그인 상태 확인 및 모달 표시
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔐 INLINE SCRIPT: Checking login status');
-            
-            // 기존 토큰 확인
-            const token = localStorage.getItem('inventory_token');
-            const modal = document.getElementById('loginModal');
-            
-            if (!token) {
-                // 토큰이 없으면 로그인 모달 표시
-                console.log('🔐 No token found, showing login modal');
-                if (modal) {
-                    modal.style.display = 'block';
-                    modal.style.zIndex = '9999';
-                    console.log('✅ Login modal displayed');
-                }
-            } else {
-                // 토큰이 있으면 모달 숨김
-                console.log('🔐 Token found, hiding login modal');
-                if (modal) {
-                    modal.style.setProperty('display', 'none', 'important');
-                    console.log('✅ Login modal hidden');
-                }
-            }
-        });
-    </script>
-    <script src="script.js?v=20250820060000"></script>
+    <script src="script.js?v=20250820070000"></script>
 </body>
 </html>

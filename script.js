@@ -80,8 +80,9 @@ class ApiService {
             localStorage.setItem('inventory_token', this.token);
             localStorage.setItem('inventory_user', JSON.stringify(data.user));
 
-            // 로그인 성공 후 관리자 UI 즉시 업데이트
+            // 로그인 성공 후 메인 앱 표시 및 관리자 UI 업데이트
             console.log('🔐 Login successful, user role:', data.user.role);
+            showMainApp();
             if (typeof toggleAdminUI === 'function') {
                 toggleAdminUI();
             }
@@ -106,7 +107,11 @@ class ApiService {
             dataStore.software = [];
             dataStore.assignments = [];
             dataStore.activities = [];
+            dataStore.users = [];
         }
+        
+        // 로그인 페이지로 이동
+        showLoginPage();
     }
 
     // 임직원 API
@@ -2619,9 +2624,116 @@ function prepareUserData() {
     }));
 }
 
+// === 페이지 전환 함수들 ===
+
+// 로그인 페이지 표시
+function showLoginPage() {
+    console.log('🔐 Showing login page');
+    document.getElementById('loginPage').style.display = 'flex';
+    document.getElementById('mainApp').style.display = 'none';
+    
+    // 로그인 폼 초기화
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.reset();
+        // 기본값 설정
+        document.getElementById('loginUsername').value = 'admin';
+        document.getElementById('loginPassword').value = 'admin123';
+    }
+    
+    // 에러 메시지 숨김
+    hideLoginError();
+}
+
+// 메인 애플리케이션 표시
+function showMainApp() {
+    console.log('🔐 Showing main application');
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    
+    // 사용자 정보 업데이트
+    updateUserInfo();
+}
+
+// 사용자 정보 표시 업데이트
+function updateUserInfo() {
+    const user = getCurrentUser();
+    if (user) {
+        const headerUser = document.getElementById('headerUser');
+        const userName = document.getElementById('userName');
+        
+        if (headerUser && userName) {
+            userName.textContent = user.full_name || user.username;
+            headerUser.style.display = 'block';
+        }
+    }
+}
+
+// 로그인 에러 표시
+function showLoginError(message) {
+    const errorDiv = document.getElementById('loginError');
+    if (errorDiv) {
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+    }
+}
+
+// 로그인 에러 숨김
+function hideLoginError() {
+    const errorDiv = document.getElementById('loginError');
+    if (errorDiv) {
+        errorDiv.style.display = 'none';
+    }
+}
+
+// 로그아웃 처리 함수
+function handleLogout() {
+    if (confirm('로그아웃 하시겠습니까?')) {
+        dataStore.api.logout();
+    }
+}
+
 // 이벤트 리스너 추가
 document.addEventListener('DOMContentLoaded', function() {
-    // 사용자 폼 이벤트 리스너
+    // 로그인 폼 이벤트 리스너
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            const submitBtn = loginForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            try {
+                // 로딩 상태 표시
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 로그인 중...';
+                submitBtn.disabled = true;
+                
+                hideLoginError();
+                
+                // 로그인 시도
+                await dataStore.api.login(username, password);
+                
+                // 성공 시 데이터 로드
+                await dataStore.loadAllData();
+                updateStatistics();
+                renderDashboard();
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                showLoginError(error.message || '로그인에 실패했습니다. 사용자명과 비밀번호를 확인하세요.');
+            } finally {
+                // 버튼 상태 복원
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    }
+    
+    // 사용자 관리 폼 이벤트 리스너
     const userForm = document.getElementById('userForm');
     if (userForm) {
         userForm.addEventListener('submit', handleUserSubmit);
@@ -2664,9 +2776,28 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleAdminUI();
     };
     
-    // 로그인 상태 확인 후 관리자 UI 표시
+    // 초기 로그인 상태 확인
+    const token = localStorage.getItem('inventory_token');
     const user = getCurrentUser();
-    if (user) {
+    
+    console.log('🔐 Initial login check - Token:', !!token, 'User:', user);
+    
+    if (token && user) {
+        // 이미 로그인된 상태 - 메인 앱 표시
+        showMainApp();
         toggleAdminUI();
+        
+        // 데이터 로드
+        dataStore.loadAllData().then(() => {
+            updateStatistics();
+            renderDashboard();
+        }).catch(error => {
+            console.error('Data load failed:', error);
+            // 토큰이 만료된 경우 로그인 페이지로
+            showLoginPage();
+        });
+    } else {
+        // 로그인되지 않은 상태 - 로그인 페이지 표시
+        showLoginPage();
     }
 });
