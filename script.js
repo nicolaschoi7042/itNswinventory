@@ -80,6 +80,12 @@ class ApiService {
             localStorage.setItem('inventory_token', this.token);
             localStorage.setItem('inventory_user', JSON.stringify(data.user));
 
+            // 로그인 성공 후 관리자 UI 즉시 업데이트
+            console.log('🔐 Login successful, user role:', data.user.role);
+            if (typeof toggleAdminUI === 'function') {
+                toggleAdminUI();
+            }
+
             return data;
         } catch (error) {
             console.error('Login failed:', error);
@@ -2357,8 +2363,14 @@ function toggleAdminUI() {
     const isAdmin = hasAdminRole();
     const adminElements = document.querySelectorAll('.admin-only');
     
+    console.log('🔐 toggleAdminUI: isAdmin =', isAdmin, 'elements found:', adminElements.length);
+    
     adminElements.forEach(element => {
-        element.style.display = isAdmin ? 'block' : 'none';
+        if (isAdmin) {
+            element.classList.add('show');
+        } else {
+            element.classList.remove('show');
+        }
     });
 }
 
