@@ -2367,7 +2367,22 @@ function getCurrentUser() {
 // 사용자 권한 확인
 function hasAdminRole() {
     const user = getCurrentUser();
-    return user && user.role === 'admin';
+    if (user && user.role === 'admin') {
+        return true;
+    }
+    
+    // getCurrentUser가 실패하는 경우 토큰에서 직접 확인
+    const token = localStorage.getItem('inventory_token');
+    if (token) {
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            return payload.role === 'admin';
+        } catch (error) {
+            console.warn('Failed to parse token for role check:', error);
+        }
+    }
+    
+    return false;
 }
 
 // 관리자 전용 UI 표시/숨김
@@ -2387,9 +2402,21 @@ function toggleAdminUI() {
 }
 
 // 사용자 테이블 렌더링
-function renderUserTable() {
+async function renderUserTable() {
     const tbody = document.querySelector('#userTable tbody');
     if (!tbody) return;
+
+    // 사용자 데이터가 없으면 로드
+    if (!dataStore.users || dataStore.users.length === 0) {
+        try {
+            console.log('🔄 renderUserTable: Loading user data...');
+            dataStore.users = await dataStore.api.getUsers();
+        } catch (error) {
+            console.error('Failed to load user data:', error);
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-state">사용자 데이터를 로드할 수 없습니다.</td></tr>';
+            return;
+        }
+    }
 
     tbody.innerHTML = '';
 
