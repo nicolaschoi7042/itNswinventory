@@ -674,7 +674,18 @@ function updateStatistics() {
     document.getElementById('totalSoftware').textContent = dataStore.software.length;
 }
 
-function renderDashboard() {
+async function renderDashboard() {
+    // 데이터가 없으면 로드
+    if (!dataStore.employees || dataStore.employees.length === 0) {
+        try {
+            console.log('🔄 renderDashboard: Loading dashboard data...');
+            await dataStore.loadAllData();
+        } catch (error) {
+            console.error('Failed to load dashboard data:', error);
+            // 대시보드는 에러가 나도 계속 표시
+        }
+    }
+    
     updateStatistics();
     renderLicenseStatus();
     renderRecentActivities();
@@ -798,8 +809,21 @@ function renderAssetChart() {
     });
 }
 
-function renderEmployees() {
+async function renderEmployees() {
     const tbody = document.querySelector('#employeeTable tbody');
+    
+    // 데이터가 없으면 로드
+    if (!dataStore.employees || dataStore.employees.length === 0) {
+        try {
+            console.log('🔄 renderEmployees: Loading employee data...');
+            await dataStore.loadAllData();
+        } catch (error) {
+            console.error('Failed to load employee data:', error);
+            tbody.innerHTML = '<tr><td colspan="6" class="empty-state">임직원 데이터를 로드할 수 없습니다.</td></tr>';
+            return;
+        }
+    }
+    
     const employees = dataStore.employees;
 
     if (employees.length === 0) {
@@ -831,8 +855,21 @@ function renderEmployees() {
     }).join('');
 }
 
-function renderHardware() {
+async function renderHardware() {
     const tbody = document.querySelector('#hardwareTable tbody');
+    
+    // 데이터가 없으면 로드
+    if (!dataStore.hardware || dataStore.hardware.length === 0) {
+        try {
+            console.log('🔄 renderHardware: Loading hardware data...');
+            await dataStore.loadAllData();
+        } catch (error) {
+            console.error('Failed to load hardware data:', error);
+            tbody.innerHTML = '<tr><td colspan="9" class="empty-state">하드웨어 데이터를 로드할 수 없습니다.</td></tr>';
+            return;
+        }
+    }
+    
     const hardware = dataStore.hardware;
 
     if (hardware.length === 0) {
@@ -867,8 +904,21 @@ function renderHardware() {
     }).join('');
 }
 
-function renderSoftware() {
+async function renderSoftware() {
     const tbody = document.querySelector('#softwareTable tbody');
+    
+    // 데이터가 없으면 로드
+    if (!dataStore.software || dataStore.software.length === 0) {
+        try {
+            console.log('🔄 renderSoftware: Loading software data...');
+            await dataStore.loadAllData();
+        } catch (error) {
+            console.error('Failed to load software data:', error);
+            tbody.innerHTML = '<tr><td colspan="9" class="empty-state">소프트웨어 데이터를 로드할 수 없습니다.</td></tr>';
+            return;
+        }
+    }
+    
     const software = dataStore.software;
 
     if (software.length === 0) {
@@ -905,11 +955,25 @@ function renderSoftware() {
     }).join('');
 }
 
-function renderAssignments() {
+async function renderAssignments() {
     console.log('renderAssignments 호출됨');
+    
+    const tbody = document.querySelector('#assignmentTable tbody');
+    
+    // 데이터가 없으면 로드
+    if (!dataStore.assignments || dataStore.assignments.length === 0) {
+        try {
+            console.log('🔄 renderAssignments: Loading assignment data...');
+            await dataStore.loadAllData();
+        } catch (error) {
+            console.error('Failed to load assignment data:', error);
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-state">자산 할당 데이터를 로드할 수 없습니다.</td></tr>';
+            return;
+        }
+    }
+    
     console.log('전체 assignments:', dataStore.assignments);
 
-    const tbody = document.querySelector('#assignmentTable tbody');
     // API에서는 '사용중' 상태를 사용함
     const assignments = dataStore.assignments.filter(as => as.status === '사용중');
 
