@@ -103,6 +103,7 @@ class ApiService {
         this.token = null;
         localStorage.removeItem('inventory_token');
         localStorage.removeItem('inventory_user');
+        localStorage.removeItem('inventory_current_tab');
         
         // 데이터 스토어 초기화
         if (window.dataStore) {
@@ -573,7 +574,17 @@ function initializeApp() {
     console.log('🔧 initializeApp() called');
     setupEventListeners();
     setupLoginModal();
-    showTab('dashboard');
+    
+    // 저장된 탭이 있으면 복원, 없으면 dashboard로 기본 설정
+    const savedTab = localStorage.getItem('inventory_current_tab');
+    const defaultTab = savedTab || 'dashboard';
+    
+    // 관리자 권한이 필요한 탭인 경우 권한 확인
+    if (defaultTab === 'admin' && !hasAdminRole()) {
+        showTab('dashboard');
+    } else {
+        showTab(defaultTab);
+    }
     
     // 인증 상태 확인 및 데이터 로드
     console.log('🔧 Calling dataStore.initializeData()');
@@ -617,6 +628,9 @@ function setupEventListeners() {
 }
 
 function showTab(tabName) {
+    // 현재 탭을 localStorage에 저장
+    localStorage.setItem('inventory_current_tab', tabName);
+    
     // 모든 탭 숨기기
     document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.remove('active');
@@ -647,6 +661,9 @@ function showTab(tabName) {
             break;
         case 'assignment':
             renderAssignments();
+            break;
+        case 'admin':
+            renderUserTable();
             break;
     }
 }
@@ -2739,25 +2756,6 @@ document.addEventListener('DOMContentLoaded', function() {
         passwordForm.addEventListener('submit', handlePasswordSubmit);
     }
     
-    // 탭 전환 이벤트에 admin 탭 추가
-    const navTabs = document.querySelectorAll('.nav-tab');
-    navTabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            const tabName = this.dataset.tab;
-            
-            // 기존 탭 전환 로직
-            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
-            this.classList.add('active');
-            document.getElementById(tabName).classList.add('active');
-            
-            // admin 탭인 경우 사용자 테이블 렌더링
-            if (tabName === 'admin') {
-                renderUserTable();
-            }
-        });
-    });
     
     // 로그인 후 관리자 UI 업데이트
     const originalUpdateStatistics = updateStatistics;
