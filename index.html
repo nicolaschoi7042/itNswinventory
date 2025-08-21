@@ -22,13 +22,24 @@
             </div>
             
             <form id="loginForm" class="login-form">
+                <div class="login-instructions">
+                    <div class="instruction-box">
+                        <h3><i class="fas fa-info-circle"></i> 로그인 안내</h3>
+                        <ul>
+                            <li><strong>사용자 ID:</strong> 본인의 이메일 ID</li>
+                            <li><strong>초기 비밀번호:</strong> roboetech1234</li>
+                            <li><strong>비밀번호 변경:</strong> 로그인 후 사용자 관리 페이지에서 변경 가능</li>
+                        </ul>
+                    </div>
+                </div>
+                
                 <div class="form-group">
                     <label for="loginUsername">
                         <i class="fas fa-user"></i>
                         사용자명
                     </label>
                     <input type="text" id="loginUsername" value="admin" required>
-                    <small class="form-help">LDAP 사용자명 또는 로컬 계정</small>
+                    <small class="form-help">이메일 ID 또는 로컬 계정명</small>
                 </div>
                 
                 <div class="form-group">
@@ -36,7 +47,8 @@
                         <i class="fas fa-lock"></i>
                         비밀번호
                     </label>
-                    <input type="password" id="loginPassword" value="admin123" required>
+                    <input type="password" id="loginPassword" value="itadmin" required>
+                    <small class="form-help">초기 비밀번호: roboetech1234</small>
                 </div>
                 
                 <button type="submit" class="btn btn-primary btn-login">

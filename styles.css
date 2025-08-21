@@ -1178,7 +1178,60 @@ form {
 .login-subtitle {
     color: #666;
     font-size: 0.9rem;
+}
+
+.login-instructions {
+    margin-bottom: 1.5rem;
+}
+
+.instruction-box {
+    background: linear-gradient(135deg, #f8f9ff 0%, #e8f0ff 100%);
+    border: 1px solid #d0e2ff;
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.instruction-box h3 {
+    color: #2c5aa0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.instruction-box h3 i {
+    color: #4a90e2;
+}
+
+.instruction-box ul {
+    list-style: none;
     margin: 0;
+    padding: 0;
+}
+
+.instruction-box li {
+    color: #4a5568;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+    padding-left: 1rem;
+    position: relative;
+}
+
+.instruction-box li:before {
+    content: "•";
+    color: #4a90e2;
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+}
+
+.instruction-box strong {
+    color: #2d3748;
+    font-weight: 600;
 }
 
 .login-form {
