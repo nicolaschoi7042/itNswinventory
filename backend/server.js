@@ -177,9 +177,7 @@ app.post('/api/auth/login', async (req, res) => {
                     let user = await findOrCreateLdapUser(ldapUser);
                     
                     // 사용자가 비활성화된 상태인지 확인
-                    console.log(`🔍 LDAP: User ${user.username} active status: ${user.is_active}`);
                     if (!user.is_active) {
-                        console.log(`❌ LDAP: User ${user.username} is deactivated, denying login`);
                         return res.status(401).json({ error: '비활성화된 계정입니다. 관리자에게 문의하세요.' });
                     }
                     
@@ -230,12 +228,6 @@ app.post('/api/auth/login', async (req, res) => {
         const result = await pool.query('SELECT * FROM users WHERE username = $1 AND is_active = true', [username]);
         let user = result.rows[0];
         
-        // 비활성화된 사용자가 있는지도 확인 (디버그용)
-        const allResult = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
-        const allUser = allResult.rows[0];
-        if (allUser && !allUser.is_active) {
-            console.log(`❌ Local: User ${username} exists but is deactivated (is_active: ${allUser.is_active})`);
-        }
 
         // 관리자 계정이 없으면 생성 (개발/테스트용)
         if (!user && username === 'admin') {
@@ -248,17 +240,7 @@ app.post('/api/auth/login', async (req, res) => {
             user = createResult.rows[0];
         }
 
-        if (!user) {
-            console.log(`❌ Local: User ${username} not found or deactivated`);
-            return res.status(401).json({ error: '잘못된 사용자명 또는 비밀번호입니다.' });
-        }
-        
-        const passwordMatch = await bcrypt.compare(password, user.password_hash);
-        console.log(`🔍 Local: Password match for ${username}: ${passwordMatch}`);
-        console.log(`🔍 Local: Stored hash length: ${user.password_hash ? user.password_hash.length : 'null'}`);
-        
-        if (!passwordMatch) {
-            console.log(`❌ Local: Password mismatch for user ${username}`);
+        if (!user || !await bcrypt.compare(password, user.password_hash)) {
             return res.status(401).json({ error: '잘못된 사용자명 또는 비밀번호입니다.' });
         }
 
@@ -913,23 +895,6 @@ app.put('/api/admin/users/:id/reset-password', authenticateToken, authorize(['ad
     }
 });
 
-// 임시 관리자 비밀번호 재설정 (개발/응급용)
-app.post('/api/emergency/reset-admin', async (req, res) => {
-    try {
-        const hashedPassword = await bcrypt.hash('itadmin', 10);
-        await pool.query(`
-            UPDATE users 
-            SET password_hash = $1, updated_at = CURRENT_TIMESTAMP 
-            WHERE username = 'admin'
-        `, [hashedPassword]);
-        
-        console.log('🚨 Emergency: Admin password reset to "itadmin"');
-        res.json({ message: 'Admin password reset to "itadmin"' });
-    } catch (error) {
-        console.error('Emergency admin reset error:', error);
-        res.status(500).json({ error: 'Emergency reset failed' });
-    }
-});
 
 // === 활동 로그 API ===
 
