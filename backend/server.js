@@ -192,7 +192,7 @@ app.post('/api/auth/login', async (req, res) => {
                             ldap: true
                         },
                         process.env.JWT_SECRET || 'your-secret-key',
-                        { expiresIn: '24h' }
+                        { expiresIn: '3h' }
                     );
 
                     await logActivity(user.id, `LDAP 사용자 로그인: ${ldapUser.fullName}`);
@@ -255,7 +255,7 @@ app.post('/api/auth/login', async (req, res) => {
                 ldap: false
             },
             process.env.JWT_SECRET || 'your-secret-key',
-            { expiresIn: '24h' }
+            { expiresIn: '3h' }
         );
 
         await logActivity(user.id, '로컬 사용자 로그인');

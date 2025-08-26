@@ -2182,15 +2182,8 @@ function setupLoginModal() {
 }
 
 function showLoginModal() {
-    const modal = document.getElementById('loginModal');
-    if (modal) {
-        modal.style.display = 'block';
-        // 포커스를 사용자명 입력 필드로 이동
-        const usernameField = document.getElementById('loginUsername');
-        if (usernameField) {
-            setTimeout(() => usernameField.focus(), 100);
-        }
-    }
+    // 현재는 전체 화면 로그인 페이지로 변경되었으므로 페이지 새로고침
+    window.location.reload();
 }
 
 function forceShowLoginModal() {
