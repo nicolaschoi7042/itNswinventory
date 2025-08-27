@@ -320,12 +320,14 @@ class DataStore {
                 this.users = [];
             }
 
-            // 하드웨어 데이터 필드 매핑 (serial_number -> serial)
+            // 하드웨어 데이터 필드 매핑 (serial_number -> serial, assigned_to -> assignedTo)
             if (this.hardware) {
                 this.hardware = this.hardware.map(hw => ({
                     ...hw,
                     serial: hw.serial_number,
-                    purchaseDate: hw.purchase_date
+                    purchaseDate: hw.purchase_date,
+                    assignedTo: hw.assigned_to,
+                    assignedToName: hw.assigned_to_name
                 }));
             }
 
@@ -434,7 +436,9 @@ class DataStore {
             const mappedHardware = {
                 ...newHardware,
                 serial: newHardware.serial_number,
-                purchaseDate: newHardware.purchase_date
+                purchaseDate: newHardware.purchase_date,
+                assignedTo: newHardware.assigned_to,
+                assignedToName: newHardware.assigned_to_name
             };
 
             this.hardware.push(mappedHardware);
@@ -463,7 +467,9 @@ class DataStore {
             const mappedHardware = {
                 ...updatedHardware,
                 serial: updatedHardware.serial_number,
-                purchaseDate: updatedHardware.purchase_date
+                purchaseDate: updatedHardware.purchase_date,
+                assignedTo: updatedHardware.assigned_to,
+                assignedToName: updatedHardware.assigned_to_name
             };
 
             const index = this.hardware.findIndex(hw => hw.id === id);
