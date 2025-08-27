@@ -126,13 +126,13 @@ const findOrCreateLdapUser = async (ldapUser) => {
         if (result.rows.length > 0) {
             let user = result.rows[0];
             
-            // LDAP에서 온 정보로 사용자 정보 업데이트 (is_active 상태는 유지)
+            // LDAP에서 온 정보로 사용자 정보 업데이트 (is_active 상태와 role은 유지)
             const updateResult = await pool.query(`
                 UPDATE users 
-                SET full_name = $1, email = $2, role = $3, updated_at = CURRENT_TIMESTAMP
-                WHERE id = $4
+                SET full_name = $1, email = $2, updated_at = CURRENT_TIMESTAMP
+                WHERE id = $3
                 RETURNING *
-            `, [ldapUser.fullName, ldapUser.email, ldapUser.role, user.id]);
+            `, [ldapUser.fullName, ldapUser.email, user.id]);
             
             console.log(`✅ Updated existing LDAP user: ${ldapUser.username}`);
             return updateResult.rows[0];
