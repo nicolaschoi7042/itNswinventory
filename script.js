@@ -320,6 +320,15 @@ class DataStore {
                 this.users = [];
             }
 
+            // 하드웨어 데이터 필드 매핑 (serial_number -> serial)
+            if (this.hardware) {
+                this.hardware = this.hardware.map(hw => ({
+                    ...hw,
+                    serial: hw.serial_number,
+                    purchaseDate: hw.purchase_date
+                }));
+            }
+
             console.log('🔄 데이터 로드 완료:');
             console.log('  - 임직원:', this.employees.length, '개');
             console.log('  - 하드웨어:', this.hardware.length, '개', this.hardware);
@@ -421,9 +430,16 @@ class DataStore {
                 notes: hardware.notes
             });
 
-            this.hardware.push(newHardware);
+            // 반환된 하드웨어 데이터 필드 매핑
+            const mappedHardware = {
+                ...newHardware,
+                serial: newHardware.serial_number,
+                purchaseDate: newHardware.purchase_date
+            };
+
+            this.hardware.push(mappedHardware);
             this.addActivity('관리자', `하드웨어 자산 ${newHardware.id} 등록`);
-            return newHardware;
+            return mappedHardware;
         } catch (error) {
             console.error('하드웨어 등록 중 오류:', error);
             throw error;
@@ -443,12 +459,19 @@ class DataStore {
                 status: hardware.status
             });
 
+            // 반환된 하드웨어 데이터 필드 매핑
+            const mappedHardware = {
+                ...updatedHardware,
+                serial: updatedHardware.serial_number,
+                purchaseDate: updatedHardware.purchase_date
+            };
+
             const index = this.hardware.findIndex(hw => hw.id === id);
             if (index !== -1) {
-                this.hardware[index] = updatedHardware;
+                this.hardware[index] = mappedHardware;
             }
             this.addActivity('관리자', `하드웨어 자산 ${id} 정보 수정`);
-            return updatedHardware;
+            return mappedHardware;
         } catch (error) {
             console.error('하드웨어 수정 중 오류:', error);
             throw error;
