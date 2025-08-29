@@ -633,7 +633,7 @@ app.get('/api/assignments', authenticateToken, async (req, res) => {
 });
 
 // 자산 할당
-app.post('/api/assignments', authenticateToken, authorize(['admin', 'manager']), async (req, res) => {
+app.post('/api/assignments', authenticateToken, async (req, res) => {
     try {
         const { employee_id, asset_type, asset_id, notes } = req.body;
 
@@ -675,7 +675,7 @@ app.post('/api/assignments', authenticateToken, authorize(['admin', 'manager']),
 });
 
 // 자산 반납
-app.put('/api/assignments/:id/return', authenticateToken, authorize(['admin', 'manager']), async (req, res) => {
+app.put('/api/assignments/:id/return', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
         const { notes } = req.body;
