@@ -1051,9 +1051,9 @@ async function renderAssignments() {
                 <td>${assetName}</td>
                 <td><span class="status-badge status-assigned">사용중</span></td>
                 <td>
-                    <button class="btn btn-success btn-sm" onclick="returnAsset('${assignment.id}')">
+                    ${hasManagerRole() ? `<button class="btn btn-success btn-sm" onclick="returnAsset('${assignment.id}')">
                         <i class="fas fa-undo"></i> 반납
-                    </button>
+                    </button>` : '<span class="text-muted">권한 없음</span>'}
                 </td>
             </tr>
         `;
@@ -1910,9 +1910,9 @@ function renderFilteredAssignments(assignments) {
                 <td>${assetName}</td>
                 <td><span class="status-badge status-assigned">사용중</span></td>
                 <td>
-                    <button class="btn btn-success btn-sm" onclick="returnAsset('${assignment.id}')">
+                    ${hasManagerRole() ? `<button class="btn btn-success btn-sm" onclick="returnAsset('${assignment.id}')">
                         <i class="fas fa-undo"></i> 반납
-                    </button>
+                    </button>` : '<span class="text-muted">권한 없음</span>'}
                 </td>
             </tr>
         `;
@@ -2463,6 +2463,27 @@ function hasAdminRole() {
         try {
             const payload = JSON.parse(atob(token.split('.')[1]));
             return payload.role === 'admin';
+        } catch (error) {
+            console.warn('Failed to parse token for role check:', error);
+        }
+    }
+    
+    return false;
+}
+
+// 매니저 이상 권한 확인 (admin 또는 manager)
+function hasManagerRole() {
+    const user = getCurrentUser();
+    if (user && (user.role === 'admin' || user.role === 'manager')) {
+        return true;
+    }
+    
+    // getCurrentUser가 실패하는 경우 토큰에서 직접 확인
+    const token = localStorage.getItem('inventory_token');
+    if (token) {
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            return payload.role === 'admin' || payload.role === 'manager';
         } catch (error) {
             console.warn('Failed to parse token for role check:', error);
         }

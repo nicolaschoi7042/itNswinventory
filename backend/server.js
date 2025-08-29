@@ -675,7 +675,7 @@ app.post('/api/assignments', authenticateToken, async (req, res) => {
 });
 
 // 자산 반납
-app.put('/api/assignments/:id/return', authenticateToken, async (req, res) => {
+app.put('/api/assignments/:id/return', authenticateToken, authorize(['admin', 'manager']), async (req, res) => {
     try {
         const { id } = req.params;
         const { notes } = req.body;
