@@ -21,7 +21,7 @@
                 <p class="login-subtitle">시스템에 로그인하여 자산 관리를 시작하세요</p>
             </div>
             
-            <form id="loginForm" class="login-form">
+            <form id="loginForm" class="login-form" autocomplete="off">
                 <div class="login-instructions">
                     <div class="instruction-box">
                         <h3><i class="fas fa-info-circle"></i> 로그인 안내</h3>
@@ -38,7 +38,7 @@
                         <i class="fas fa-user"></i>
                         사용자명
                     </label>
-                    <input type="text" id="loginUsername" value="admin" required>
+                    <input type="text" id="loginUsername" autocomplete="off" placeholder="사용자명을 입력하세요" required>
                     <small class="form-help">이메일 ID 또는 로컬 계정명</small>
                 </div>
                 
@@ -47,7 +47,7 @@
                         <i class="fas fa-lock"></i>
                         비밀번호
                     </label>
-                    <input type="password" id="loginPassword" value="itadmin" required>
+                    <input type="password" id="loginPassword" autocomplete="off" placeholder="비밀번호를 입력하세요" required>
                     <small class="form-help">초기 비밀번호: roboetech1234</small>
                 </div>
                 
@@ -757,26 +757,55 @@
     </div>
 
     <script>
-        // 무한 새로고침 문제 해결을 위한 강제 localStorage 초기화
+        // 무한 새로고침 문제 해결을 위한 강력한 localStorage 초기화
+        console.log('🔧 Pre-script cleanup - Starting');
+        
+        // URL에 따른 조건부 정리
         if (window.location.href.includes('it.roboetech.com')) {
+            let shouldClear = false;
             const token = localStorage.getItem('inventory_token');
+            const user = localStorage.getItem('inventory_user');
+            
+            console.log('🔧 Pre-script cleanup - Token exists:', !!token, 'User exists:', !!user);
+            
             if (token) {
                 try {
                     const payload = JSON.parse(atob(token.split('.')[1]));
                     const isExpired = payload.exp * 1000 < Date.now();
                     if (isExpired) {
-                        console.log('🔧 Clearing expired token on page load');
-                        localStorage.removeItem('inventory_token');
-                        localStorage.removeItem('inventory_user');
+                        console.log('🔧 Pre-script cleanup - Token expired');
+                        shouldClear = true;
                     }
                 } catch (error) {
-                    console.log('🔧 Clearing invalid token on page load');
-                    localStorage.removeItem('inventory_token');
-                    localStorage.removeItem('inventory_user');
+                    console.log('🔧 Pre-script cleanup - Invalid token format');
+                    shouldClear = true;
                 }
             }
+            
+            // 사용자 데이터가 없거나 비정상적인 경우
+            if (user) {
+                try {
+                    const userData = JSON.parse(user);
+                    if (!userData.username || userData.username === '') {
+                        console.log('🔧 Pre-script cleanup - Invalid user data');
+                        shouldClear = true;
+                    }
+                } catch (error) {
+                    console.log('🔧 Pre-script cleanup - Corrupted user data');
+                    shouldClear = true;
+                }
+            }
+            
+            if (shouldClear) {
+                console.log('🔧 Pre-script cleanup - Clearing all data');
+                localStorage.clear();
+                // 세션 스토리지도 정리
+                sessionStorage.clear();
+            }
         }
+        
+        console.log('🔧 Pre-script cleanup - Completed');
     </script>
-    <script src="script.js?v=20250903160000"></script>
+    <script src="script.js?v=20250903161500"></script>
 </body>
 </html>
