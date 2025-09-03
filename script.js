@@ -604,6 +604,15 @@ function initializeApp() {
     setupEventListeners();
     setupLoginModal();
     
+    // 토큰 존재 여부 확인
+    const token = localStorage.getItem('inventory_token');
+    if (!token) {
+        console.log('🔧 No token found, showing login page directly');
+        showLoginModal();
+        return; // 로그인 후에 앱이 다시 초기화될 것임
+    }
+    
+    // 토큰이 있는 경우 앱 초기화 계속
     // 저장된 탭이 있으면 복원, 없으면 dashboard로 기본 설정
     const savedTab = localStorage.getItem('inventory_current_tab');
     const defaultTab = savedTab || 'dashboard';
@@ -2216,8 +2225,30 @@ function showLoginModal() {
     localStorage.removeItem('inventory_token');
     localStorage.removeItem('inventory_user');
     
-    // 현재는 전체 화면 로그인 페이지로 변경되었으므로 페이지 새로고침
-    window.location.reload();
+    // 로그인 페이지 표시 (새로고침 대신 직접 표시)
+    const loginPage = document.getElementById('loginPage');
+    const mainApp = document.getElementById('mainApp');
+    
+    if (loginPage && mainApp) {
+        loginPage.style.display = 'flex';
+        mainApp.style.display = 'none';
+        
+        // 로그인 폼 초기화 및 포커스
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.reset();
+            const usernameField = document.getElementById('loginUsername');
+            if (usernameField) {
+                setTimeout(() => usernameField.focus(), 100);
+            }
+        }
+        
+        console.log('🔐 Login page displayed without reload');
+    } else {
+        // 백업: 로그인 페이지를 찾을 수 없는 경우에만 새로고침
+        console.log('🔐 Login page elements not found, reloading as fallback');
+        window.location.reload();
+    }
 }
 
 function forceShowLoginModal() {
@@ -2258,16 +2289,31 @@ function forceShowLoginModal() {
 }
 
 function hideLoginModal() {
-    const modal = document.getElementById('loginModal');
-    if (modal) {
-        modal.style.setProperty('display', 'none', 'important');
+    // 로그인 페이지 숨기고 메인 앱 표시
+    const loginPage = document.getElementById('loginPage');
+    const mainApp = document.getElementById('mainApp');
+    
+    if (loginPage && mainApp) {
+        loginPage.style.display = 'none';
+        mainApp.style.display = 'block';
         
         // body 스타일 복원
         document.body.style.overflow = '';
         
-        console.log('🔐 LOGIN: Modal hidden successfully');
+        console.log('🔐 LOGIN: Login page hidden, main app displayed');
+        
+        // 저장된 탭 복원 또는 기본 탭 표시
+        const savedTab = localStorage.getItem('inventory_current_tab');
+        const defaultTab = savedTab || 'dashboard';
+        
+        // 관리자 권한이 필요한 탭인 경우 권한 확인
+        if (defaultTab === 'admin' && !hasAdminRole()) {
+            showTab('dashboard');
+        } else {
+            showTab(defaultTab);
+        }
     } else {
-        console.error('🔐 LOGIN: Login modal not found when trying to hide');
+        console.error('🔐 LOGIN: Login page or main app elements not found when trying to switch');
     }
 }
 
