@@ -756,6 +756,27 @@
         </div>
     </div>
 
-    <script src="script.js?v=20250820070000"></script>
+    <script>
+        // 무한 새로고침 문제 해결을 위한 강제 localStorage 초기화
+        if (window.location.href.includes('it.roboetech.com')) {
+            const token = localStorage.getItem('inventory_token');
+            if (token) {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    const isExpired = payload.exp * 1000 < Date.now();
+                    if (isExpired) {
+                        console.log('🔧 Clearing expired token on page load');
+                        localStorage.removeItem('inventory_token');
+                        localStorage.removeItem('inventory_user');
+                    }
+                } catch (error) {
+                    console.log('🔧 Clearing invalid token on page load');
+                    localStorage.removeItem('inventory_token');
+                    localStorage.removeItem('inventory_user');
+                }
+            }
+        }
+    </script>
+    <script src="script.js?v=20250903160000"></script>
 </body>
 </html>
