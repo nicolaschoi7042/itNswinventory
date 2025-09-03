@@ -2271,12 +2271,12 @@ function forceShowLoginModal() {
         const passwordField = document.getElementById('loginPassword');
         
         if (usernameField && passwordField) {
-            usernameField.value = 'admin';
-            passwordField.value = 'admin123';
+            // 필드 초기화 (자동입력 제거)
+            usernameField.value = '';
+            passwordField.value = '';
             
             setTimeout(() => {
                 usernameField.focus();
-                usernameField.select();
             }, 100);
         }
         
@@ -2828,9 +2828,9 @@ function showLoginPage() {
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.reset();
-        // 기본값 설정
-        document.getElementById('loginUsername').value = 'admin';
-        document.getElementById('loginPassword').value = 'admin123';
+        // 필드 초기화 (자동입력 제거)
+        document.getElementById('loginUsername').value = '';
+        document.getElementById('loginPassword').value = '';
     }
     
     // 에러 메시지 숨김
