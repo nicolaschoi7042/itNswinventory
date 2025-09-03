@@ -2211,6 +2211,11 @@ function setupLoginModal() {
 }
 
 function showLoginModal() {
+    // 무한 새로고침 방지를 위한 토큰/사용자 데이터 초기화
+    console.log('🔐 Clearing invalid token and user data');
+    localStorage.removeItem('inventory_token');
+    localStorage.removeItem('inventory_user');
+    
     // 현재는 전체 화면 로그인 페이지로 변경되었으므로 페이지 새로고침
     window.location.reload();
 }
@@ -2904,10 +2909,31 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('🔐 Initial login check - Token:', !!token, 'User:', user);
     
-    if (token && user) {
-        // 이미 로그인된 상태 - 메인 앱 표시
-        showMainApp();
-        toggleAdminUI();
+    // 토큰과 사용자 정보의 유효성 검사
+    if (token && user && user.username) {
+        try {
+            // JWT 토큰 만료 시간 체크
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const isExpired = payload.exp * 1000 < Date.now();
+            
+            if (isExpired) {
+                console.log('🔐 Token expired, clearing data');
+                localStorage.removeItem('inventory_token');
+                localStorage.removeItem('inventory_user');
+                showLoginPage();
+                return;
+            }
+            
+            // 이미 로그인된 상태 - 메인 앱 표시
+            showMainApp();
+            toggleAdminUI();
+        } catch (error) {
+            console.log('🔐 Invalid token format, clearing data');
+            localStorage.removeItem('inventory_token');
+            localStorage.removeItem('inventory_user');
+            showLoginPage();
+            return;
+        }
         
         // 데이터 로드
         dataStore.loadAllData().then(() => {
