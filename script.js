@@ -1232,7 +1232,7 @@ function updateAssignmentDropdowns(updateEmployee = true) {
         
         hardwareSelect.innerHTML = '<option value="">선택하세요</option>' +
             finalHardware.map(hw =>
-                `<option value="${hw.id}">${hw.id} - ${hw.type} ${hw.manufacturer} ${hw.model} (${hw.status})</option>`
+                `<option value="${hw.id}">${hw.id} - ${hw.type} ${hw.manufacturer} ${hw.model} - S/N: ${hw.serial || hw.serial_number || 'N/A'} (${hw.status})</option>`
             ).join('');
             
         // 이전 선택 값 복원 (해당 하드웨어가 여전히 available한 경우)
@@ -1352,7 +1352,7 @@ function updateOnlyHardwareDropdown() {
         
         hardwareSelect.innerHTML = '<option value="">선택하세요</option>' +
             finalHardware.map(hw =>
-                `<option value="${hw.id}">${hw.id} - ${hw.type} ${hw.manufacturer} ${hw.model} (${hw.status})</option>`
+                `<option value="${hw.id}">${hw.id} - ${hw.type} ${hw.manufacturer} ${hw.model} - S/N: ${hw.serial || hw.serial_number || 'N/A'} (${hw.status})</option>`
             ).join('');
             
         // 이전 선택 값 복원 (해당 하드웨어가 여전히 available한 경우)
