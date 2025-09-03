@@ -1181,25 +1181,25 @@ form {
 }
 
 .login-instructions {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .instruction-box {
     background: linear-gradient(135deg, #f8f9ff 0%, #e8f0ff 100%);
     border: 1px solid #d0e2ff;
-    border-radius: 12px;
-    padding: 1.2rem;
-    margin-bottom: 1rem;
+    border-radius: 8px;
+    padding: 0.8rem;
+    margin-bottom: 0.8rem;
 }
 
 .instruction-box h3 {
     color: #2c5aa0;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     font-weight: 600;
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.5rem;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
 }
 
 .instruction-box h3 i {
@@ -1214,10 +1214,10 @@ form {
 
 .instruction-box li {
     color: #4a5568;
-    font-size: 0.85rem;
-    line-height: 1.5;
-    margin-bottom: 0.5rem;
-    padding-left: 1rem;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    margin-bottom: 0.3rem;
+    padding-left: 0.8rem;
     position: relative;
 }
 
