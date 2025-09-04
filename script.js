@@ -871,7 +871,7 @@ async function renderEmployees() {
 
     tbody.innerHTML = employees.map(emp => {
         const assignedAssets = dataStore.assignments.filter(as =>
-            as.employeeId === emp.id && as.status === '할당중'
+            as.employee_id === emp.id && as.status === '사용중'
         ).length;
 
         return `
@@ -1788,7 +1788,7 @@ function renderFilteredEmployees(employees) {
 
     tbody.innerHTML = employees.map(emp => {
         const assignedAssets = dataStore.assignments.filter(as =>
-            as.employeeId === emp.id && as.status === '할당중'
+            as.employee_id === emp.id && as.status === '사용중'
         ).length;
 
         return `
@@ -2030,7 +2030,7 @@ function exportToExcel(dataType) {
 function prepareEmployeeData() {
     return dataStore.employees.map(emp => {
         const assignedAssets = dataStore.assignments.filter(as =>
-            as.employeeId === emp.id && as.status === '할당중'
+            as.employee_id === emp.id && as.status === '사용중'
         ).length;
 
         return {
