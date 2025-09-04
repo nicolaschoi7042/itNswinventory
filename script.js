@@ -879,7 +879,7 @@ async function renderEmployees() {
                 <td>${emp.id}</td>
                 <td>${emp.name}</td>
                 <td>${emp.department}</td>
-                <td><span class="status-badge status-assigned">${assignedAssets}개</span></td>
+                <td><span class="status-badge status-assigned" style="font-size: 1.2em; padding: 0.4em 0.8em;">${assignedAssets} 개</span></td>
                 <td>
                     <button class="btn btn-sm" onclick="editEmployee('${emp.id}')">
                         <i class="fas fa-edit"></i>
@@ -1797,7 +1797,7 @@ function renderFilteredEmployees(employees) {
                 <td>${emp.name}</td>
                 <td>${emp.department}</td>
                 <td>${emp.position}</td>
-                <td><span class="status-badge status-assigned">${assignedAssets}개</span></td>
+                <td><span class="status-badge status-assigned" style="font-size: 1.2em; padding: 0.4em 0.8em;">${assignedAssets} 개</span></td>
                 <td>
                     <button class="btn btn-sm" onclick="editEmployee('${emp.id}')">
                         <i class="fas fa-edit"></i>
