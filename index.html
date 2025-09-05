@@ -6,7 +6,7 @@
     <title> Roboe Technology inc IT 자산 및 SW 인벤토리 관리시스템</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="styles-ny-business.css?v=20250905082000">
+    <link rel="stylesheet" href="styles-ny-business.css?v=20250905083000">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
@@ -120,7 +120,8 @@
 
         <!-- 대시보드 탭 -->
         <div id="dashboard" class="tab-content active">
-            <div class="dashboard-grid">
+            <!-- 대시보드 카드들 임시 제거 -->
+            <div class="dashboard-grid" style="display: none;">
                 <div class="dashboard-card">
                     <h3>자산 현황</h3>
                     <canvas id="assetChart" width="300" height="200"></canvas>
@@ -143,6 +144,12 @@
                     <h3>최근 활동</h3>
                     <div id="recentActivities"></div>
                 </div>
+            </div>
+            
+            <!-- 임시 테스트 메시지 -->
+            <div style="padding: 40px; text-align: center;">
+                <h2>대시보드 카드 제거됨 (스크롤 테스트 중)</h2>
+                <p>현재 헤더와 네비게이션만 표시 중</p>
             </div>
             
             <!-- SW 라이선스 점검 매뉴얼 섹션 - 임시 제거 -->
