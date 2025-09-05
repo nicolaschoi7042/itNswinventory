@@ -34,21 +34,38 @@ body {
     padding: 0 !important;
 }
 
-/* PDF 뷰어만 제한 - 카드는 건드리지 않음 */
+/* 강력한 높이 제한 - 5860px 문제 해결 */
+iframe, object, embed {
+    height: 700px !important;
+    max-height: 700px !important;
+    min-height: auto !important;
+}
+
+.pdf-viewer-container,
 .pdf-viewer-container iframe,
 .pdf-viewer-container object {
     height: 700px !important;
     max-height: 700px !important;
+    min-height: auto !important;
+    overflow: hidden !important;
 }
 
-/* 매뉴얼 섹션의 높이만 제한 */
+/* 매뉴얼 섹션 강력한 제한 */
 .dashboard-manual-section {
-    max-height: 800px !important;
+    height: 600px !important;
+    max-height: 600px !important;
     overflow-y: auto !important;
 }
 
 .manual-container {
-    max-height: 750px !important;
+    height: 550px !important;
+    max-height: 550px !important;
+    overflow-y: auto !important;
+}
+
+/* 탭 콘텐츠도 제한 */
+#dashboard {
+    max-height: 100vh !important;
     overflow-y: auto !important;
 }
 
