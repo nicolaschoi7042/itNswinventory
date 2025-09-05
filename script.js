@@ -930,9 +930,9 @@ async function renderHardware() {
                 <td><span class="status-badge ${statusClass}">${hw.status}</span></td>
                 <td>${assignedEmployee ? assignedEmployee.name : '-'}</td>
                 <td>
-                    <button class="btn btn-sm" onclick="editHardware('${hw.id}')">
+                    ${hasManagerRole() ? `<button class="btn btn-sm" onclick="editHardware('${hw.id}')">
                         <i class="fas fa-edit"></i>
-                    </button>
+                    </button>` : ''}
                     ${hasAdminRole() ? `<button class="btn btn-danger btn-sm" onclick="deleteHardwareConfirm('${hw.id}')">
                         <i class="fas fa-trash"></i>
                     </button>` : ''}
