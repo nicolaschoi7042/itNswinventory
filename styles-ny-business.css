@@ -14,60 +14,7 @@
     box-sizing: border-box;
 }
 
-/* 모든 요소의 기본 높이 제한 */
-#mainApp, #dashboard, .tab-content {
-    max-height: none !important;
-    height: auto !important;
-}
-
-/* 스크롤 문제 해결 - 더 정확한 접근 */
-html {
-    height: 100% !important;
-    overflow-x: hidden !important;
-}
-
-body {
-    height: auto !important;
-    min-height: 100% !important;
-    overflow-x: hidden !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-/* 강력한 높이 제한 - 5860px 문제 해결 */
-iframe, object, embed {
-    height: 700px !important;
-    max-height: 700px !important;
-    min-height: auto !important;
-}
-
-.pdf-viewer-container,
-.pdf-viewer-container iframe,
-.pdf-viewer-container object {
-    height: 700px !important;
-    max-height: 700px !important;
-    min-height: auto !important;
-    overflow: hidden !important;
-}
-
-/* 매뉴얼 섹션 강력한 제한 */
-.dashboard-manual-section {
-    height: 600px !important;
-    max-height: 600px !important;
-    overflow-y: auto !important;
-}
-
-.manual-container {
-    height: 550px !important;
-    max-height: 550px !important;
-    overflow-y: auto !important;
-}
-
-/* 탭 콘텐츠도 제한 */
-#dashboard {
-    max-height: 100vh !important;
-    overflow-y: auto !important;
-}
+/* 기본 리셋만 유지 - 과도한 높이 제한 제거 */
 
 *::before,
 *::after {
@@ -183,10 +130,6 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
-    margin: 0 !important;
-    padding: 0 !important;
-    height: auto !important;
-    min-height: auto !important;
 }
 
 /* ==========================================================================
