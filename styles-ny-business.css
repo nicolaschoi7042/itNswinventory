@@ -431,7 +431,7 @@ body {
     padding: var(--spacing-base) var(--spacing-lg);
     border: none;
     background: transparent;
-    color: var(--color-text-secondary);
+    color: #6B7280; /* 명확한 색상 지정 */
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     font-family: var(--font-family-primary);
@@ -444,22 +444,23 @@ body {
 }
 
 .nav-tab:hover {
-    color: var(--color-text-primary);
-    background: rgba(44, 44, 44, 0.05);
+    color: #374151; /* 명확한 호버 색상 */
+    background: rgba(107, 114, 128, 0.08);
     transform: translateY(-1px);
 }
 
 .nav-tab.active {
-    color: var(--color-surface);
-    background: var(--color-primary);
-    box-shadow: var(--shadow-base);
+    color: #FFFFFF; /* 명확한 흰색 */
+    background: #2C2C2C; /* 명확한 배경색 */
+    box-shadow: 0 4px 12px rgba(44, 44, 44, 0.15);
     font-weight: var(--font-weight-semibold);
 }
 
 .nav-tab.active:hover {
-    background: var(--color-primary);
+    background: #1a1a1a; /* 더 진한 색상 */
+    color: #FFFFFF; /* 명확한 흰색 유지 */
     transform: translateY(-1px);
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 8px 25px rgba(44, 44, 44, 0.2);
 }
 
 .nav-tab i {
@@ -6939,20 +6940,56 @@ select:valid:focus {
    MISSING LAYOUT COMPONENTS - CRITICAL FOR PRODUCTION SITE
    ========================================================================== */
 
-/* PDF Manual Styles - New York Business Theme */
-.manual-container {
+/* Modern Manual Section - New York Style */
+.dashboard-manual-section {
+    margin: var(--spacing-xl) 0;
+    padding: var(--spacing-xl);
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(107, 114, 128, 0.08);
+}
+
+.dashboard-manual-section .section-header {
     display: flex;
-    flex-direction: column;
-    gap: var(--spacing-lg);
-    margin-top: var(--spacing-lg);
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 1px solid rgba(107, 114, 128, 0.08);
+}
+
+.dashboard-manual-section .section-header h2 {
+    margin: 0;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+}
+
+.section-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.manual-container {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: var(--spacing-xl);
+    align-items: start;
 }
 
 .manual-description {
-    background: var(--color-surface);
+    background: rgba(44, 44, 44, 0.02);
     padding: var(--spacing-lg);
     border-radius: var(--radius-lg);
     border-left: 4px solid var(--color-primary);
-    box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 1024px) {
+    .manual-container {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+    }
 }
 
 .manual-description h3 {
@@ -7050,10 +7087,18 @@ select:valid:focus {
     margin-right: var(--spacing-sm);
 }
 
-/* Dashboard Grid Styles */
+/* Modern New York Style Dashboard */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: 2fr 1fr;
+    gap: var(--spacing-xl);
+    margin-bottom: var(--spacing-xl);
+    align-items: start;
+}
+
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: var(--spacing-lg);
     margin-bottom: var(--spacing-xl);
 }
@@ -7061,53 +7106,175 @@ select:valid:focus {
 .dashboard-card {
     background: var(--color-surface);
     border-radius: var(--radius-lg);
-    padding: var(--spacing-lg);
-    box-shadow: var(--shadow-base);
-    border: 1px solid rgba(107, 114, 128, 0.1);
+    padding: var(--spacing-xl);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(107, 114, 128, 0.08);
     transition: var(--transition-base);
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
 }
 
 .dashboard-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-    border-color: rgba(44, 44, 44, 0.2);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    border-color: rgba(44, 44, 44, 0.12);
 }
 
 .dashboard-card h3 {
     color: var(--color-text-primary);
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    margin-bottom: var(--spacing-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    margin-bottom: var(--spacing-lg);
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    font-size: var(--font-size-sm);
+    opacity: 0.8;
 }
 
 .dashboard-card h3 i {
     color: var(--color-primary);
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-base);
 }
 
 .dashboard-stat {
-    font-size: var(--font-size-2xl);
-    font-weight: var(--font-weight-bold);
+    font-size: 2.5rem;
+    font-weight: 300;
     color: var(--color-primary);
-    margin: var(--spacing-sm) 0;
+    margin: 0;
+    line-height: 1;
+    font-family: 'Inter', sans-serif;
 }
 
-/* Tab Content Sections */
+/* Recent Activities - Horizontal Layout */
+.dashboard-card.activities {
+    grid-column: 1;
+}
+
+.dashboard-card.stats {
+    grid-column: 2;
+}
+
+#recentActivities {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: var(--spacing-base);
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid rgba(107, 114, 128, 0.05);
+    gap: var(--spacing-base);
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(44, 44, 44, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.activity-icon i {
+    font-size: var(--font-size-sm);
+    color: var(--color-primary);
+}
+
+.activity-content {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.activity-title {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.activity-time {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+}
+
+/* Tab Content Sections - Fixed Layout */
 .tab-content {
     display: none;
+    width: 100%;
+    max-width: none;
+    padding: var(--spacing-xl) 0;
     animation: fadeIn 0.3s ease-in-out;
+    overflow: visible;
 }
 
 .tab-content.active {
     display: block;
 }
 
+.tab-content > * {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.tab-content .container {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+/* Fix section headers in tab content */
+.tab-content .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xl);
+    padding: var(--spacing-lg);
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(107, 114, 128, 0.08);
+}
+
+.tab-content .section-header h2 {
+    margin: 0;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+}
+
+.tab-content .section-actions {
+    display: flex;
+    gap: var(--spacing-sm);
 }
 
 /* User Info Styles */
@@ -7172,6 +7339,38 @@ select:valid:focus {
     .dashboard-grid {
         grid-template-columns: 1fr;
         gap: var(--spacing-base);
+    }
+    
+    .dashboard-stats {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-base);
+    }
+    
+    .dashboard-card {
+        padding: var(--spacing-lg);
+    }
+    
+    .dashboard-stat {
+        font-size: 2rem;
+    }
+    
+    .dashboard-manual-section {
+        padding: var(--spacing-base);
+        margin: var(--spacing-base) 0;
+    }
+    
+    .section-actions {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+    
+    .activity-item {
+        padding: var(--spacing-base) 0;
+    }
+    
+    .activity-title {
+        white-space: normal;
+        line-height: 1.4;
     }
     
     .user-name {
