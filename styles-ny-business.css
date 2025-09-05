@@ -20,20 +20,59 @@
     height: auto !important;
 }
 
-/* 스크롤 문제 해결을 위한 추가 제한 */
-html, body, #mainApp, .container {
-    height: auto !important;
-    min-height: auto !important;
-    max-height: none !important;
-    overflow-x: hidden;
-    overflow-y: visible;
+/* 스크롤 문제 해결을 위한 강력한 제한 */
+html, body {
+    height: 100% !important;
+    min-height: 100% !important;
+    max-height: 100vh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
 }
 
-/* PDF 뷰어 높이 제한 */
+#mainApp, .container {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: calc(100vh - 20px) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+}
+
+/* 모든 iframe과 object 요소의 높이 강제 제한 */
+iframe, object, embed {
+    max-height: 700px !important;
+    height: 700px !important;
+}
+
+/* 대시보드와 탭 콘텐츠 높이 제한 */
+.tab-content {
+    max-height: calc(100vh - 200px) !important;
+    overflow-y: auto !important;
+}
+
+/* PDF 뷰어 및 모든 큰 콘텐츠 높이 제한 */
 .pdf-viewer-container iframe,
-.pdf-viewer-container object {
+.pdf-viewer-container object,
+.manual-container,
+.dashboard-manual-section {
     height: 700px !important;
     max-height: 700px !important;
+    overflow-y: auto !important;
+}
+
+/* 추가 높이 제한 */
+.login-page {
+    min-height: 100vh !important;
+    max-height: 100vh !important;
+}
+
+/* 모든 section과 div의 최대 높이 제한 */
+section, div {
+    max-height: 100vh !important;
+}
+
+section.dashboard-manual-section,
+div.manual-container {
+    max-height: 800px !important;
 }
 
 *::before,
