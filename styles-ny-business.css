@@ -7038,7 +7038,7 @@ select:valid:focus {
 .pdf-viewer-container iframe {
     border: none !important;
     width: 100% !important;
-    height: 600px !important;
+    height: 400px !important;
     display: block;
     pointer-events: auto;
 }
@@ -7133,7 +7133,7 @@ select:valid:focus {
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    min-height: 320px; /* 최소 높이 증가 */
+    min-height: 200px; /* 최소 높이 축소 */
 }
 
 .dashboard-card::before {
