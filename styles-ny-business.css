@@ -7291,6 +7291,40 @@ select:valid:focus {
     margin: 0 0 var(--spacing-lg) 0;
 }
 
+/* Search filter layout */
+.search-filter {
+    display: flex;
+    gap: var(--spacing-base);
+    align-items: center;
+    flex-wrap: nowrap;
+    margin-bottom: var(--spacing-lg);
+}
+
+.search-filter .search-input {
+    flex: 1;
+    min-width: 200px;
+}
+
+.search-filter .filter-select {
+    flex-shrink: 0;
+    min-width: 150px;
+    max-width: 200px;
+}
+
+/* Responsive search filter */
+@media (max-width: 768px) {
+    .search-filter {
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
+    }
+    
+    .search-filter .search-input,
+    .search-filter .filter-select {
+        flex: 1 1 100%;
+        min-width: unset;
+    }
+}
+
 .tab-content .container {
     width: 100%;
     max-width: 100%;
