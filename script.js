@@ -609,6 +609,8 @@ function initializeApp() {
     if (!token) {
         console.log('🔧 No token found, showing login page directly');
         showLoginModal();
+        // Make body visible after showing login
+        document.body.classList.add('loaded');
         return; // 로그인 후에 앱이 다시 초기화될 것임
     }
     
@@ -628,6 +630,9 @@ function initializeApp() {
     console.log('🔧 Calling dataStore.initializeData()');
     dataStore.initializeData();
     // 통계와 대시보드는 데이터 로드 후 자동으로 업데이트됨
+    
+    // Make body visible after showing main app
+    document.body.classList.add('loaded');
 }
 
 function setupEventListeners() {
@@ -918,10 +923,21 @@ async function renderHardware() {
     tbody.innerHTML = hardware.map(hw => {
         const assignedEmployee = dataStore.employees.find(emp => emp.id === hw.assignedTo);
         const statusClass = getStatusClass(hw.status);
+        // Format asset tag (HW001, HW002, etc.)
+        // Check if ID already has HW prefix to avoid duplication
+        let assetTag = '';
+        if (hw.id) {
+            const idStr = hw.id.toString();
+            if (idStr.startsWith('HW')) {
+                assetTag = idStr;
+            } else {
+                assetTag = `HW${idStr.padStart(3, '0')}`;
+            }
+        }
 
         return `
             <tr>
-                <td>${hw.id}</td>
+                <td>${assetTag}</td>
                 <td>${hw.type}</td>
                 <td>${hw.manufacturer}</td>
                 <td>${hw.model}</td>
@@ -952,7 +968,7 @@ async function renderSoftware() {
             await dataStore.loadAllData();
         } catch (error) {
             console.error('Failed to load software data:', error);
-            tbody.innerHTML = '<tr><td colspan="9" class="empty-state">소프트웨어 데이터를 로드할 수 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" class="empty-state">소프트웨어 데이터를 로드할 수 없습니다.</td></tr>';
             return;
         }
     }
@@ -960,7 +976,7 @@ async function renderSoftware() {
     const software = dataStore.software;
 
     if (software.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" class="empty-state">등록된 소프트웨어가 없습니다.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" class="empty-state">등록된 소프트웨어가 없습니다.</td></tr>';
         return;
     }
 
@@ -970,8 +986,21 @@ async function renderSoftware() {
         const currentUsers = sw.current_users || sw.usedLicenses || 0;
         const remainingLicenses = totalLicenses - currentUsers;
         
+        // Format asset tag similar to hardware (SW001, SW002, etc.)
+        // Check if ID already has SW prefix to avoid duplication
+        let assetTag = '';
+        if (sw.id) {
+            const idStr = sw.id.toString();
+            if (idStr.startsWith('SW')) {
+                assetTag = idStr;
+            } else {
+                assetTag = `SW${idStr.padStart(3, '0')}`;
+            }
+        }
+        
         return `
             <tr>
+                <td>${assetTag}</td>
                 <td>${sw.name || ''}</td>
                 <td>${sw.manufacturer || ''}</td>
                 <td>${sw.version || ''}</td>
@@ -1822,10 +1851,21 @@ function renderFilteredHardware(hardware) {
     tbody.innerHTML = hardware.map(hw => {
         const assignedEmployee = dataStore.employees.find(emp => emp.id === hw.assignedTo);
         const statusClass = getStatusClass(hw.status);
+        // Format asset tag (HW001, HW002, etc.)
+        // Check if ID already has HW prefix to avoid duplication
+        let assetTag = '';
+        if (hw.id) {
+            const idStr = hw.id.toString();
+            if (idStr.startsWith('HW')) {
+                assetTag = idStr;
+            } else {
+                assetTag = `HW${idStr.padStart(3, '0')}`;
+            }
+        }
 
         return `
             <tr>
-                <td>${hw.id}</td>
+                <td>${assetTag}</td>
                 <td>${hw.type}</td>
                 <td>${hw.manufacturer}</td>
                 <td>${hw.model}</td>
@@ -2230,6 +2270,7 @@ function showLoginModal() {
     const mainApp = document.getElementById('mainApp');
     
     if (loginPage && mainApp) {
+        loginPage.classList.add('show');
         loginPage.style.display = 'flex';
         mainApp.style.display = 'none';
         
@@ -2294,6 +2335,7 @@ function hideLoginModal() {
     const mainApp = document.getElementById('mainApp');
     
     if (loginPage && mainApp) {
+        loginPage.classList.remove('show');
         loginPage.style.display = 'none';
         mainApp.style.display = 'block';
         
@@ -2601,10 +2643,6 @@ async function renderUserTable() {
                             title="권한 변경">
                         <i class="fas fa-user-cog"></i>
                     </button>
-                    <button class="btn btn-sm btn-warning" onclick="showPasswordModal(${user.id}, '${user.username}')" 
-                            title="비밀번호 재설정">
-                        <i class="fas fa-key"></i>
-                    </button>
                     <button class="btn btn-sm ${user.is_active ? 'btn-danger' : 'btn-success'}" 
                             onclick="toggleUserStatus(${user.id}, ${!user.is_active})" 
                             title="${user.is_active ? '비활성화' : '활성화'}">
@@ -2685,17 +2723,7 @@ function showRoleModal(userId, username, currentRole) {
 }
 
 // 비밀번호 재설정 모달 표시
-function showPasswordModal(userId, username) {
-    const modal = document.getElementById('passwordModal');
-    const form = document.getElementById('passwordForm');
-    
-    document.getElementById('passwordUsername').textContent = username;
-    document.getElementById('newPassword').value = '';
-    document.getElementById('confirmPassword').value = '';
-    
-    form.dataset.userId = userId;
-    modal.style.display = 'block';
-}
+// Password modal function removed - password changes handled through LDAP
 
 // 사용자 생성/수정
 async function handleUserSubmit(event) {
@@ -2761,33 +2789,7 @@ async function handleRoleSubmit(event) {
 }
 
 // 비밀번호 재설정
-async function handlePasswordSubmit(event) {
-    event.preventDefault();
-    
-    const form = event.target;
-    const userId = form.dataset.userId;
-    const newPassword = document.getElementById('newPassword').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-    
-    if (newPassword !== confirmPassword) {
-        showAlert('비밀번호가 일치하지 않습니다.', 'error');
-        return;
-    }
-    
-    if (newPassword.length < 6) {
-        showAlert('비밀번호는 최소 6자 이상이어야 합니다.', 'error');
-        return;
-    }
-    
-    try {
-        await dataStore.api.resetPassword(userId, newPassword);
-        showAlert('비밀번호가 재설정되었습니다.');
-        
-        closeModal('passwordModal');
-    } catch (error) {
-        showAlert(error.message, 'error');
-    }
-}
+// Password submit handler removed - password changes handled through LDAP
 
 // 사용자 상태 토글
 async function toggleUserStatus(userId, isActive) {
@@ -2840,7 +2842,9 @@ function showLoginPage() {
 // 메인 애플리케이션 표시
 function showMainApp() {
     console.log('🔐 Showing main application');
-    document.getElementById('loginPage').style.display = 'none';
+    const loginPage = document.getElementById('loginPage');
+    loginPage.classList.remove('show');
+    loginPage.style.display = 'none';
     document.getElementById('mainApp').style.display = 'block';
     
     // 사용자 정보 업데이트
@@ -2936,10 +2940,7 @@ document.addEventListener('DOMContentLoaded', function() {
         roleForm.addEventListener('submit', handleRoleSubmit);
     }
     
-    const passwordForm = document.getElementById('passwordForm');
-    if (passwordForm) {
-        passwordForm.addEventListener('submit', handlePasswordSubmit);
-    }
+    // Password form removed - password changes handled through LDAP
     
     
     // 로그인 후 관리자 UI 업데이트
