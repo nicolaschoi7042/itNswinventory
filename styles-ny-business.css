@@ -4919,13 +4919,14 @@ fieldset::before {
 /* Specialized button styles */
 .btn-success {
     background: linear-gradient(135deg, var(--color-success) 0%, rgba(6, 95, 70, 0.9) 100%);
-    color: var(--color-white);
+    color: #FFFFFF !important;
     border-color: var(--color-success);
     box-shadow: 0 2px 4px rgba(6, 95, 70, 0.2);
 }
 
 .btn-success:hover {
     background: linear-gradient(135deg, rgba(6, 95, 70, 0.9) 0%, rgba(6, 95, 70, 0.8) 100%);
+    color: #FFFFFF !important;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(6, 95, 70, 0.25);
 }
@@ -7267,10 +7268,11 @@ select:valid:focus {
 .tab-content {
     display: none;
     width: 100%;
-    max-width: none;
-    padding: var(--spacing-base) 0 0 0;
+    max-width: 100%;
+    padding: var(--spacing-lg);
     animation: fadeIn 0.3s ease-in-out;
     overflow: visible;
+    margin: 0 auto;
 }
 
 .tab-content.active {
@@ -7281,6 +7283,12 @@ select:valid:focus {
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
+}
+
+.tab-content .search-filter,
+.tab-content .table-container {
+    width: 100%;
+    margin: 0 0 var(--spacing-lg) 0;
 }
 
 .tab-content .container {
@@ -7305,6 +7313,7 @@ select:valid:focus {
     background: var(--color-surface);
     border-radius: var(--radius-lg);
     border: 1px solid rgba(107, 114, 128, 0.08);
+    width: 100%;
 }
 
 .tab-content .section-header h2 {
