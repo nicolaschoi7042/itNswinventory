@@ -981,9 +981,9 @@ async function renderSoftware() {
                 <td>${currentUsers}</td>
                 <td>${remainingLicenses}</td>
                 <td>
-                    <button class="btn btn-sm" onclick="editSoftware('${sw.id}')">
+                    ${hasManagerRole() ? `<button class="btn btn-sm" onclick="editSoftware('${sw.id}')">
                         <i class="fas fa-edit"></i>
-                    </button>
+                    </button>` : ''}
                     ${hasAdminRole() ? `<button class="btn btn-danger btn-sm" onclick="deleteSoftwareConfirm('${sw.id}')">
                         <i class="fas fa-trash"></i>
                     </button>` : ''}
