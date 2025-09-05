@@ -6,7 +6,7 @@
     <title> Roboe Technology inc IT 자산 및 SW 인벤토리 관리시스템</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="styles-ny-business.css?v=20250905080000">
+    <link rel="stylesheet" href="styles-ny-business.css?v=20250905081000">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
@@ -171,8 +171,8 @@
                         </ul>
                     </div>
 
-                    <!-- PDF 뷰어 -->
-                    <div class="pdf-viewer-container">
+                    <!-- PDF 뷰어 - 임시 제거 (스크롤 문제 진단용) -->
+                    <div class="pdf-viewer-container" style="display: none;">
                         <div class="pdf-viewer-tabs">
                             <button class="pdf-tab active" onclick="showPdfEmbed()">
                                 <i class="fas fa-file-pdf"></i> 내장 뷰어
@@ -215,6 +215,12 @@
                                "브라우저 뷰어" 탭을 클릭하거나 "새 창에서 열기" 버튼을 사용하세요.
                             </p>
                         </div>
+                    </div>
+                    
+                    <!-- 임시 메시지 -->
+                    <div class="pdf-temp-message" style="padding: 20px; background: #f0f0f0; text-align: center;">
+                        <p><strong>PDF 뷰어 임시 제거됨 (스크롤 문제 진단 중)</strong></p>
+                        <p><a href="SMART_Check_Plus_User_Manual_V2.0.pdf" target="_blank" class="btn btn-primary">PDF 다운로드</a></p>
                     </div>
                 </div>
             </div>
