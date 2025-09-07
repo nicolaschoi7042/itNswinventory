@@ -403,7 +403,7 @@ body {
 
 .stat-item {
     text-align: center;
-    padding: var(--spacing-base) var(--spacing-lg);
+    padding: var(--spacing-sm) var(--spacing-lg);
     border-radius: var(--radius-lg);
     background: linear-gradient(135deg, rgba(44, 44, 44, 0.02) 0%, rgba(44, 44, 44, 0.05) 100%);
     border: 1px solid rgba(44, 44, 44, 0.08);
@@ -411,6 +411,11 @@ body {
     transition: var(--transition-base);
     position: relative;
     overflow: hidden;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 48px;
 }
 
 .stat-item::before {
@@ -573,7 +578,7 @@ body {
     background: var(--color-surface);
     border-radius: var(--radius-lg);
     padding: var(--spacing-xs);
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--spacing-base);
     box-shadow: var(--shadow-base);
     border: 1px solid rgba(107, 114, 128, 0.1);
     gap: var(--spacing-xs);
@@ -590,7 +595,7 @@ body {
     align-items: center;
     justify-content: center;
     gap: var(--spacing-sm);
-    padding: var(--spacing-base) var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-sm);
     border: none;
     background: transparent;
     color: #6B7280; /* 명확한 색상 지정 */
@@ -602,7 +607,7 @@ body {
     transition: var(--transition-base);
     white-space: nowrap;
     position: relative;
-    min-height: 44px;
+    min-height: 36px;
     flex: 1; /* Make each tab take equal space */
     text-align: center;
 }
@@ -903,6 +908,7 @@ body {
     border: 1px solid rgba(107, 114, 128, 0.08);
     overflow: hidden;
     position: relative;
+    margin-top: var(--spacing-xs);
 }
 
 .tab-content::before {
@@ -917,10 +923,11 @@ body {
 
 /* Section headers within content */
 .section-header {
-    padding: var(--spacing-lg) var(--spacing-xl);
+    padding: var(--spacing-xs) var(--spacing-xl);
     background: linear-gradient(135deg, rgba(44, 44, 44, 0.02) 0%, rgba(44, 44, 44, 0.04) 100%);
     border-bottom: 1px solid rgba(107, 114, 128, 0.1);
     position: relative;
+    margin-bottom: var(--spacing-xs);
 }
 
 .section-header::after {
@@ -5105,16 +5112,17 @@ fieldset::before {
 }
 
 .btn-danger {
-    background: linear-gradient(135deg, #e53e3e 0%, rgba(220, 38, 127, 0.9) 100%);
-    color: var(--color-white);
-    border-color: #e53e3e;
-    box-shadow: 0 2px 4px rgba(229, 62, 62, 0.2);
+    background: linear-gradient(135deg, #f87171 0%, rgba(251, 113, 133, 0.9) 100%);
+    color: #7f1d1d;
+    border-color: #f87171;
+    box-shadow: 0 2px 4px rgba(248, 113, 113, 0.2);
 }
 
 .btn-danger:hover {
-    background: linear-gradient(135deg, rgba(220, 38, 127, 0.9) 0%, rgba(220, 38, 127, 0.8) 100%);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.9) 0%, rgba(239, 68, 68, 0.8) 100%);
+    color: #ffffff;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(220, 38, 127, 0.25);
+    box-shadow: 0 4px 12px rgba(248, 113, 113, 0.25);
 }
 
 .btn-warning {
@@ -7597,9 +7605,10 @@ select:valid:focus {
 
 .tab-content .section-header h2 {
     margin: 0;
-    font-size: 1.75rem;
-    font-weight: var(--font-weight-bold);
+    font-size: 1.25rem;
+    font-weight: var(--font-weight-semibold);
     color: var(--color-text-primary);
+    line-height: 1.4;
 }
 
 .tab-content .section-actions {

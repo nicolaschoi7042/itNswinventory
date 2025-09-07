@@ -46,7 +46,7 @@ Assume the primary reader of the PRD is a **junior developer**. Therefore, requi
 ## Output
 
 *   **Format:** Markdown (`.md`)
-*   **Location:** `/prompt/`
+*   **Location:** `/prompt/tasks`
 *   **Filename:** `prd-[feature-name].md`
 
 ## Final instructions
