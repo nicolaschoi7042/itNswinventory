@@ -44,6 +44,7 @@ Based on the analysis of the existing vanilla HTML/CSS/JavaScript IT Asset & Sof
   - [x] 1.6 Configure TypeScript with strict mode and path aliases
   - [x] 1.7 Set up basic Material-UI theme structure matching New York Business theme
 - [ ] 2.0 Authentication System Migration
+  - [x] 2.1 LDAP Integration: Migrate existing LDAP authentication to work with Next.js API routes
 - [ ] 3.0 API Layer and State Management Setup
 - [ ] 4.0 UI Components and Theme Implementation
 - [ ] 5.0 Core Page Migration (Login, Dashboard, Navigation)
