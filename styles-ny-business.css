@@ -7380,6 +7380,9 @@ select:valid:focus {
     max-height: 200px;
     overflow-y: auto;
     margin-top: var(--spacing-base);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 }
 
 /* 카드 내부 콘텐츠 정렬 */
