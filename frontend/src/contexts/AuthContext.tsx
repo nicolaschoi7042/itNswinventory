@@ -4,22 +4,35 @@
 // Based on the original IT Inventory System's authentication flow
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { authService } from '@/services/auth.service';
-import { type User, type LoginCredentials } from '@/lib/auth';
+import { 
+  getSessionData, 
+  setSessionData, 
+  clearSession, 
+  isAuthenticated as checkAuthenticated,
+  isTokenExpiringSoon,
+  hasAdminRole as checkAdminRole,
+  hasManagerRole as checkManagerRole,
+  canCreateRecords as checkCanCreateRecords,
+  canDeleteRecords as checkCanDeleteRecords,
+  getAuthHeader,
+  type SessionUser
+} from '@/lib/session-storage';
+import { syncTokenToCookies, clearTokenEverywhere, initializeSessionSync } from '@/lib/session-sync';
+import { type LoginRequest } from '@/types/api';
 
 interface AuthContextType {
   // Authentication state
-  user: User | null;
+  user: SessionUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   
   // Authentication actions
-  login: (credentials: LoginCredentials) => Promise<{ success: boolean; message: string }>;
+  login: (credentials: LoginRequest) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<void>;
-  refreshUser: () => Promise<void>;
+  refreshToken: () => Promise<boolean>;
   
   // Permission helpers
-  hasRole: (role: 'Admin' | 'Manager' | 'User') => boolean;
+  hasRole: (role: 'admin' | 'manager' | 'user') => boolean;
   canManageUsers: boolean;
   canDeleteRecords: boolean;
   canCreateRecords: boolean;
@@ -35,38 +48,42 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<SessionUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Initialize authentication state on mount
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // Check if user is already logged in
-        const storedUser = authService.getCurrentUser();
+        console.log('🔐 Initializing authentication...');
         
-        if (storedUser) {
-          // Validate token with backend
-          const isValidToken = await authService.validateToken();
-          
-          if (isValidToken) {
-            setUser(storedUser);
+        // Initialize session synchronization
+        const cleanupSync = initializeSessionSync();
+        
+        // Check if user has valid session
+        if (checkAuthenticated()) {
+          const sessionData = getSessionData();
+          if (sessionData) {
+            setUser(sessionData.user);
+            console.log('✅ Found valid session for user:', sessionData.user.username);
             
-            // Optionally refresh user data from backend
-            await authService.refreshUser();
-            const refreshedUser = authService.getCurrentUser();
-            if (refreshedUser) {
-              setUser(refreshedUser);
+            // Sync token to cookies for middleware access
+            syncTokenToCookies();
+            
+            // Check if token needs refresh
+            if (isTokenExpiringSoon()) {
+              console.log('🔄 Token expiring soon, attempting refresh...');
+              await refreshTokenSilently();
             }
-          } else {
-            // Token is invalid, clear stored data
-            await authService.logout();
           }
+        } else {
+          console.log('❌ No valid session found');
+          clearTokenEverywhere();
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
-        // If initialization fails, ensure user is logged out
-        await authService.logout();
+        clearTokenEverywhere();
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -75,23 +92,78 @@ export function AuthProvider({ children }: AuthProviderProps) {
     initAuth();
   }, []);
 
+  // Set up automatic token refresh
+  useEffect(() => {
+    if (!user) return;
+
+    const refreshInterval = setInterval(() => {
+      if (isTokenExpiringSoon()) {
+        console.log('🔄 Auto-refreshing token...');
+        refreshTokenSilently();
+      }
+    }, 60000); // Check every minute
+
+    return () => clearInterval(refreshInterval);
+  }, [user]);
+
+  // Silent token refresh helper
+  const refreshTokenSilently = useCallback(async () => {
+    try {
+      const success = await refreshToken();
+      if (!success) {
+        console.log('❌ Silent token refresh failed, logging out');
+        await logout();
+      }
+    } catch (error) {
+      console.error('Silent token refresh error:', error);
+      await logout();
+    }
+  }, []);
+
   // Login function
-  const login = useCallback(async (credentials: LoginCredentials) => {
+  const login = useCallback(async (credentials: LoginRequest) => {
     setIsLoading(true);
     
     try {
-      const result = await authService.login(credentials);
+      console.log('🔐 Attempting login for user:', credentials.username);
       
-      if (result.success && result.user) {
-        setUser(result.user);
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.token && data.user) {
+        console.log('✅ Login successful for user:', data.user.username);
+        
+        // Store session data
+        setSessionData({
+          token: data.token,
+          user: data.user
+        });
+        
+        // Sync to cookies for middleware access
+        syncTokenToCookies();
+        
+        setUser(data.user);
+        
+        return {
+          success: true,
+          message: '로그인이 성공했습니다.'
+        };
+      } else {
+        console.log('❌ Login failed:', data.error);
+        return {
+          success: false,
+          message: data.error || '로그인에 실패했습니다.'
+        };
       }
-      
-      return {
-        success: result.success,
-        message: result.message || (result.success ? '로그인 성공' : '로그인 실패')
-      };
     } catch (error) {
-      console.error('Login error in context:', error);
+      console.error('Login error:', error);
       return {
         success: false,
         message: '로그인 중 오류가 발생했습니다.'
@@ -103,60 +175,99 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Logout function
   const logout = useCallback(async () => {
-    setIsLoading(true);
+    console.log('🔒 Logging out user...');
     
     try {
-      await authService.logout();
+      // Clear session storage and cookies
+      clearTokenEverywhere();
       setUser(null);
+      
+      // Optional: notify server about logout
+      // This is not critical so we don't wait for it
+      fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: getAuthHeader(),
+      }).catch(() => {
+        // Ignore logout API errors
+      });
+      
     } catch (error) {
-      console.error('Logout error in context:', error);
+      console.error('Logout error:', error);
       // Even if logout fails, clear the user state
+      clearTokenEverywhere();
       setUser(null);
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
-  // Refresh user data
-  const refreshUser = useCallback(async () => {
+  // Refresh token function
+  const refreshToken = useCallback(async (): Promise<boolean> => {
     try {
-      const refreshedUser = await authService.refreshUser();
-      if (refreshedUser) {
-        setUser(refreshedUser);
+      const response = await fetch('/api/auth/refresh', {
+        method: 'POST',
+        headers: getAuthHeader(),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data.token && data.user) {
+          console.log('✅ Token refreshed successfully');
+          
+          // Update session data
+          setSessionData({
+            token: data.token,
+            user: data.user
+          });
+          
+          // Sync to cookies
+          syncTokenToCookies();
+          
+          setUser(data.user);
+          return true;
+        }
       }
+      
+      console.log('❌ Token refresh failed');
+      return false;
     } catch (error) {
-      console.error('Refresh user error:', error);
+      console.error('Token refresh error:', error);
+      return false;
     }
   }, []);
 
   // Role checking function
-  const hasRole = useCallback((role: 'Admin' | 'Manager' | 'User') => {
-    return authService.hasRole(role);
-  }, []);
+  const hasRole = useCallback((role: 'admin' | 'manager' | 'user') => {
+    return user?.role === role;
+  }, [user]);
 
-  // Get user permissions
-  const permissions = authService.getUserPermissions(user);
+  // Permission calculations
+  const isAdmin = checkAdminRole();
+  const isManager = checkManagerRole();
+  const canCreateRecords = checkCanCreateRecords();
+  const canDeleteRecords = checkCanDeleteRecords();
+  const canManageUsers = isAdmin;
+  const canEditRecords = isManager || isAdmin;
 
   // Auth context value
   const value: AuthContextType = {
     // State
     user,
     isLoading,
-    isAuthenticated: !!user,
+    isAuthenticated: !!user && checkAuthenticated(),
     
     // Actions
     login,
     logout,
-    refreshUser,
+    refreshToken,
     
     // Permission helpers
     hasRole,
-    canManageUsers: permissions.canManageUsers,
-    canDeleteRecords: permissions.canDeleteRecords,
-    canCreateRecords: permissions.canCreateRecords,
-    canEditRecords: permissions.canEditRecords,
-    isAdmin: permissions.isAdmin,
-    isManager: permissions.isManager,
+    canManageUsers,
+    canDeleteRecords,
+    canCreateRecords,
+    canEditRecords,
+    isAdmin,
+    isManager,
   };
 
   return (
@@ -217,7 +328,7 @@ export function withAuth<P extends object>(
 // HOC for protecting routes that require specific roles
 export function withRole<P extends object>(
   Component: React.ComponentType<P>,
-  requiredRole: 'Admin' | 'Manager',
+  requiredRole: 'admin' | 'manager',
   fallbackComponent?: React.ComponentType<P>
 ) {
   return function RoleProtectedComponent(props: P) {
@@ -262,7 +373,7 @@ export function withRole<P extends object>(
           <div className="text-center p-8 bg-white rounded-lg shadow-lg">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">접근 권한 없음</h2>
             <p className="text-gray-600 mb-4">
-              이 페이지에 접근하려면 {requiredRole === 'Admin' ? '관리자' : '매니저'} 권한이 필요합니다.
+              이 페이지에 접근하려면 {requiredRole === 'admin' ? '관리자' : '매니저'} 권한이 필요합니다.
             </p>
             <button
               onClick={() => window.history.back()}

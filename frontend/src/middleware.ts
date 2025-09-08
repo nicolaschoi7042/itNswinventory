@@ -1,50 +1,114 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { verifyToken } from '@/lib/jwt';
+import { 
+  requiresAuthentication,
+  isRoleAllowed,
+  getRedirectUrl,
+  isPublicRoute,
+  getAccessDeniedMessage,
+  getPublicRoutes,
+  getProtectedRoutes
+} from '@/lib/route-protection';
 
-// Routes that require authentication
-const protectedRoutes = [
-  '/dashboard',
-  '/employees', 
-  '/hardware',
-  '/software',
-  '/assignments',
-  '/users',
+// Get route configurations dynamically
+const protectedRoutes = getProtectedRoutes();
+const publicRoutes = getPublicRoutes();
+
+// API routes that don't need middleware processing
+const publicApiRoutes = [
+  '/api/auth/login',
+  '/api/auth/refresh',
 ];
-
-// Public routes that don't require authentication (for future use)
-// const publicRoutes = [
-//   '/login',
-//   '/api/auth/login',
-// ];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // Check for token in localStorage via request headers (set by client-side)
-  // Since middleware runs on server-side, we'll rely on client-side protection
-  // and use this middleware mainly for public/private route management
-  const token = request.cookies.get('auth-token')?.value || 
-               request.headers.get('authorization')?.replace('Bearer ', '');
-
-  // Check if the route is protected
-  const isProtectedRoute = protectedRoutes.some(route => 
-    pathname.startsWith(route)
-  );
-
-  // For protected routes, let the client-side AuthContext handle authentication
-  // This middleware mainly handles redirects for root path and login page
-  
-  // If accessing root path
-  if (pathname === '/' || pathname === '') {
-    // Always redirect to login by default - client will redirect to dashboard if authenticated
-    return NextResponse.redirect(new URL('/login', request.url));
+  // Skip processing for public API routes
+  if (publicApiRoutes.some(route => pathname.startsWith(route))) {
+    return NextResponse.next();
   }
-
-  // For API routes, don't interfere
-  if (pathname.startsWith('/api/')) {
+  
+  // Skip processing for static files and Next.js internals
+  if (pathname.startsWith('/_next') || pathname.includes('.')) {
     return NextResponse.next();
   }
 
+  // Get token from cookies (more reliable for SSR)
+  const authCookie = request.cookies.get('inventory_token');
+  const token = authCookie?.value;
+  
+  let isValidToken = false;
+  let userRole: string | undefined;
+  
+  // Verify token if it exists
+  if (token) {
+    try {
+      const payload = verifyToken(token);
+      if (payload) {
+        isValidToken = true;
+        userRole = payload.role;
+      }
+    } catch (error) {
+      console.log('Middleware: Invalid token detected');
+      isValidToken = false;
+    }
+  }
+
+  // Redirect logic for root path
+  if (pathname === '/' || pathname === '') {
+    if (isValidToken) {
+      // Authenticated user accessing root - redirect to dashboard
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    } else {
+      // Unauthenticated user accessing root - redirect to login
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+  }
+
+  // Check route protection using the configuration system
+  const needsAuth = requiresAuthentication(pathname);
+  const isPublic = isPublicRoute(pathname);
+
+  // Handle public routes (like /login)
+  if (isPublic || !needsAuth) {
+    if (isValidToken && pathname === '/login') {
+      // Authenticated user trying to access login - redirect to dashboard
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+    // Allow access to public routes
+    return NextResponse.next();
+  }
+
+  // Handle protected routes
+  if (needsAuth) {
+    // Check authentication
+    if (!isValidToken) {
+      // Unauthenticated user trying to access protected route - redirect to login
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // Check role-based access
+    if (userRole && !isRoleAllowed(pathname, userRole)) {
+      // User doesn't have required role - redirect with error message
+      const redirectUrl = getRedirectUrl(pathname, true, userRole);
+      if (redirectUrl) {
+        const redirectTo = new URL(redirectUrl, request.url);
+        redirectTo.searchParams.set('error', 'access_denied');
+        redirectTo.searchParams.set('message', encodeURIComponent(
+          getAccessDeniedMessage(pathname, userRole)
+        ));
+        return NextResponse.redirect(redirectTo);
+      }
+    }
+
+    // User has valid authentication and role - allow access
+    return NextResponse.next();
+  }
+
+  // For all other routes, allow access
   return NextResponse.next();
 }
 

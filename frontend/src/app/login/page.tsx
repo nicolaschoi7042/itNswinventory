@@ -51,7 +51,18 @@ export default function LoginPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
-      const redirectTo = searchParams?.get('redirect') || '/dashboard';
+      // Check for intended destination from sessionStorage first
+      const intendedDestination = typeof window !== 'undefined' 
+        ? sessionStorage.getItem('intended_destination') 
+        : null;
+      
+      const redirectTo = intendedDestination || searchParams?.get('redirect') || '/dashboard';
+      
+      // Clear the stored destination
+      if (intendedDestination && typeof window !== 'undefined') {
+        sessionStorage.removeItem('intended_destination');
+      }
+      
       router.push(redirectTo);
     }
   }, [isAuthenticated, authLoading, router, searchParams]);
@@ -91,7 +102,18 @@ export default function LoginPage() {
         
         // Redirect after successful login
         setTimeout(() => {
-          const redirectTo = searchParams?.get('redirect') || '/dashboard';
+          // Check for intended destination from sessionStorage first
+          const intendedDestination = typeof window !== 'undefined' 
+            ? sessionStorage.getItem('intended_destination') 
+            : null;
+          
+          const redirectTo = intendedDestination || searchParams?.get('redirect') || '/dashboard';
+          
+          // Clear the stored destination
+          if (intendedDestination && typeof window !== 'undefined') {
+            sessionStorage.removeItem('intended_destination');
+          }
+          
           router.push(redirectTo);
         }, 1000);
       } else {
@@ -145,7 +167,7 @@ export default function LoginPage() {
         padding: 2,
       }}
     >
-      <Container maxWidth="sm">
+      <Container maxWidth="xs">
         <Fade in timeout={800}>
           <Card
             elevation={3}
@@ -155,6 +177,9 @@ export default function LoginPage() {
               background: 'rgba(255, 255, 255, 0.95)',
               backdropFilter: 'blur(20px)',
               boxShadow: '0 8px 32px rgba(31, 38, 135, 0.37)',
+              maxWidth: 400,
+              width: '100%',
+              margin: '0 auto',
             }}
           >
             <CardContent sx={{ p: 4 }}>
@@ -177,22 +202,24 @@ export default function LoginPage() {
                 </Box>
                 
                 <Typography
-                  variant="h4"
+                  variant="h6"
                   component="h1"
                   gutterBottom
                   sx={{
-                    fontWeight: 300,
+                    fontWeight: 'bold',
                     color: 'text.primary',
                     mb: 1,
+                    whiteSpace: 'nowrap',
+                    fontSize: { xs: '1.1rem', sm: '1.25rem' }
                   }}
                 >
                   IT 자산 및 SW 인벤토리 관리시스템
                 </Typography>
                 
                 <Typography
-                  variant="body1"
+                  variant="body2"
                   color="text.secondary"
-                  sx={{ mb: 3 }}
+                  sx={{ mb: 3, fontSize: '0.875rem' }}
                 >
                   시스템에 로그인하여 자산 관리를 시작하세요
                 </Typography>

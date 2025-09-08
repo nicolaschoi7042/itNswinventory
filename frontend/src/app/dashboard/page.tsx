@@ -12,12 +12,11 @@ import {
   Typography,
   Box,
   Chip,
-  IconButton,
   Divider,
 } from '@mui/material';
 import {
   Laptop as LaptopIcon,
-  Software as SoftwareIcon,
+  Apps as SoftwareIcon,
   People as PeopleIcon,
   Assignment as AssignmentIcon,
   PersonAdd as PersonAddIcon,
@@ -78,7 +77,7 @@ function DashboardCard({ title, subtitle, icon, color, onClick }: DashboardCardP
 }
 
 function DashboardPage() {
-  const { user, canManageUsers, canCreateRecords, isAdmin, isManager } = useAuth();
+  const { user, canManageUsers, isAdmin, isManager } = useAuth();
 
   // Navigation handlers
   const handleNavigateToEmployees = () => {
@@ -109,14 +108,14 @@ function DashboardPage() {
           IT 자산 및 SW 인벤토리 관리시스템
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          안녕하세요, <strong>{user?.name || user?.username}</strong>님! 
+          안녕하세요, <strong>{user?.full_name || user?.username}</strong>님! 
           시스템에 오신 것을 환영합니다.
         </Typography>
         
         {/* User Role Badge */}
         <Box mt={2}>
           <Chip
-            label={`역할: ${user?.role === 'Admin' ? '관리자' : user?.role === 'Manager' ? '매니저' : '사용자'}`}
+            label={`역할: ${user?.role === 'admin' ? '관리자' : user?.role === 'manager' ? '매니저' : '사용자'}`}
             color={isAdmin ? 'error' : isManager ? 'warning' : 'default'}
             variant="outlined"
           />
@@ -222,7 +221,7 @@ function DashboardPage() {
                   사용자 역할
                 </Typography>
                 <Typography variant="body1" fontWeight="bold">
-                  {user?.role === 'Admin' ? '관리자' : user?.role === 'Manager' ? '매니저' : '사용자'}
+                  {user?.role === 'admin' ? '관리자' : user?.role === 'manager' ? '매니저' : '사용자'}
                 </Typography>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
@@ -230,7 +229,7 @@ function DashboardPage() {
                   마지막 로그인
                 </Typography>
                 <Typography variant="body1" fontWeight="bold">
-                  {user?.lastLogin ? new Date(user.lastLogin).toLocaleString('ko-KR') : '알 수 없음'}
+                  알 수 없음
                 </Typography>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
@@ -238,7 +237,7 @@ function DashboardPage() {
                   부서
                 </Typography>
                 <Typography variant="body1" fontWeight="bold">
-                  {user?.department || 'IT부'}
+                  IT부
                 </Typography>
               </Grid>
             </Grid>
