@@ -1,0 +1,73 @@
+@import 'tailwindcss';
+
+/* IT Asset & Software Inventory Management System - Tailwind + Material-UI Integration */
+:root {
+  --background: #f5f6fa;
+  --foreground: #333333;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+
+  /* Primary color scheme - matching original system */
+  --color-primary: #667eea;
+  --color-primary-dark: #4a5dc4;
+  --color-secondary: #764ba2;
+  
+  /* Semantic colors - matching original system */
+  --color-success: #28a745;
+  --color-success-light: #d4edda;
+  --color-success-text: #155724;
+  
+  --color-warning: #ffc107;
+  --color-warning-light: #fff3cd;
+  --color-warning-text: #856404;
+  
+  --color-error: #dc3545;
+  --color-error-light: #f8d7da;
+  --color-error-text: #721c24;
+  
+  --color-info: #17a2b8;
+  
+  /* Background colors */
+  --color-paper: #ffffff;
+  --color-card: #ffffff;
+  --color-hover: #f8f9ff;
+  
+  /* Text colors */
+  --color-text-primary: #333333;
+  --color-text-secondary: #666666;
+  --color-text-disabled: #999999;
+  
+  /* Border and divider colors */
+  --color-border: #ddd;
+  --color-divider: #eee;
+  
+  /* Shadow values */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 32px rgba(31, 38, 135, 0.37);
+  --shadow-button: 0 4px 15px rgba(102, 126, 234, 0.4);
+  
+  /* Gradient */
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Global styles to match original system */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+}
+
+/* Material-UI integration - ensure no conflicts */
+.MuiCssBaseline-root {
+  background-color: var(--color-background);
+}

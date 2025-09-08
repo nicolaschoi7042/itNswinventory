@@ -1,0 +1,86 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "forceConsistentCasingInFileNames": true,
+    
+    // Strict type checking options
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"],
+      
+      // Core directories
+      "@/components": ["./src/components"],
+      "@/components/*": ["./src/components/*"],
+      "@/lib": ["./src/lib"],
+      "@/lib/*": ["./src/lib/*"],
+      "@/utils": ["./src/utils"],
+      "@/utils/*": ["./src/utils/*"],
+      "@/types": ["./src/types"],
+      "@/types/*": ["./src/types/*"],
+      "@/constants": ["./src/constants"],
+      "@/constants/*": ["./src/constants/*"],
+      
+      // UI and theming
+      "@/theme": ["./src/theme"],
+      "@/theme/*": ["./src/theme/*"],
+      
+      // State management and data
+      "@/hooks": ["./src/hooks"],
+      "@/hooks/*": ["./src/hooks/*"],
+      "@/stores": ["./src/stores"],
+      "@/stores/*": ["./src/stores/*"],
+      "@/api": ["./src/api"],
+      "@/api/*": ["./src/api/*"],
+      
+      // App specific aliases
+      "@/app": ["./src/app"],
+      "@/app/*": ["./src/app/*"],
+      "@/services": ["./src/services"],
+      "@/services/*": ["./src/services/*"],
+      "@/middleware": ["./src/middleware"],
+      "@/middleware/*": ["./src/middleware/*"],
+      
+      // Specific component groups
+      "@/components/ui": ["./src/components/ui"],
+      "@/components/layout": ["./src/components/layout"],
+      "@/components/forms": ["./src/components/forms"],
+      "@/components/tables": ["./src/components/tables"],
+      "@/components/modals": ["./src/components/modals"],
+      "@/components/common": ["./src/components/common"],
+      
+      // Public assets
+      "@/public": ["./public"],
+      "@/public/*": ["./public/*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
