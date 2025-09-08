@@ -21,7 +21,7 @@ const publicApiRoutes = [
   '/api/auth/refresh',
 ];
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
   // Skip processing for public API routes
@@ -44,7 +44,7 @@ export function middleware(request: NextRequest) {
   // Verify token if it exists
   if (token) {
     try {
-      const payload = verifyToken(token);
+      const payload = await verifyToken(token);
       if (payload) {
         isValidToken = true;
         userRole = payload.role;

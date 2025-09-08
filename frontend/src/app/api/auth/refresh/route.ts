@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify current token
-    const payload = verifyToken(token);
+    const payload = await verifyToken(token);
     if (!payload) {
       return NextResponse.json(
         { error: '유효하지 않은 토큰입니다.' },
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new token with updated expiration
-    const newToken = createToken({
+    const newToken = await createToken({
       id: user.id,
       username: user.username,
       role: user.role,

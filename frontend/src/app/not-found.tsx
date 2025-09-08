@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { Box, Container, Typography, Button } from '@mui/material';
 import { Home as HomeIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';

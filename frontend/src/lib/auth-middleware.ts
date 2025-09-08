@@ -18,7 +18,7 @@ export async function authenticateToken(request: NextRequest): Promise<{ success
     return { success: false, error: '접근 토큰이 필요합니다.' };
   }
 
-  const user = verifyToken(token);
+  const user = await verifyToken(token);
   if (!user) {
     return { success: false, error: '유효하지 않은 토큰입니다.' };
   }

@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import * as jose from 'jose';
 
 export interface JWTPayload {
   id: number;
@@ -8,21 +8,35 @@ export interface JWTPayload {
 }
 
 /**
+ * Get JWT secret as Uint8Array for jose library
+ */
+function getJWTSecret(): Uint8Array {
+  const secret = process.env.JWT_SECRET || 'your-secret-key';
+  return new TextEncoder().encode(secret);
+}
+
+/**
  * Create JWT token
  */
-export function createToken(payload: JWTPayload): string {
-  const secret = process.env.JWT_SECRET || 'your-secret-key';
-  return jwt.sign(payload, secret, { expiresIn: '3h' });
+export async function createToken(payload: JWTPayload): Promise<string> {
+  const secret = getJWTSecret();
+  const jwt = await new jose.SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('3h')
+    .sign(secret);
+  
+  return jwt;
 }
 
 /**
  * Verify JWT token
  */
-export function verifyToken(token: string): JWTPayload | null {
+export async function verifyToken(token: string): Promise<JWTPayload | null> {
   try {
-    const secret = process.env.JWT_SECRET || 'your-secret-key';
-    const decoded = jwt.verify(token, secret) as JWTPayload;
-    return decoded;
+    const secret = getJWTSecret();
+    const { payload } = await jose.jwtVerify(token, secret);
+    return payload as JWTPayload;
   } catch (error) {
     console.error('JWT verification error:', error);
     return null;

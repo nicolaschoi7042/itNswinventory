@@ -31,61 +31,61 @@ export const cardHover = keyframes`
 `;
 
 /**
- * Original IT Inventory System Theme for Material-UI
- * Matches the existing vanilla JavaScript system with purple gradient headers
- * and professional blue-purple color scheme
+ * New York Business Theme for Material-UI
+ * Matches the sophisticated monochromatic color palette from styles-ny-business.css
+ * Professional enterprise design with charcoal and gray tones
  */
 export const theme = createTheme({
   palette: {
     mode: 'light',
-    // Primary color - Purple gradient primary (667eea)
+    // Primary color - Deep charcoal (#2C2C2C)
     primary: {
-      main: '#667eea',
-      light: '#8a9cf4',
-      dark: '#4a5dc4',
+      main: '#2C2C2C', // Deep charcoal from CSS
+      light: '#4A4A4A',
+      dark: '#1A1A1A',
       contrastText: '#FFFFFF',
     },
-    // Secondary color - Dark purple (764ba2)
+    // Secondary color - Medium gray (#6B7280)
     secondary: {
-      main: '#764ba2',
-      light: '#9571c2',
-      dark: '#5a3781',
+      main: '#6B7280', // Medium gray from CSS
+      light: '#9CA3AF',
+      dark: '#4B5563',
       contrastText: '#FFFFFF',
     },
-    // Background colors - matching original system
+    // Background colors - matching New York Business theme
     background: {
-      default: '#f5f6fa', // Original body background
-      paper: '#FFFFFF', // White cards/modals
+      default: '#FAFAFA', // Off-white from CSS
+      paper: '#FFFFFF', // Pure white surface from CSS
     },
-    // Text colors - matching original system
+    // Text colors - matching New York Business theme
     text: {
-      primary: '#333333', // Original dark text
-      secondary: '#666666', // Original secondary text
-      disabled: '#999999',
+      primary: '#374151', // Dark gray text from CSS
+      secondary: '#9CA3AF', // Light gray text from CSS
+      disabled: '#D1D5DB',
     },
-    // Semantic colors - matching original system
+    // Semantic colors - matching New York Business theme
     success: {
-      main: '#28a745', // Original success green
-      light: '#34ce57',
-      dark: '#218838',
+      main: '#065F46', // Dark green from CSS
+      light: '#047857',
+      dark: '#064E3B',
       contrastText: '#FFFFFF',
     },
     warning: {
-      main: '#ffc107', // Original warning yellow
-      light: '#ffcd39',
-      dark: '#e0a800',
-      contrastText: '#000000',
+      main: '#92400E', // Dark amber from CSS
+      light: '#B45309',
+      dark: '#78350F',
+      contrastText: '#FFFFFF',
     },
     error: {
-      main: '#dc3545', // Original danger red
-      light: '#e15767',
-      dark: '#c82333',
+      main: '#991B1B', // Dark red from CSS
+      light: '#B91C1C',
+      dark: '#7F1D1D',
       contrastText: '#FFFFFF',
     },
     info: {
-      main: '#17a2b8', // Original info cyan
-      light: '#45b5c6',
-      dark: '#138496',
+      main: '#1E3A8A', // Dark blue from CSS
+      light: '#1E40AF',
+      dark: '#1E3A8A',
       contrastText: '#FFFFFF',
     },
     // Divider and border colors
@@ -100,12 +100,12 @@ export const theme = createTheme({
     },
   },
   typography: {
-    // Font family matching original system
+    // Font family matching New York Business theme
     fontFamily: [
+      '"Inter"',
+      '-apple-system',
+      'BlinkMacSystemFont',
       '"Segoe UI"',
-      'Tahoma',
-      'Geneva', 
-      'Verdana',
       'sans-serif',
     ].join(','),
     fontSize: 16,
@@ -242,19 +242,19 @@ export const theme = createTheme({
 // Export theme utilities
 export * from './utils';
 
-// Extend theme with component customizations matching original system
+// New York Business Theme with component customizations
 export const newYorkBusinessTheme = createTheme(theme, {
   components: {
-    // Button component customizations - matching original buttons
+    // Button component customizations - New York Business styling
     MuiButton: {
       styleOverrides: {
         root: {
           textTransform: 'none',
           fontWeight: 500,
-          borderRadius: '5px', // Original border-radius
-          padding: '10px 20px', // Original padding
+          borderRadius: '8px', // Matching --radius-base from CSS
+          padding: '10px 20px',
           fontSize: '0.9rem',
-          transition: 'all 0.3s ease', // Original transition
+          transition: 'all 200ms ease-in-out', // Matching --transition-base
           display: 'inline-flex',
           alignItems: 'center',
           gap: '8px',
@@ -264,45 +264,49 @@ export const newYorkBusinessTheme = createTheme(theme, {
           },
         },
         containedPrimary: {
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', // Original gradient
+          backgroundColor: '#2C2C2C', // Deep charcoal from New York Business theme
           color: 'white',
           '&:hover': {
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            backgroundColor: '#1A1A1A',
             transform: 'translateY(-2px)',
-            boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)', // Original hover shadow
+            boxShadow: '0 4px 15px rgba(44, 44, 44, 0.3)', // Charcoal shadow
           },
         },
         containedSecondary: {
-          backgroundColor: '#6c757d', // Original secondary color
+          backgroundColor: '#6B7280', // Medium gray from New York Business theme
           color: 'white',
           '&:hover': {
-            backgroundColor: '#545b62',
+            backgroundColor: '#4B5563',
+            transform: 'translateY(-2px)',
           },
         },
         containedError: {
-          backgroundColor: '#dc3545', // Original danger color
+          backgroundColor: '#991B1B', // Dark red from New York Business theme
           '&:hover': {
-            backgroundColor: '#c82333',
+            backgroundColor: '#7F1D1D',
+            transform: 'translateY(-2px)',
           },
         },
         containedSuccess: {
-          backgroundColor: '#28a745', // Original success color
+          backgroundColor: '#065F46', // Dark green from New York Business theme
           '&:hover': {
-            backgroundColor: '#218838',
+            backgroundColor: '#064E3B',
+            transform: 'translateY(-2px)',
           },
         },
       },
     },
-    // Card component customizations - matching original dashboard cards
+    // Card component customizations - New York Business styling
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: '10px', // Original border-radius
+          borderRadius: '12px', // Slightly larger radius for modern look
           padding: '2rem',
-          boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)', // Original box-shadow
-          transition: 'transform 0.3s ease', // Original transition
+          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)', // --shadow-base from CSS
+          transition: 'all 300ms ease-in-out', // --transition-slow from CSS
           '&:hover': {
-            transform: 'translateY(-5px)', // Original hover effect
+            transform: 'translateY(-5px)',
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)', // --shadow-lg
           },
         },
       },
@@ -384,20 +388,20 @@ export const newYorkBusinessTheme = createTheme(theme, {
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            borderRadius: '5px', // Original border-radius
+            borderRadius: '8px', // --radius-base from CSS
             backgroundColor: 'white',
             fontSize: '0.9rem',
             '&:hover .MuiOutlinedInput-notchedOutline': {
-              borderColor: '#667eea',
+              borderColor: '#2C2C2C', // Deep charcoal primary
             },
             '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-              borderColor: '#667eea',
-              boxShadow: '0 0 0 3px rgba(102, 126, 234, 0.1)', // Original focus shadow
+              borderColor: '#2C2C2C', // Deep charcoal primary
+              boxShadow: '0 0 0 3px rgba(44, 44, 44, 0.1)', // Charcoal focus shadow
             },
           },
           '& .MuiInputLabel-root': {
             fontWeight: 600,
-            color: '#333',
+            color: '#374151', // Dark gray text from theme
             fontSize: '0.9rem',
           },
           '& .MuiOutlinedInput-input': {
@@ -410,7 +414,7 @@ export const newYorkBusinessTheme = createTheme(theme, {
     MuiSelect: {
       styleOverrides: {
         root: {
-          borderRadius: '5px',
+          borderRadius: '8px', // --radius-base from CSS
           backgroundColor: 'white',
           fontSize: '0.9rem',
           minWidth: '200px',
@@ -539,7 +543,7 @@ export const newYorkBusinessTheme = createTheme(theme, {
       styleOverrides: {
         root: {
           fontWeight: 600,
-          color: '#333',
+          color: '#374151', // Dark gray text from theme
           marginBottom: '5px',
         },
       },
@@ -548,10 +552,10 @@ export const newYorkBusinessTheme = createTheme(theme, {
       styleOverrides: {
         root: {
           fontWeight: 600,
-          color: '#333',
+          color: '#374151', // Dark gray text from theme
           fontSize: '0.9rem',
           '&.Mui-focused': {
-            color: '#667eea',
+            color: '#2C2C2C', // Deep charcoal primary
           },
         },
       },

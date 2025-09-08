@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
       console.log('✅ Test: Authentication successful for', username, 'with role:', testUser.role);
       
       // Generate JWT token
-      const token = createToken({
+      const token = await createToken({
         id: testUser.id,
         username: testUser.username,
         role: testUser.role,
@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
     await updateLastLogin(user.id);
 
     // Create JWT token
-    const token = createToken({
+    const token = await createToken({
       id: user.id,
       username: user.username,
       role: user.role,
