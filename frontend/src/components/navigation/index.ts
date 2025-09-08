@@ -31,6 +31,9 @@ export {
 } from './Breadcrumb';
 export type { BreadcrumbProps, BreadcrumbItem } from './Breadcrumb';
 
+// Export navigation layout components
+export { NavigationLayout, CompactNavigationLayout, type User } from './NavigationLayout';
+
 // Navigation layouts and configurations
 export const navigationConfig = {
   // Header configurations
@@ -157,7 +160,7 @@ export const navigationHelpers = {
   },
 
   // Get breadcrumb for route
-  getBreadcrumbForRoute: (route: string): BreadcrumbItem[] => {
+  getBreadcrumbForRoute: (route: string) => {
     const config = Object.values(routeConfig).find(r => r.path === route);
     return config?.breadcrumb || [];
   },
@@ -199,7 +202,7 @@ export const navigationHelpers = {
   },
 
   // Generate navigation items for role
-  getNavigationItemsForRole: (role: 'admin' | 'manager' | 'user'): NavigationTab[] => {
+  getNavigationItemsForRole: (role: 'admin' | 'manager' | 'user') => {
     return defaultTabs.filter(tab => 
       !tab.roles || tab.roles.length === 0 || tab.roles.includes(role)
     );
@@ -212,10 +215,10 @@ export const createNavigationContext = () => {
     // Current navigation state
     currentRoute: '/',
     currentTab: 'dashboard',
-    breadcrumb: [] as BreadcrumbItem[],
+    breadcrumb: [],
     
     // User info
-    user: null as User | null,
+    user: null,
     userRole: 'user' as 'admin' | 'manager' | 'user',
     
     // Navigation handlers
@@ -227,7 +230,7 @@ export const createNavigationContext = () => {
       console.log('Set tab:', tab);
     },
     
-    setBreadcrumb: (items: BreadcrumbItem[]) => {
+    setBreadcrumb: (items: any[]) => {
       console.log('Set breadcrumb:', items);
     },
     
@@ -249,92 +252,3 @@ export const createNavigationContext = () => {
     },
   };
 };
-
-// Layout component combining all navigation components
-import { Box, useTheme, useMediaQuery } from '@mui/material';
-import { ReactNode } from 'react';
-
-interface NavigationLayoutProps {
-  user: User;
-  stats?: HeaderStats;
-  currentTab: string;
-  currentRoute: string;
-  breadcrumb?: BreadcrumbItem[];
-  onTabChange: (tab: string) => void;
-  onLogout: () => void;
-  onUserProfile?: () => void;
-  onSettings?: () => void;
-  onBreadcrumbClick?: (item: BreadcrumbItem) => void;
-  onRefresh?: () => void;
-  showBreadcrumb?: boolean;
-  children: ReactNode;
-}
-
-export function NavigationLayout({
-  user,
-  stats,
-  currentTab,
-  currentRoute,
-  breadcrumb = [],
-  onTabChange,
-  onLogout,
-  onUserProfile,
-  onSettings,
-  onBreadcrumbClick,
-  onRefresh,
-  showBreadcrumb = true,
-  children,
-}: NavigationLayoutProps) {
-  const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
-
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      {/* Header */}
-      <Header
-        user={user}
-        stats={stats}
-        onLogout={onLogout}
-        onUserProfile={onUserProfile}
-        onSettings={onSettings}
-        onRefresh={onRefresh}
-        showStats={!isSmallScreen}
-      />
-
-      {/* Navigation Tabs */}
-      <ResponsiveNavigation
-        currentTab={currentTab}
-        userRole={user.role}
-        onChange={onTabChange}
-      />
-
-      {/* Breadcrumb */}
-      {showBreadcrumb && breadcrumb.length > 0 && (
-        <Box sx={{ px: 3, py: 1, borderBottom: 1, borderColor: 'divider' }}>
-          <Breadcrumb
-            items={breadcrumb}
-            onItemClick={onBreadcrumbClick}
-            variant={isSmallScreen ? 'compact' : 'default'}
-          />
-        </Box>
-      )}
-
-      {/* Content */}
-      <Box sx={{ flex: 1, overflow: 'auto' }}>
-        {children}
-      </Box>
-    </Box>
-  );
-}
-
-// Compact navigation layout for mobile
-export function CompactNavigationLayout(props: NavigationLayoutProps) {
-  return (
-    <NavigationLayout
-      {...props}
-      showBreadcrumb={false}
-    />
-  );
-}
-
-import { ReactNode } from 'react';

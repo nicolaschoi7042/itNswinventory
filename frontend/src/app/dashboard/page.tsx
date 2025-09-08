@@ -23,6 +23,7 @@ import {
   Settings as SettingsIcon,
 } from '@mui/icons-material';
 import { useAuth, withAuth } from '@/contexts/AuthContext';
+import { MainLayout } from '@/components/layout';
 
 // Dashboard card component
 interface DashboardCardProps {
@@ -101,7 +102,8 @@ function DashboardPage() {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <MainLayout>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header */}
       <Box mb={4}>
         <Typography variant="h4" component="h1" gutterBottom>
@@ -244,7 +246,8 @@ function DashboardPage() {
           </CardContent>
         </Card>
       </Box>
-    </Container>
+      </Container>
+    </MainLayout>
   );
 }
 
