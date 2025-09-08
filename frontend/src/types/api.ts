@@ -166,3 +166,50 @@ export interface CreateUserData {
   name: string;
   department?: string;
 }
+
+// Authentication API types
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  token: string;
+  user: {
+    id: number;
+    username: string;
+    full_name: string;
+    email: string;
+    role: 'admin' | 'manager' | 'user';
+    ldap: boolean;
+  };
+}
+
+export interface TokenRefreshResponse {
+  token: string;
+  user: {
+    id: number;
+    username: string;
+    full_name: string;
+    email: string;
+    role: 'admin' | 'manager' | 'user';
+    ldap: boolean;
+  };
+}
+
+export interface CurrentUserResponse {
+  user: {
+    id: number;
+    username: string;
+    full_name: string;
+    email: string;
+    role: 'admin' | 'manager' | 'user';
+    is_active: boolean;
+    last_login?: string;
+    ldap: boolean;
+  };
+}
+
+export interface AuthError {
+  error: string;
+}
