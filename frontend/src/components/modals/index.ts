@@ -55,6 +55,24 @@ export {
   useHardwareDetailModal,
 } from './HardwareDetailModal';
 
+export {
+  SoftwareFormModal,
+} from './SoftwareFormModal';
+
+export {
+  SoftwareDetailModal,
+} from './SoftwareDetailModal';
+
+export {
+  SoftwareAssignmentModal,
+  useSoftwareAssignmentModal,
+} from './SoftwareAssignmentModal';
+
+export {
+  SoftwareReturnModal,
+  useSoftwareReturnModal,
+} from './SoftwareReturnModal';
+
 // Re-export commonly used types
 export type { UserRole } from '../tables/TableActions';
 
