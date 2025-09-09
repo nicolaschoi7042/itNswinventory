@@ -3578,15 +3578,15 @@ fieldset::before {
     border-radius: var(--radius-xl);
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 
                 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    max-width: 90vw;
+    max-width: 560px;
     max-height: 90vh;
-    width: 100%;
+    width: 70%;
     margin: auto;
     position: fixed;
     top: 50%;
     left: 50%;
     cursor: default;
-    overflow: hidden;
+    overflow-y: auto;
     border: 1px solid rgba(107, 114, 128, 0.1);
     z-index: var(--z-modal);
     display: none;
@@ -3594,15 +3594,15 @@ fieldset::before {
 
 /* Modal size variants */
 .modal.small {
-    max-width: 400px;
+    max-width: 350px;
 }
 
 .modal.medium {
-    max-width: 600px;
+    max-width: 420px;
 }
 
 .modal.large {
-    max-width: 800px;
+    max-width: 560px;
 }
 
 .modal.extra-large {
@@ -3709,21 +3709,62 @@ fieldset::before {
     position: relative;
 }
 
-.modal-body::-webkit-scrollbar {
+/* Modal form padding for forms not wrapped in modal-body */
+.modal form {
+    padding: var(--spacing-xl);
+    max-height: calc(90vh - 100px);
+    overflow-y: auto;
+}
+
+/* Smaller form elements in modals */
+.modal input[type="text"],
+.modal input[type="password"],
+.modal input[type="email"],
+.modal input[type="number"],
+.modal input[type="date"],
+.modal input[type="time"],
+.modal input[type="datetime-local"],
+.modal input[type="url"],
+.modal input[type="search"],
+.modal input[type="tel"],
+.modal textarea,
+.modal select {
+    padding: var(--spacing-sm) var(--spacing-base);
+    min-height: 36px;
+    font-size: var(--font-size-sm);
+}
+
+/* Smaller buttons in modals */
+.modal .btn {
+    padding: var(--spacing-sm) var(--spacing-base);
+    font-size: var(--font-size-sm);
+    min-height: 36px;
+}
+
+/* Smaller form groups in modals */
+.modal .form-group {
+    margin-bottom: var(--spacing-base);
+}
+
+.modal-body::-webkit-scrollbar,
+.modal form::-webkit-scrollbar {
     width: 6px;
 }
 
-.modal-body::-webkit-scrollbar-track {
+.modal-body::-webkit-scrollbar-track,
+.modal form::-webkit-scrollbar-track {
     background: rgba(107, 114, 128, 0.05);
     border-radius: var(--radius-sm);
 }
 
-.modal-body::-webkit-scrollbar-thumb {
+.modal-body::-webkit-scrollbar-thumb,
+.modal form::-webkit-scrollbar-thumb {
     background: var(--color-secondary);
     border-radius: var(--radius-sm);
 }
 
-.modal-body::-webkit-scrollbar-thumb:hover {
+.modal-body::-webkit-scrollbar-thumb:hover,
+.modal form::-webkit-scrollbar-thumb:hover {
     background: var(--color-primary);
 }
 
