@@ -1192,10 +1192,7 @@ function showSoftwareModal(softwareId = null) {
 }
 
 async function showAssignmentModal() {
-    console.log('🔍 showAssignmentModal: Starting...');
     const modal = document.getElementById('assignmentModal');
-    console.log('🔍 showAssignmentModal: Modal element found:', !!modal);
-    
     document.getElementById('assignmentForm').reset();
     document.getElementById('assignDate').value = new Date().toISOString().split('T')[0];
 
@@ -1207,18 +1204,14 @@ async function showAssignmentModal() {
 
     // 최신 데이터를 로드한 후 드롭다운 업데이트
     try {
-        console.log('🔍 showAssignmentModal: Loading data...');
         await dataStore.loadAllData();
-        console.log('🔍 showAssignmentModal: Data loaded, updating dropdowns...');
         updateAssignmentDropdowns();
     } catch (error) {
         console.error('데이터 로드 중 오류:', error);
         updateAssignmentDropdowns(); // 실패 시에도 기존 데이터로 시도
     }
     
-    console.log('🔍 showAssignmentModal: Showing modal...');
     modal.style.display = 'block';
-    console.log('🔍 showAssignmentModal: Done.');
 }
 
 function updateAssignmentDropdowns(updateEmployee = true) {
