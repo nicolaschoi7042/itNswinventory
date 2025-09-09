@@ -3580,7 +3580,8 @@ fieldset::before {
                 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     max-width: 560px;
     max-height: 90vh;
-    width: 70%;
+    width: min(70%, 560px);
+    min-width: 320px;
     margin: auto;
     position: fixed;
     top: 50%;
@@ -3589,7 +3590,9 @@ fieldset::before {
     overflow-y: auto;
     border: 1px solid rgba(107, 114, 128, 0.1);
     z-index: var(--z-modal);
-    display: none;
+    visibility: hidden;
+    contain: layout style paint;
+    will-change: transform, opacity;
 }
 
 /* Modal size variants */
@@ -3716,7 +3719,7 @@ fieldset::before {
     overflow-y: auto;
 }
 
-/* Smaller form elements in modals */
+/* Responsive form elements in modals - Touch-friendly with progressive enhancement */
 .modal input[type="text"],
 .modal input[type="password"],
 .modal input[type="email"],
@@ -3730,8 +3733,26 @@ fieldset::before {
 .modal textarea,
 .modal select {
     padding: var(--spacing-sm) var(--spacing-base);
-    min-height: 36px;
+    min-height: 44px; /* Touch-friendly default */
     font-size: var(--font-size-sm);
+}
+
+/* Optimize for mouse/precise pointer devices */
+@media (hover: hover) and (pointer: fine) {
+    .modal input[type="text"],
+    .modal input[type="password"],
+    .modal input[type="email"],
+    .modal input[type="number"],
+    .modal input[type="date"],
+    .modal input[type="time"],
+    .modal input[type="datetime-local"],
+    .modal input[type="url"],
+    .modal input[type="search"],
+    .modal input[type="tel"],
+    .modal textarea,
+    .modal select {
+        min-height: 36px; /* Compact for precise input */
+    }
 }
 
 /* Smaller buttons in modals */
@@ -4319,15 +4340,24 @@ fieldset::before {
     scale: 0.9;
 }
 
-/* Modal Animations and Transitions */
+/* Modal Animations and Transitions - Compatible with existing display logic */
 .modal {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.95);
+    opacity: 0;
     transition: all var(--transition-normal) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* When modal is shown via display: block */
+.modal[style*="display: block"] {
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+}
+
+/* Legacy support for modal-overlay if used */
 .modal-overlay.active .modal {
-    transform: scale(1);
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
     opacity: 1;
 }
 
@@ -4852,6 +4882,16 @@ fieldset::before {
         transform: translateY(0) translateY(-120px);
         left: calc(var(--spacing-lg) + var(--spacing-base));
         right: calc(var(--spacing-lg) + var(--spacing-base));
+    }
+}
+
+/* Enhanced modal responsive design */
+@media (max-width: 768px) {
+    .modal {
+        width: 95%;
+        margin: 20px;
+        max-width: none;
+        min-width: 280px;
     }
 }
 
