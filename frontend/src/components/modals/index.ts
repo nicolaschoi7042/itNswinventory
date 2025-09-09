@@ -35,6 +35,26 @@ export {
   useToast,
 } from './AlertDialog';
 
+export {
+  EmployeeFormModal,
+  useEmployeeFormModal,
+} from './EmployeeFormModal';
+
+export {
+  EmployeeDetailModal,
+  useEmployeeDetailModal,
+} from './EmployeeDetailModal';
+
+export {
+  HardwareFormModal,
+  useHardwareFormModal,
+} from './HardwareFormModal';
+
+export {
+  HardwareDetailModal,
+  useHardwareDetailModal,
+} from './HardwareDetailModal';
+
 // Re-export commonly used types
 export type { UserRole } from '../tables/TableActions';
 

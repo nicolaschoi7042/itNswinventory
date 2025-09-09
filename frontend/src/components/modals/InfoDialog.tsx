@@ -24,7 +24,7 @@ import {
   Info as InfoIcon,
   Person as PersonIcon,
   Computer as ComputerIcon,
-  Software as SoftwareIcon,
+  Apps as SoftwareIcon,
   Assignment as AssignmentIcon,
   Edit as EditIcon,
   Print as PrintIcon,
