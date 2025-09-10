@@ -103,12 +103,7 @@ export function AlertDialog({
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth={maxWidth}
-      fullWidth
-    >
+    <Dialog open={open} onClose={onClose} maxWidth={maxWidth} fullWidth>
       <DialogTitle
         sx={{
           display: 'flex',
@@ -119,28 +114,25 @@ export function AlertDialog({
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           {showIcon && (
-            <IconComponent
-              color={config.color}
-              sx={{ fontSize: 28 }}
-            />
+            <IconComponent color={config.color} sx={{ fontSize: 28 }} />
           )}
-          <Typography variant="h6" component="h2" sx={{ fontWeight: 600 }}>
+          <Typography variant='h6' component='h2' sx={{ fontWeight: 600 }}>
             {title}
           </Typography>
         </Box>
 
         <IconButton
           onClick={onClose}
-          size="small"
+          size='small'
           sx={{ mt: -0.5, mr: -0.5 }}
-          aria-label="Close alert"
+          aria-label='Close alert'
         >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
 
       <DialogContent sx={{ pb: showProgress ? 1 : 2 }}>
-        <Typography variant="body1" sx={{ mb: details ? 2 : 0 }}>
+        <Typography variant='body1' sx={{ mb: details ? 2 : 0 }}>
           {message}
         </Typography>
 
@@ -148,20 +140,20 @@ export function AlertDialog({
           <Box sx={{ mt: 2, mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               <Box sx={{ minWidth: 35 }}>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant='body2' color='text.secondary'>
                   {Math.round(progress)}%
                 </Typography>
               </Box>
               <Box sx={{ width: '100%', mr: 1 }}>
                 <LinearProgress
-                  variant="determinate"
+                  variant='determinate'
                   value={progress}
                   color={config.color}
                 />
               </Box>
             </Box>
             {progressLabel && (
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant='body2' color='text.secondary'>
                 {progressLabel}
               </Typography>
             )}
@@ -172,18 +164,20 @@ export function AlertDialog({
           <>
             <Button
               onClick={handleToggleDetails}
-              startIcon={detailsExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-              variant="text"
-              size="small"
+              startIcon={
+                detailsExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />
+              }
+              variant='text'
+              size='small'
               sx={{ mb: 1 }}
             >
               {detailsExpanded ? 'Hide Details' : 'Show Details'}
             </Button>
-            
+
             <Collapse in={detailsExpanded}>
-              <Alert severity={severity} variant="outlined">
+              <Alert severity={severity} variant='outlined'>
                 {typeof details === 'string' ? (
-                  <Typography variant="body2">{details}</Typography>
+                  <Typography variant='body2'>{details}</Typography>
                 ) : (
                   details
                 )}
@@ -199,17 +193,17 @@ export function AlertDialog({
             {onAction && (
               <Button
                 onClick={onAction}
-                variant="outlined"
+                variant='outlined'
                 color={config.color}
               >
                 {actionLabel}
               </Button>
             )}
-            
+
             <Button
               onClick={onClose}
-              variant="contained"
-              color="primary"
+              variant='contained'
+              color='primary'
               autoFocus
             >
               Close
@@ -265,17 +259,17 @@ export function ToastNotification({
         message={
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <IconComponent />
-            <Typography variant="body2">{message}</Typography>
+            <Typography variant='body2'>{message}</Typography>
           </Box>
         }
         action={
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {action}
             <IconButton
-              size="small"
-              color="inherit"
+              size='small'
+              color='inherit'
               onClick={onClose}
-              aria-label="close"
+              aria-label='close'
             >
               <CloseIcon />
             </IconButton>
@@ -301,32 +295,35 @@ export function ErrorAlert({
   ...props
 }: ErrorAlertProps) {
   const errorMessage = error instanceof Error ? error.message : error;
-  const finalMessage = message || errorMessage || 'An unexpected error occurred.';
-  
-  const actions = showRetry && onRetry ? (
-    <>
-      <Button onClick={onRetry} variant="outlined" color="error">
-        Retry
-      </Button>
-      <Button onClick={props.onClose} variant="contained" color="primary">
-        Close
-      </Button>
-    </>
-  ) : undefined;
+  const finalMessage =
+    message || errorMessage || 'An unexpected error occurred.';
+
+  const actions =
+    showRetry && onRetry ? (
+      <>
+        <Button onClick={onRetry} variant='outlined' color='error'>
+          Retry
+        </Button>
+        <Button onClick={props.onClose} variant='contained' color='primary'>
+          Close
+        </Button>
+      </>
+    ) : undefined;
 
   return (
     <AlertDialog
       {...props}
-      title="Error"
+      title='Error'
       message={finalMessage}
-      severity="error"
+      severity='error'
       details={error instanceof Error ? error.stack : undefined}
       actions={actions}
     />
   );
 }
 
-interface SuccessAlertProps extends Omit<AlertDialogProps, 'severity' | 'title'> {
+interface SuccessAlertProps
+  extends Omit<AlertDialogProps, 'severity' | 'title'> {
   showAction?: boolean;
   actionLabel?: string;
   onAction?: () => void;
@@ -338,29 +335,31 @@ export function SuccessAlert({
   onAction,
   ...props
 }: SuccessAlertProps) {
-  const actions = showAction && onAction ? (
-    <>
-      <Button onClick={onAction} variant="contained" color="success">
-        {actionLabel}
-      </Button>
-      <Button onClick={props.onClose} variant="outlined">
-        Close
-      </Button>
-    </>
-  ) : undefined;
+  const actions =
+    showAction && onAction ? (
+      <>
+        <Button onClick={onAction} variant='contained' color='success'>
+          {actionLabel}
+        </Button>
+        <Button onClick={props.onClose} variant='outlined'>
+          Close
+        </Button>
+      </>
+    ) : undefined;
 
   return (
     <AlertDialog
       {...props}
-      title="Success"
-      severity="success"
+      title='Success'
+      severity='success'
       actions={actions}
       autoHideDuration={showAction ? null : 3000}
     />
   );
 }
 
-interface ProgressAlertProps extends Omit<AlertDialogProps, 'showProgress' | 'severity'> {
+interface ProgressAlertProps
+  extends Omit<AlertDialogProps, 'showProgress' | 'severity'> {
   progress: number;
   progressLabel?: string;
   onCancel?: () => void;
@@ -375,7 +374,7 @@ export function ProgressAlert({
   ...props
 }: ProgressAlertProps) {
   const actions = onCancel ? (
-    <Button onClick={onCancel} variant="outlined" color="inherit">
+    <Button onClick={onCancel} variant='outlined' color='inherit'>
       {cancelLabel}
     </Button>
   ) : undefined;
@@ -383,7 +382,7 @@ export function ProgressAlert({
   return (
     <AlertDialog
       {...props}
-      severity="info"
+      severity='info'
       showProgress
       progress={progress}
       progressLabel={progressLabel}
@@ -394,12 +393,16 @@ export function ProgressAlert({
 
 // Hook for managing alert dialogs
 export function useAlertDialog() {
-  const [alerts, setAlerts] = useState<Array<{
-    id: string;
-    props: AlertDialogProps;
-  }>>([]);
+  const [alerts, setAlerts] = useState<
+    Array<{
+      id: string;
+      props: AlertDialogProps;
+    }>
+  >([]);
 
-  const showAlert = (alertProps: Omit<AlertDialogProps, 'open' | 'onClose'>) => {
+  const showAlert = (
+    alertProps: Omit<AlertDialogProps, 'open' | 'onClose'>
+  ) => {
     const id = Math.random().toString(36).substr(2, 9);
     const newAlert = {
       id,
@@ -422,7 +425,10 @@ export function useAlertDialog() {
   };
 
   // Convenience methods
-  const showSuccess = (message: string, options?: Partial<SuccessAlertProps>) => {
+  const showSuccess = (
+    message: string,
+    options?: Partial<SuccessAlertProps>
+  ) => {
     return showAlert({
       title: 'Success',
       message,
@@ -432,7 +438,10 @@ export function useAlertDialog() {
     });
   };
 
-  const showError = (message: string | Error, options?: Partial<ErrorAlertProps>) => {
+  const showError = (
+    message: string | Error,
+    options?: Partial<ErrorAlertProps>
+  ) => {
     const errorMessage = message instanceof Error ? message.message : message;
     return showAlert({
       title: 'Error',
@@ -443,7 +452,10 @@ export function useAlertDialog() {
     });
   };
 
-  const showWarning = (message: string, options?: Partial<AlertDialogProps>) => {
+  const showWarning = (
+    message: string,
+    options?: Partial<AlertDialogProps>
+  ) => {
     return showAlert({
       title: 'Warning',
       message,
@@ -485,12 +497,16 @@ export function useAlertDialog() {
 
 // Hook for toast notifications
 export function useToast() {
-  const [toasts, setToasts] = useState<Array<{
-    id: string;
-    props: ToastNotificationProps;
-  }>>([]);
+  const [toasts, setToasts] = useState<
+    Array<{
+      id: string;
+      props: ToastNotificationProps;
+    }>
+  >([]);
 
-  const showToast = (toastProps: Omit<ToastNotificationProps, 'open' | 'onClose'>) => {
+  const showToast = (
+    toastProps: Omit<ToastNotificationProps, 'open' | 'onClose'>
+  ) => {
     const id = Math.random().toString(36).substr(2, 9);
     const newToast = {
       id,
@@ -513,15 +529,24 @@ export function useToast() {
   };
 
   // Convenience methods
-  const success = (message: string, options?: Partial<ToastNotificationProps>) => {
+  const success = (
+    message: string,
+    options?: Partial<ToastNotificationProps>
+  ) => {
     return showToast({ message, severity: 'success', ...options });
   };
 
-  const error = (message: string, options?: Partial<ToastNotificationProps>) => {
+  const error = (
+    message: string,
+    options?: Partial<ToastNotificationProps>
+  ) => {
     return showToast({ message, severity: 'error', ...options });
   };
 
-  const warning = (message: string, options?: Partial<ToastNotificationProps>) => {
+  const warning = (
+    message: string,
+    options?: Partial<ToastNotificationProps>
+  ) => {
     return showToast({ message, severity: 'warning', ...options });
   };
 

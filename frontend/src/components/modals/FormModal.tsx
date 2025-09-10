@@ -59,7 +59,7 @@ export function FormModal({
   additionalActions,
   formId,
   hideActions = false,
-  customActions
+  customActions,
 }: FormModalProps) {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -105,22 +105,22 @@ export function FormModal({
         }}
       >
         <Box>
-          <Typography variant="h6" component="h2" sx={{ fontWeight: 600 }}>
+          <Typography variant='h6' component='h2' sx={{ fontWeight: 600 }}>
             {title}
           </Typography>
           {subtitle && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>
               {subtitle}
             </Typography>
           )}
         </Box>
-        
+
         <IconButton
           onClick={onClose}
           disabled={loading}
-          size="small"
+          size='small'
           sx={{ mt: -0.5, mr: -0.5 }}
-          aria-label="Close modal"
+          aria-label='Close modal'
         >
           <CloseIcon />
         </IconButton>
@@ -154,7 +154,7 @@ export function FormModal({
             <CircularProgress size={40} />
           </Box>
         )}
-        
+
         {children}
       </DialogContent>
 
@@ -174,27 +174,29 @@ export function FormModal({
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               {additionalActions}
             </Box>
-            
+
             <Box sx={{ display: 'flex', gap: 1 }}>
               {customActions || (
                 <>
                   <Button
                     onClick={onClose}
                     disabled={loading}
-                    variant="outlined"
+                    variant='outlined'
                     startIcon={<CancelIcon />}
-                    color="inherit"
+                    color='inherit'
                   >
                     {cancelLabel}
                   </Button>
-                  
+
                   {onSubmit && (
                     <Button
-                      type="submit"
+                      type='submit'
                       disabled={disabled || loading}
-                      variant="contained"
-                      startIcon={loading ? <CircularProgress size={16} /> : <SaveIcon />}
-                      color="primary"
+                      variant='contained'
+                      startIcon={
+                        loading ? <CircularProgress size={16} /> : <SaveIcon />
+                      }
+                      color='primary'
                     >
                       {loading ? 'Saving...' : submitLabel}
                     </Button>
@@ -213,7 +215,13 @@ export function FormModal({
 interface ConfirmFormModalProps extends Omit<FormModalProps, 'onSubmit'> {
   onConfirm: () => void | Promise<void>;
   confirmLabel?: string;
-  confirmColor?: 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success';
+  confirmColor?:
+    | 'primary'
+    | 'secondary'
+    | 'error'
+    | 'warning'
+    | 'info'
+    | 'success';
   showCancel?: boolean;
 }
 
@@ -236,41 +244,39 @@ export function ConfirmFormModal({
         <Button
           onClick={props.onClose}
           disabled={props.loading}
-          variant="outlined"
-          color="inherit"
+          variant='outlined'
+          color='inherit'
         >
           {props.cancelLabel || 'Cancel'}
         </Button>
       )}
-      
+
       <Button
         onClick={handleConfirm}
         disabled={props.disabled || props.loading}
-        variant="contained"
+        variant='contained'
         color={confirmColor}
-        startIcon={props.loading ? <CircularProgress size={16} /> : <SaveIcon />}
+        startIcon={
+          props.loading ? <CircularProgress size={16} /> : <SaveIcon />
+        }
       >
         {props.loading ? 'Processing...' : confirmLabel}
       </Button>
     </>
   );
 
-  return (
-    <FormModal
-      {...props}
-      customActions={customActions}
-    />
-  );
+  return <FormModal {...props} customActions={customActions} />;
 }
 
 // Quick access form modal with common configurations
-interface QuickFormModalProps extends Omit<FormModalProps, 'maxWidth' | 'fullWidth'> {
+interface QuickFormModalProps
+  extends Omit<FormModalProps, 'maxWidth' | 'fullWidth'> {
   size?: 'small' | 'medium' | 'large' | 'extra-large';
 }
 
-export function QuickFormModal({ 
-  size = 'medium', 
-  ...props 
+export function QuickFormModal({
+  size = 'medium',
+  ...props
 }: QuickFormModalProps) {
   const sizeConfig = {
     small: { maxWidth: 'xs' as const, fullWidth: true },
@@ -279,12 +285,7 @@ export function QuickFormModal({
     'extra-large': { maxWidth: 'lg' as const, fullWidth: true },
   };
 
-  return (
-    <FormModal
-      {...props}
-      {...sizeConfig[size]}
-    />
-  );
+  return <FormModal {...props} {...sizeConfig[size]} />;
 }
 
 // Hook for managing form modal state

@@ -1,13 +1,13 @@
-import { 
-  Box, 
-  Typography, 
-  Paper, 
-  Stack, 
-  Switch, 
-  FormControlLabel, 
-  Button, 
-  Card, 
-  CardContent, 
+import {
+  Box,
+  Typography,
+  Paper,
+  Stack,
+  Switch,
+  FormControlLabel,
+  Button,
+  Card,
+  CardContent,
   Alert,
   Chip,
   Grid,
@@ -198,84 +198,112 @@ export function NavigationTest() {
   const [currentStats, setCurrentStats] = useState(sampleStats);
 
   // Performance measurement
-  const measureResponseTime = useCallback((operation: string, fn: () => void) => {
-    const startTime = performance.now();
-    try {
-      fn();
-      const endTime = performance.now();
-      const duration = endTime - startTime;
-      
-      setTestMetrics(prev => ({
-        ...prev,
-        responseTime: Math.round((prev.responseTime + duration) / 2 * 100) / 100,
-        userInteractions: prev.userInteractions + 1,
-      }));
-      
-      return duration;
-    } catch (error) {
-      setTestMetrics(prev => ({
-        ...prev,
-        errors: prev.errors + 1,
-      }));
-      console.error(`Error in ${operation}:`, error);
-    }
-  }, []);
+  const measureResponseTime = useCallback(
+    (operation: string, fn: () => void) => {
+      const startTime = performance.now();
+      try {
+        fn();
+        const endTime = performance.now();
+        const duration = endTime - startTime;
+
+        setTestMetrics(prev => ({
+          ...prev,
+          responseTime:
+            Math.round(((prev.responseTime + duration) / 2) * 100) / 100,
+          userInteractions: prev.userInteractions + 1,
+        }));
+
+        return duration;
+      } catch (error) {
+        setTestMetrics(prev => ({
+          ...prev,
+          errors: prev.errors + 1,
+        }));
+        console.error(`Error in ${operation}:`, error);
+      }
+    },
+    []
+  );
 
   // Event handlers
-  const handleUserRoleChange = useCallback((role: 'admin' | 'manager' | 'user') => {
-    measureResponseTime('userRoleChange', () => {
-      setCurrentUser(sampleUsers[role]);
-      // Reset tab if current tab is not available for new role
-      if (role === 'user' && (currentTab === 'employees' || currentTab === 'hardware' || currentTab === 'users')) {
-        setCurrentTab('dashboard');
-      } else if (role === 'manager' && currentTab === 'users') {
-        setCurrentTab('dashboard');
-      }
-    });
-  }, [measureResponseTime, currentTab]);
+  const handleUserRoleChange = useCallback(
+    (role: 'admin' | 'manager' | 'user') => {
+      measureResponseTime('userRoleChange', () => {
+        setCurrentUser(sampleUsers[role]);
+        // Reset tab if current tab is not available for new role
+        if (
+          role === 'user' &&
+          (currentTab === 'employees' ||
+            currentTab === 'hardware' ||
+            currentTab === 'users')
+        ) {
+          setCurrentTab('dashboard');
+        } else if (role === 'manager' && currentTab === 'users') {
+          setCurrentTab('dashboard');
+        }
+      });
+    },
+    [measureResponseTime, currentTab]
+  );
 
-  const handleTabChange = useCallback((tabId: string) => {
-    measureResponseTime('tabChange', () => {
-      setCurrentTab(tabId);
-      setTestMetrics(prev => ({
-        ...prev,
-        tabChanges: prev.tabChanges + 1,
-      }));
-    });
-  }, [measureResponseTime]);
+  const handleTabChange = useCallback(
+    (tabId: string) => {
+      measureResponseTime('tabChange', () => {
+        setCurrentTab(tabId);
+        setTestMetrics(prev => ({
+          ...prev,
+          tabChanges: prev.tabChanges + 1,
+        }));
+      });
+    },
+    [measureResponseTime]
+  );
 
-  const handleMenuAction = useCallback((action: string) => {
-    measureResponseTime('menuAction', () => {
-      console.log(`Menu action: ${action}`, { user: currentUser.username, time: new Date().toISOString() });
-      setTestMetrics(prev => ({
-        ...prev,
-        menuActions: prev.menuActions + 1,
-      }));
-    });
-  }, [measureResponseTime, currentUser.username]);
+  const handleMenuAction = useCallback(
+    (action: string) => {
+      measureResponseTime('menuAction', () => {
+        console.log(`Menu action: ${action}`, {
+          user: currentUser.username,
+          time: new Date().toISOString(),
+        });
+        setTestMetrics(prev => ({
+          ...prev,
+          menuActions: prev.menuActions + 1,
+        }));
+      });
+    },
+    [measureResponseTime, currentUser.username]
+  );
 
   const handleRefresh = useCallback(() => {
     measureResponseTime('refresh', () => {
       setNotificationCount(prev => prev + Math.floor(Math.random() * 3));
       setCurrentStats({
-        totalEmployees: sampleStats.totalEmployees + Math.floor(Math.random() * 20 - 10),
-        totalHardware: sampleStats.totalHardware + Math.floor(Math.random() * 50 - 25),
-        totalSoftware: sampleStats.totalSoftware + Math.floor(Math.random() * 10 - 5),
-        totalAssignments: sampleStats.totalAssignments + Math.floor(Math.random() * 30 - 15),
+        totalEmployees:
+          sampleStats.totalEmployees + Math.floor(Math.random() * 20 - 10),
+        totalHardware:
+          sampleStats.totalHardware + Math.floor(Math.random() * 50 - 25),
+        totalSoftware:
+          sampleStats.totalSoftware + Math.floor(Math.random() * 10 - 5),
+        totalAssignments:
+          sampleStats.totalAssignments + Math.floor(Math.random() * 30 - 15),
       });
     });
   }, [measureResponseTime]);
 
-  const handleBreadcrumbClick = useCallback((item: BreadcrumbItem) => {
-    measureResponseTime('breadcrumbClick', () => {
-      console.log('Breadcrumb clicked:', item.label);
-    });
-  }, [measureResponseTime]);
+  const handleBreadcrumbClick = useCallback(
+    (item: BreadcrumbItem) => {
+      measureResponseTime('breadcrumbClick', () => {
+        console.log('Breadcrumb clicked:', item.label);
+      });
+    },
+    [measureResponseTime]
+  );
 
   // Auto test functionality
   const runAutoTest = useCallback(async () => {
     setIsAutoTestRunning(true);
-    
+
     const testSequence = [
       () => handleUserRoleChange('admin'),
       () => handleTabChange('employees'),
@@ -293,7 +321,7 @@ export function NavigationTest() {
       await new Promise(resolve => setTimeout(resolve, 1000));
       testSequence[i]();
     }
-    
+
     setIsAutoTestRunning(false);
   }, [handleUserRoleChange, handleTabChange, handleRefresh, handleMenuAction]);
 
@@ -334,29 +362,33 @@ export function NavigationTest() {
 
   return (
     <Box>
-      <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+      <Typography variant='h5' gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
         네비게이션 인증 플로우 테스트
       </Typography>
 
       {/* Test Control Panel */}
       <Card sx={{ mb: 3 }}>
-        <CardHeader 
-          title="테스트 제어판"
+        <CardHeader
+          title='테스트 제어판'
           action={
-            <Stack direction="row" spacing={2} alignItems="center">
+            <Stack direction='row' spacing={2} alignItems='center'>
               <Button
-                variant={isAutoTestRunning ? "outlined" : "contained"}
+                variant={isAutoTestRunning ? 'outlined' : 'contained'}
                 startIcon={isAutoTestRunning ? <PauseIcon /> : <PlayIcon />}
-                onClick={isAutoTestRunning ? () => setIsAutoTestRunning(false) : runAutoTest}
-                color={isAutoTestRunning ? "warning" : "primary"}
+                onClick={
+                  isAutoTestRunning
+                    ? () => setIsAutoTestRunning(false)
+                    : runAutoTest
+                }
+                color={isAutoTestRunning ? 'warning' : 'primary'}
               >
                 {isAutoTestRunning ? '테스트 중지' : '자동 테스트 실행'}
               </Button>
               <Button
-                variant="outlined"
+                variant='outlined'
                 startIcon={<RefreshIcon />}
                 onClick={handleRefresh}
-                size="small"
+                size='small'
               >
                 새로고침
               </Button>
@@ -366,68 +398,116 @@ export function NavigationTest() {
         <CardContent>
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
-              <Typography variant="body2" sx={{ mb: 2 }}>사용자 역할:</Typography>
-              <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-                {(['admin', 'manager', 'user'] as const).map((role) => (
+              <Typography variant='body2' sx={{ mb: 2 }}>
+                사용자 역할:
+              </Typography>
+              <Stack direction='row' spacing={1} sx={{ mb: 2 }}>
+                {(['admin', 'manager', 'user'] as const).map(role => (
                   <Button
                     key={role}
-                    variant={currentUser.role === role ? 'contained' : 'outlined'}
+                    variant={
+                      currentUser.role === role ? 'contained' : 'outlined'
+                    }
                     onClick={() => handleUserRoleChange(role)}
-                    size="small"
+                    size='small'
                     disabled={isAutoTestRunning}
                   >
-                    {role === 'admin' ? '관리자' : role === 'manager' ? '매니저' : '사용자'}
+                    {role === 'admin'
+                      ? '관리자'
+                      : role === 'manager'
+                        ? '매니저'
+                        : '사용자'}
                   </Button>
                 ))}
               </Stack>
 
-              <Typography variant="body2" sx={{ mb: 1 }}>표시 옵션:</Typography>
-              <Stack direction="row" spacing={2} flexWrap="wrap">
+              <Typography variant='body2' sx={{ mb: 1 }}>
+                표시 옵션:
+              </Typography>
+              <Stack direction='row' spacing={2} flexWrap='wrap'>
                 <FormControlLabel
-                  control={<Switch checked={showStats} onChange={(e) => setShowStats(e.target.checked)} />}
-                  label="통계"
+                  control={
+                    <Switch
+                      checked={showStats}
+                      onChange={e => setShowStats(e.target.checked)}
+                    />
+                  }
+                  label='통계'
                 />
                 <FormControlLabel
-                  control={<Switch checked={showBreadcrumb} onChange={(e) => setShowBreadcrumb(e.target.checked)} />}
-                  label="브레드크럼"
+                  control={
+                    <Switch
+                      checked={showBreadcrumb}
+                      onChange={e => setShowBreadcrumb(e.target.checked)}
+                    />
+                  }
+                  label='브레드크럼'
                 />
                 <FormControlLabel
-                  control={<Switch checked={showUserAvatar} onChange={(e) => setShowUserAvatar(e.target.checked)} />}
-                  label="아바타"
+                  control={
+                    <Switch
+                      checked={showUserAvatar}
+                      onChange={e => setShowUserAvatar(e.target.checked)}
+                    />
+                  }
+                  label='아바타'
                 />
               </Stack>
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <Typography variant="body2" sx={{ mb: 1 }}>테스트 메트릭:</Typography>
+              <Typography variant='body2' sx={{ mb: 1 }}>
+                테스트 메트릭:
+              </Typography>
               <Grid container spacing={2}>
                 <Grid item xs={6}>
-                  <Typography variant="caption" color="text.secondary">총 상호작용</Typography>
-                  <Typography variant="h6">{testMetrics.userInteractions}</Typography>
+                  <Typography variant='caption' color='text.secondary'>
+                    총 상호작용
+                  </Typography>
+                  <Typography variant='h6'>
+                    {testMetrics.userInteractions}
+                  </Typography>
                 </Grid>
                 <Grid item xs={6}>
-                  <Typography variant="caption" color="text.secondary">탭 변경</Typography>
-                  <Typography variant="h6">{testMetrics.tabChanges}</Typography>
+                  <Typography variant='caption' color='text.secondary'>
+                    탭 변경
+                  </Typography>
+                  <Typography variant='h6'>{testMetrics.tabChanges}</Typography>
                 </Grid>
                 <Grid item xs={6}>
-                  <Typography variant="caption" color="text.secondary">메뉴 액션</Typography>
-                  <Typography variant="h6">{testMetrics.menuActions}</Typography>
+                  <Typography variant='caption' color='text.secondary'>
+                    메뉴 액션
+                  </Typography>
+                  <Typography variant='h6'>
+                    {testMetrics.menuActions}
+                  </Typography>
                 </Grid>
                 <Grid item xs={6}>
-                  <Typography variant="caption" color="text.secondary">평균 응답시간</Typography>
-                  <Typography variant="h6" color={testMetrics.responseTime > 50 ? 'error' : 'success'}>
+                  <Typography variant='caption' color='text.secondary'>
+                    평균 응답시간
+                  </Typography>
+                  <Typography
+                    variant='h6'
+                    color={testMetrics.responseTime > 50 ? 'error' : 'success'}
+                  >
                     {testMetrics.responseTime}ms
                   </Typography>
                 </Grid>
               </Grid>
-              <Button size="small" onClick={resetMetrics} sx={{ mt: 1 }}>메트릭 초기화</Button>
+              <Button size='small' onClick={resetMetrics} sx={{ mt: 1 }}>
+                메트릭 초기화
+              </Button>
             </Grid>
           </Grid>
 
           {isAutoTestRunning && (
             <Box sx={{ mt: 2 }}>
               <LinearProgress />
-              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+              <Typography
+                variant='caption'
+                color='text.secondary'
+                sx={{ mt: 1, display: 'block' }}
+              >
                 자동 테스트 실행 중... 역할 기반 접근 제어와 네비게이션 테스트
               </Typography>
             </Box>
@@ -464,12 +544,16 @@ export function NavigationTest() {
             showBadges
             showTooltips
           />
-          
-          <Alert severity="info" sx={{ mt: 2 }}>
-            <Typography variant="body2">
-              <strong>현재 사용자:</strong> {currentUser.fullName} ({currentUser.role})<br/>
-              <strong>접근 가능한 탭:</strong> {availableTabs.length}개 / {navigationTabs.length}개<br/>
-              <strong>현재 탭:</strong> {availableTabs.find(tab => tab.id === currentTab)?.label || '접근 불가'}
+
+          <Alert severity='info' sx={{ mt: 2 }}>
+            <Typography variant='body2'>
+              <strong>현재 사용자:</strong> {currentUser.fullName} (
+              {currentUser.role})<br />
+              <strong>접근 가능한 탭:</strong> {availableTabs.length}개 /{' '}
+              {navigationTabs.length}개<br />
+              <strong>현재 탭:</strong>{' '}
+              {availableTabs.find(tab => tab.id === currentTab)?.label ||
+                '접근 불가'}
             </Typography>
           </Alert>
         </CardContent>
@@ -479,7 +563,7 @@ export function NavigationTest() {
       <Grid container spacing={3} sx={{ mb: 3 }}>
         <Grid item xs={12} md={6}>
           <Card>
-            <CardHeader title="사용자 메뉴" />
+            <CardHeader title='사용자 메뉴' />
             <CardContent>
               <UserMenu
                 user={currentUser}
@@ -498,32 +582,52 @@ export function NavigationTest() {
 
         <Grid item xs={12} md={6}>
           <Card>
-            <CardHeader title="사용자 정보" />
+            <CardHeader title='사용자 정보' />
             <CardContent>
               <Stack spacing={2}>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">이름</Typography>
-                  <Typography variant="body1">{currentUser.fullName}</Typography>
+                  <Typography variant='body2' color='text.secondary'>
+                    이름
+                  </Typography>
+                  <Typography variant='body1'>
+                    {currentUser.fullName}
+                  </Typography>
                 </Box>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">이메일</Typography>
-                  <Typography variant="body1">{currentUser.email}</Typography>
+                  <Typography variant='body2' color='text.secondary'>
+                    이메일
+                  </Typography>
+                  <Typography variant='body1'>{currentUser.email}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">부서</Typography>
-                  <Typography variant="body1">{currentUser.department}</Typography>
+                  <Typography variant='body2' color='text.secondary'>
+                    부서
+                  </Typography>
+                  <Typography variant='body1'>
+                    {currentUser.department}
+                  </Typography>
                 </Box>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">역할</Typography>
-                  <Chip 
-                    label={currentUser.role} 
-                    color={currentUser.role === 'admin' ? 'error' : currentUser.role === 'manager' ? 'warning' : 'default'}
-                    size="small"
+                  <Typography variant='body2' color='text.secondary'>
+                    역할
+                  </Typography>
+                  <Chip
+                    label={currentUser.role}
+                    color={
+                      currentUser.role === 'admin'
+                        ? 'error'
+                        : currentUser.role === 'manager'
+                          ? 'warning'
+                          : 'default'
+                    }
+                    size='small'
                   />
                 </Box>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">마지막 로그인</Typography>
-                  <Typography variant="caption">
+                  <Typography variant='body2' color='text.secondary'>
+                    마지막 로그인
+                  </Typography>
+                  <Typography variant='caption'>
                     {new Date(currentUser.lastLogin).toLocaleString('ko-KR')}
                   </Typography>
                 </Box>
@@ -536,13 +640,15 @@ export function NavigationTest() {
       {/* Breadcrumb Component */}
       {showBreadcrumb && (
         <Card sx={{ mb: 3 }}>
-          <CardHeader title="브레드크럼 네비게이션" />
+          <CardHeader title='브레드크럼 네비게이션' />
           <CardContent>
             <Breadcrumb
               items={sampleBreadcrumbs}
               onItemClick={handleBreadcrumbClick}
               showBack
-              onBackClick={() => handleBreadcrumbClick({ id: 'back', label: '뒤로가기' })}
+              onBackClick={() =>
+                handleBreadcrumbClick({ id: 'back', label: '뒤로가기' })
+              }
             />
           </CardContent>
         </Card>
@@ -550,19 +656,19 @@ export function NavigationTest() {
 
       {/* Performance & Interaction Monitoring */}
       <Card>
-        <CardHeader 
-          title="성능 및 상호작용 모니터링"
-          action={<SpeedIcon color="primary" />}
+        <CardHeader
+          title='성능 및 상호작용 모니터링'
+          action={<SpeedIcon color='primary' />}
         />
         <CardContent>
           <Grid container spacing={3}>
             <Grid item xs={12} md={4}>
-              <Card variant="outlined">
+              <Card variant='outlined'>
                 <CardContent sx={{ textAlign: 'center' }}>
-                  <Typography variant="h4" color="primary">
+                  <Typography variant='h4' color='primary'>
                     {testMetrics.userInteractions}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant='body2' color='text.secondary'>
                     총 사용자 상호작용
                   </Typography>
                 </CardContent>
@@ -570,12 +676,15 @@ export function NavigationTest() {
             </Grid>
 
             <Grid item xs={12} md={4}>
-              <Card variant="outlined">
+              <Card variant='outlined'>
                 <CardContent sx={{ textAlign: 'center' }}>
-                  <Typography variant="h4" color={testMetrics.responseTime > 50 ? 'error' : 'success'}>
+                  <Typography
+                    variant='h4'
+                    color={testMetrics.responseTime > 50 ? 'error' : 'success'}
+                  >
                     {testMetrics.responseTime}ms
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant='body2' color='text.secondary'>
                     평균 응답 시간
                   </Typography>
                 </CardContent>
@@ -583,12 +692,15 @@ export function NavigationTest() {
             </Grid>
 
             <Grid item xs={12} md={4}>
-              <Card variant="outlined">
+              <Card variant='outlined'>
                 <CardContent sx={{ textAlign: 'center' }}>
-                  <Typography variant="h4" color={testMetrics.errors > 0 ? 'error' : 'success'}>
+                  <Typography
+                    variant='h4'
+                    color={testMetrics.errors > 0 ? 'error' : 'success'}
+                  >
                     {testMetrics.errors}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant='body2' color='text.secondary'>
                     오류 발생 횟수
                   </Typography>
                 </CardContent>
@@ -597,35 +709,47 @@ export function NavigationTest() {
           </Grid>
 
           <Box sx={{ mt: 3 }}>
-            <Alert 
+            <Alert
               severity={
-                testMetrics.errors > 0 ? 'error' :
-                testMetrics.responseTime > 50 ? 'warning' :
-                testMetrics.userInteractions > 0 ? 'success' : 'info'
+                testMetrics.errors > 0
+                  ? 'error'
+                  : testMetrics.responseTime > 50
+                    ? 'warning'
+                    : testMetrics.userInteractions > 0
+                      ? 'success'
+                      : 'info'
               }
               icon={testMetrics.errors > 0 ? <ErrorIcon /> : <CheckIcon />}
             >
-              <Typography variant="body2">
-                {testMetrics.errors > 0 ? 
-                  `${testMetrics.errors}개의 오류가 발생했습니다. 네비게이션 컴포넌트를 확인해주세요.` :
-                 testMetrics.responseTime > 50 ? 
-                  '응답 시간이 평균보다 높습니다. 성능 최적화를 고려해보세요.' :
-                 testMetrics.userInteractions > 0 ?
-                  `네비게이션이 정상적으로 작동 중입니다. ${testMetrics.userInteractions}번의 상호작용이 기록되었습니다.` :
-                  '네비게이션 테스트를 시작하세요. 위의 역할 변경 버튼이나 탭을 클릭해보세요.'}
+              <Typography variant='body2'>
+                {testMetrics.errors > 0
+                  ? `${testMetrics.errors}개의 오류가 발생했습니다. 네비게이션 컴포넌트를 확인해주세요.`
+                  : testMetrics.responseTime > 50
+                    ? '응답 시간이 평균보다 높습니다. 성능 최적화를 고려해보세요.'
+                    : testMetrics.userInteractions > 0
+                      ? `네비게이션이 정상적으로 작동 중입니다. ${testMetrics.userInteractions}번의 상호작용이 기록되었습니다.`
+                      : '네비게이션 테스트를 시작하세요. 위의 역할 변경 버튼이나 탭을 클릭해보세요.'}
               </Typography>
             </Alert>
           </Box>
 
           <Box sx={{ mt: 2 }}>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant='body2' color='text.secondary'>
               <strong>테스트 가이드:</strong>
             </Typography>
-            <Typography variant="caption" color="text.secondary" component="div">
-              • <strong>역할 기반 접근:</strong> 각 역할별로 접근 가능한 탭이 다름<br/>
-              • <strong>실시간 업데이트:</strong> 통계 정보가 실시간으로 변경됨<br/>
-              • <strong>상호작용 추적:</strong> 모든 클릭과 액션이 메트릭에 기록됨<br/>
-              • <strong>자동 테스트:</strong> 모든 기능을 자동으로 테스트하여 성능 측정
+            <Typography
+              variant='caption'
+              color='text.secondary'
+              component='div'
+            >
+              • <strong>역할 기반 접근:</strong> 각 역할별로 접근 가능한 탭이
+              다름
+              <br />• <strong>실시간 업데이트:</strong> 통계 정보가 실시간으로
+              변경됨
+              <br />• <strong>상호작용 추적:</strong> 모든 클릭과 액션이
+              메트릭에 기록됨
+              <br />• <strong>자동 테스트:</strong> 모든 기능을 자동으로
+              테스트하여 성능 측정
             </Typography>
           </Box>
         </CardContent>

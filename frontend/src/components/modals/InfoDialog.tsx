@@ -77,7 +77,7 @@ export function InfoDialog({
       onClose={onClose}
       maxWidth={maxWidth}
       fullWidth={fullWidth}
-      scroll="paper"
+      scroll='paper'
     >
       {/* Dialog Header */}
       <DialogTitle
@@ -91,27 +91,29 @@ export function InfoDialog({
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           {icon && (
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              {icon}
-            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>{icon}</Box>
           )}
           <Box>
-            <Typography variant="h5" component="h2" sx={{ fontWeight: 600 }}>
+            <Typography variant='h5' component='h2' sx={{ fontWeight: 600 }}>
               {title}
             </Typography>
             {subtitle && (
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              <Typography
+                variant='body2'
+                color='text.secondary'
+                sx={{ mt: 0.5 }}
+              >
                 {subtitle}
               </Typography>
             )}
           </Box>
         </Box>
-        
+
         <IconButton
           onClick={onClose}
-          size="small"
+          size='small'
           sx={{ mt: -0.5, mr: -0.5 }}
-          aria-label="Close dialog"
+          aria-label='Close dialog'
         >
           <CloseIcon />
         </IconButton>
@@ -120,9 +122,7 @@ export function InfoDialog({
       {showDivider && <Divider />}
 
       {/* Dialog Content */}
-      <DialogContent sx={{ py: 3 }}>
-        {children}
-      </DialogContent>
+      <DialogContent sx={{ py: 3 }}>{children}</DialogContent>
 
       {/* Dialog Actions */}
       {(actions || onEdit || onPrint || onShare) && (
@@ -133,9 +133,9 @@ export function InfoDialog({
               {onEdit && (
                 <Button
                   onClick={onEdit}
-                  variant="outlined"
+                  variant='outlined'
                   startIcon={<EditIcon />}
-                  color="primary"
+                  color='primary'
                 >
                   {editLabel}
                 </Button>
@@ -143,9 +143,9 @@ export function InfoDialog({
               {onPrint && (
                 <Button
                   onClick={onPrint}
-                  variant="outlined"
+                  variant='outlined'
                   startIcon={<PrintIcon />}
-                  color="inherit"
+                  color='inherit'
                 >
                   {printLabel}
                 </Button>
@@ -153,21 +153,17 @@ export function InfoDialog({
               {onShare && (
                 <Button
                   onClick={onShare}
-                  variant="outlined"
+                  variant='outlined'
                   startIcon={<ShareIcon />}
-                  color="inherit"
+                  color='inherit'
                 >
                   {shareLabel}
                 </Button>
               )}
               {actions}
             </Box>
-            
-            <Button
-              onClick={onClose}
-              variant="contained"
-              color="primary"
-            >
+
+            <Button onClick={onClose} variant='contained' color='primary'>
               {closeLabel}
             </Button>
           </DialogActions>
@@ -188,33 +184,27 @@ interface InfoFieldProps {
   md?: number;
 }
 
-export function InfoField({ 
-  label, 
-  value, 
+export function InfoField({
+  label,
+  value,
   variant = 'default',
   color = 'primary',
   xs = 12,
   sm = 6,
-  md = 4
+  md = 4,
 }: InfoFieldProps) {
   const renderValue = () => {
     if (variant === 'chip' && typeof value === 'string') {
-      return (
-        <Chip 
-          label={value} 
-          color={color}
-          size="small"
-        />
-      );
+      return <Chip label={value} color={color} size='small' />;
     }
-    
+
     if (variant === 'list' && Array.isArray(value)) {
       return (
         <List dense sx={{ py: 0 }}>
           {value.map((item, index) => (
             <ListItem key={index} sx={{ px: 0, py: 0.5 }}>
-              <ListItemText 
-                primary={item} 
+              <ListItemText
+                primary={item}
                 primaryTypographyProps={{ variant: 'body2' }}
               />
             </ListItem>
@@ -222,9 +212,9 @@ export function InfoField({
         </List>
       );
     }
-    
+
     return (
-      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+      <Typography variant='body1' sx={{ fontWeight: 500 }}>
         {value || '—'}
       </Typography>
     );
@@ -233,9 +223,9 @@ export function InfoField({
   return (
     <Grid item xs={xs} sm={sm} md={md}>
       <Box sx={{ mb: 2 }}>
-        <Typography 
-          variant="body2" 
-          color="text.secondary" 
+        <Typography
+          variant='body2'
+          color='text.secondary'
           sx={{ mb: 0.5, fontWeight: 600 }}
         >
           {label}
@@ -255,12 +245,12 @@ interface InfoSectionProps {
   defaultExpanded?: boolean;
 }
 
-export function InfoSection({ 
-  title, 
-  children, 
+export function InfoSection({
+  title,
+  children,
   icon,
   collapsible = false,
-  defaultExpanded = true 
+  defaultExpanded = true,
 }: InfoSectionProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
 
@@ -273,12 +263,12 @@ export function InfoSection({
   return (
     <Card sx={{ mb: 2 }}>
       <CardContent sx={{ pb: '16px !important' }}>
-        <Box 
-          sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
             mb: 2,
-            cursor: collapsible ? 'pointer' : 'default'
+            cursor: collapsible ? 'pointer' : 'default',
           }}
           onClick={handleToggle}
         >
@@ -287,16 +277,14 @@ export function InfoSection({
               {icon}
             </Box>
           )}
-          <Typography variant="h6" sx={{ fontWeight: 600, flex: 1 }}>
+          <Typography variant='h6' sx={{ fontWeight: 600, flex: 1 }}>
             {title}
           </Typography>
           {collapsible && (
-            <IconButton size="small">
-              {expanded ? '−' : '+'}
-            </IconButton>
+            <IconButton size='small'>{expanded ? '−' : '+'}</IconButton>
           )}
         </Box>
-        
+
         {expanded && (
           <Grid container spacing={2}>
             {children}
@@ -308,7 +296,8 @@ export function InfoSection({
 }
 
 // Specialized info dialogs for different entity types
-interface EmployeeInfoDialogProps extends Omit<InfoDialogProps, 'title' | 'icon' | 'children'> {
+interface EmployeeInfoDialogProps
+  extends Omit<InfoDialogProps, 'title' | 'icon' | 'children'> {
   employee: {
     id: string;
     name: string;
@@ -322,46 +311,50 @@ interface EmployeeInfoDialogProps extends Omit<InfoDialogProps, 'title' | 'icon'
   };
 }
 
-export function EmployeeInfoDialog({ employee, ...props }: EmployeeInfoDialogProps) {
+export function EmployeeInfoDialog({
+  employee,
+  ...props
+}: EmployeeInfoDialogProps) {
   return (
     <InfoDialog
       {...props}
       title={employee.name}
       subtitle={`Employee ID: ${employee.id}`}
-      icon={<PersonIcon color="primary" sx={{ fontSize: 32 }} />}
+      icon={<PersonIcon color='primary' sx={{ fontSize: 32 }} />}
     >
-      <InfoSection title="Basic Information" icon={<PersonIcon />}>
-        <InfoField label="Employee ID" value={employee.id} />
-        <InfoField label="Name" value={employee.name} />
-        <InfoField label="Department" value={employee.department} />
-        <InfoField label="Position" value={employee.position} />
-        <InfoField 
-          label="Status" 
+      <InfoSection title='Basic Information' icon={<PersonIcon />}>
+        <InfoField label='Employee ID' value={employee.id} />
+        <InfoField label='Name' value={employee.name} />
+        <InfoField label='Department' value={employee.department} />
+        <InfoField label='Position' value={employee.position} />
+        <InfoField
+          label='Status'
           value={employee.status}
-          variant="chip"
+          variant='chip'
           color={employee.status === 'Active' ? 'success' : 'default'}
         />
-        <InfoField label="Hire Date" value={employee.hireDate} />
+        <InfoField label='Hire Date' value={employee.hireDate} />
       </InfoSection>
-      
-      <InfoSection title="Contact Information" icon={<InfoIcon />}>
-        <InfoField label="Email" value={employee.email} />
-        <InfoField label="Phone" value={employee.phone} />
+
+      <InfoSection title='Contact Information' icon={<InfoIcon />}>
+        <InfoField label='Email' value={employee.email} />
+        <InfoField label='Phone' value={employee.phone} />
       </InfoSection>
-      
-      <InfoSection title="Asset Information" icon={<AssignmentIcon />}>
-        <InfoField 
-          label="Assigned Assets" 
+
+      <InfoSection title='Asset Information' icon={<AssignmentIcon />}>
+        <InfoField
+          label='Assigned Assets'
           value={`${employee.assignedAssets || 0} items`}
-          variant="chip"
-          color="info"
+          variant='chip'
+          color='info'
         />
       </InfoSection>
     </InfoDialog>
   );
 }
 
-interface HardwareInfoDialogProps extends Omit<InfoDialogProps, 'title' | 'icon' | 'children'> {
+interface HardwareInfoDialogProps
+  extends Omit<InfoDialogProps, 'title' | 'icon' | 'children'> {
   hardware: {
     id: string;
     name: string;
@@ -376,42 +369,46 @@ interface HardwareInfoDialogProps extends Omit<InfoDialogProps, 'title' | 'icon'
   };
 }
 
-export function HardwareInfoDialog({ hardware, ...props }: HardwareInfoDialogProps) {
+export function HardwareInfoDialog({
+  hardware,
+  ...props
+}: HardwareInfoDialogProps) {
   return (
     <InfoDialog
       {...props}
       title={hardware.name}
       subtitle={`Asset ID: ${hardware.id}`}
-      icon={<ComputerIcon color="primary" sx={{ fontSize: 32 }} />}
+      icon={<ComputerIcon color='primary' sx={{ fontSize: 32 }} />}
     >
-      <InfoSection title="Hardware Details" icon={<ComputerIcon />}>
-        <InfoField label="Asset ID" value={hardware.id} />
-        <InfoField label="Name" value={hardware.name} />
-        <InfoField label="Type" value={hardware.type} />
-        <InfoField label="Manufacturer" value={hardware.manufacturer} />
-        <InfoField label="Model" value={hardware.model} />
-        <InfoField label="Serial Number" value={hardware.serial} />
+      <InfoSection title='Hardware Details' icon={<ComputerIcon />}>
+        <InfoField label='Asset ID' value={hardware.id} />
+        <InfoField label='Name' value={hardware.name} />
+        <InfoField label='Type' value={hardware.type} />
+        <InfoField label='Manufacturer' value={hardware.manufacturer} />
+        <InfoField label='Model' value={hardware.model} />
+        <InfoField label='Serial Number' value={hardware.serial} />
       </InfoSection>
-      
-      <InfoSection title="Assignment & Status" icon={<AssignmentIcon />}>
-        <InfoField 
-          label="Status" 
+
+      <InfoSection title='Assignment & Status' icon={<AssignmentIcon />}>
+        <InfoField
+          label='Status'
           value={hardware.status}
-          variant="chip"
+          variant='chip'
           color={hardware.status === 'Assigned' ? 'primary' : 'success'}
         />
-        <InfoField label="Assigned To" value={hardware.assignedTo} />
+        <InfoField label='Assigned To' value={hardware.assignedTo} />
       </InfoSection>
-      
-      <InfoSection title="Purchase Information" icon={<InfoIcon />}>
-        <InfoField label="Purchase Date" value={hardware.purchaseDate} />
-        <InfoField label="Warranty Expiry" value={hardware.warrantyExpiry} />
+
+      <InfoSection title='Purchase Information' icon={<InfoIcon />}>
+        <InfoField label='Purchase Date' value={hardware.purchaseDate} />
+        <InfoField label='Warranty Expiry' value={hardware.warrantyExpiry} />
       </InfoSection>
     </InfoDialog>
   );
 }
 
-interface SoftwareInfoDialogProps extends Omit<InfoDialogProps, 'title' | 'icon' | 'children'> {
+interface SoftwareInfoDialogProps
+  extends Omit<InfoDialogProps, 'title' | 'icon' | 'children'> {
   software: {
     id: string;
     name: string;
@@ -425,30 +422,33 @@ interface SoftwareInfoDialogProps extends Omit<InfoDialogProps, 'title' | 'icon'
   };
 }
 
-export function SoftwareInfoDialog({ software, ...props }: SoftwareInfoDialogProps) {
+export function SoftwareInfoDialog({
+  software,
+  ...props
+}: SoftwareInfoDialogProps) {
   return (
     <InfoDialog
       {...props}
       title={software.name}
       subtitle={`Software ID: ${software.id}`}
-      icon={<SoftwareIcon color="primary" sx={{ fontSize: 32 }} />}
+      icon={<SoftwareIcon color='primary' sx={{ fontSize: 32 }} />}
     >
-      <InfoSection title="Software Details" icon={<SoftwareIcon />}>
-        <InfoField label="Software ID" value={software.id} />
-        <InfoField label="Name" value={software.name} />
-        <InfoField label="Manufacturer" value={software.manufacturer} />
-        <InfoField label="Version" value={software.version} />
-        <InfoField label="Type" value={software.type} />
-        <InfoField label="License Type" value={software.licenseType} />
+      <InfoSection title='Software Details' icon={<SoftwareIcon />}>
+        <InfoField label='Software ID' value={software.id} />
+        <InfoField label='Name' value={software.name} />
+        <InfoField label='Manufacturer' value={software.manufacturer} />
+        <InfoField label='Version' value={software.version} />
+        <InfoField label='Type' value={software.type} />
+        <InfoField label='License Type' value={software.licenseType} />
       </InfoSection>
-      
-      <InfoSection title="License Information" icon={<AssignmentIcon />}>
-        <InfoField label="Total Licenses" value={software.totalLicenses} />
-        <InfoField label="Used Licenses" value={software.usedLicenses} />
-        <InfoField 
-          label="Available Licenses" 
+
+      <InfoSection title='License Information' icon={<AssignmentIcon />}>
+        <InfoField label='Total Licenses' value={software.totalLicenses} />
+        <InfoField label='Used Licenses' value={software.usedLicenses} />
+        <InfoField
+          label='Available Licenses'
           value={software.availableLicenses}
-          variant="chip"
+          variant='chip'
           color={software.availableLicenses > 0 ? 'success' : 'error'}
         />
       </InfoSection>

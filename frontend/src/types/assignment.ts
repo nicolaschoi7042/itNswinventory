@@ -1,18 +1,18 @@
 /**
  * Assignment Management Types
- * 
+ *
  * This file contains all TypeScript interfaces and types for the asset assignment system.
  * It handles both hardware and software assignment workflows with comprehensive validation.
  */
 
 // Assignment status types
-export type AssignmentStatus = 
-  | '사용중'      // Currently assigned and in use
-  | '반납완료'    // Returned and completed
-  | '대기중'      // Waiting for assignment
-  | '연체'        // Overdue return
-  | '분실'        // Lost or missing
-  | '손상';       // Damaged
+export type AssignmentStatus =
+  | '사용중' // Currently assigned and in use
+  | '반납완료' // Returned and completed
+  | '대기중' // Waiting for assignment
+  | '연체' // Overdue return
+  | '분실' // Lost or missing
+  | '손상'; // Damaged
 
 // Asset types that can be assigned
 export type AssetType = 'hardware' | 'software';
@@ -128,56 +128,41 @@ export interface AssignmentHistory {
   notes?: string;
 }
 
-// Validation rules for assignments
-export const ASSIGNMENT_VALIDATION_RULES = {
-  notes: {
-    maxLength: 500
-  },
-  return_notes: {
-    maxLength: 500
-  },
-  assigned_date: {
-    required: true,
-    maxDate: new Date() // Cannot assign in the future
-  },
-  return_date: {
-    required: false,
-    maxDate: new Date() // Cannot return in the future
-  }
-} as const;
+// Validation rules are now defined in @/constants/assignment.ts
+// Import ASSIGNMENT_VALIDATION_RULES from there to avoid duplication
 
 // Assignment status permissions and actions
 export const ASSIGNMENT_STATUS_PERMISSIONS = {
-  '사용중': {
+  사용중: {
     allowReturn: true,
     allowEdit: true,
-    allowDelete: false
+    allowDelete: false,
   },
-  '반납완료': {
+  반납완료: {
     allowReturn: false,
     allowEdit: false,
-    allowDelete: true
+    allowDelete: true,
   },
-  '대기중': {
+  대기중: {
     allowReturn: false,
     allowEdit: true,
-    allowDelete: true
+    allowDelete: true,
   },
-  '연체': {
+  연체: {
     allowReturn: true,
     allowEdit: true,
-    allowDelete: false
+    allowDelete: false,
   },
-  '분실': {
+  분실: {
     allowReturn: false,
     allowEdit: true,
-    allowDelete: false
+    allowDelete: false,
   },
-  '손상': {
+  손상: {
     allowReturn: true,
     allowEdit: true,
-    allowDelete: false
-  }
+    allowDelete: false,
+  },
 } as const;
 
 // Utility functions are now moved to @/utils/assignment.utils.ts
@@ -186,37 +171,38 @@ export const ASSIGNMENT_STATUS_PERMISSIONS = {
 
 // Type guards
 export const isAssignment = (obj: any): obj is Assignment => {
-  return obj && 
+  return (
+    obj &&
     typeof obj.id === 'string' &&
     typeof obj.employee_id === 'string' &&
     typeof obj.asset_id === 'string' &&
     ['hardware', 'software'].includes(obj.asset_type) &&
     typeof obj.assigned_date === 'string' &&
-    ['사용중', '반납완료', '대기중', '연체', '분실', '손상'].includes(obj.status);
+    ['사용중', '반납완료', '대기중', '연체', '분실', '손상'].includes(
+      obj.status
+    )
+  );
 };
 
-export const isAssignmentWithDetails = (obj: any): obj is AssignmentWithDetails => {
-  return isAssignment(obj) &&
+export const isAssignmentWithDetails = (
+  obj: any
+): obj is AssignmentWithDetails => {
+  return (
+    isAssignment(obj) &&
     obj.employee &&
+    typeof obj.employee === 'object' &&
     typeof obj.employee.name === 'string' &&
     obj.asset &&
-    typeof obj.asset.name === 'string';
+    typeof obj.asset === 'object' &&
+    typeof obj.asset.name === 'string'
+  );
 };
 
 // Default values
 export const createDefaultAssignment = (): Partial<CreateAssignmentData> => ({
   assigned_date: new Date().toISOString().split('T')[0],
-  notes: ''
+  notes: '',
 });
 
-export const createDefaultAssignmentFilters = (): AssignmentFilters => ({
-  asset_type: undefined,
-  status: undefined,
-  employee_id: undefined,
-  department: undefined,
-  assigned_date_from: undefined,
-  assigned_date_to: undefined,
-  return_date_from: undefined,
-  return_date_to: undefined,
-  overdue: undefined
-});
+export const createDefaultAssignmentFilters =
+  (): Partial<AssignmentFilters> => ({});

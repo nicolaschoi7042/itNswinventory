@@ -5,13 +5,13 @@ import { Alert, Box, Grid } from '@mui/material';
 import { FormModal } from './FormModal';
 import { FormInput } from '@/components/forms/FormInput';
 import { FormSelect } from '@/components/forms/FormSelect';
-import { 
-  Hardware, 
-  CreateHardwareData, 
-  UpdateHardwareData, 
+import {
+  Hardware,
+  CreateHardwareData,
+  UpdateHardwareData,
   HARDWARE_TYPES,
   HARDWARE_MANUFACTURERS,
-  HARDWARE_STATUSES 
+  HARDWARE_STATUSES,
 } from '@/types/hardware';
 
 interface HardwareFormData {
@@ -129,7 +129,8 @@ export function HardwareFormModal({
       if (isNaN(purchaseDate.getTime())) {
         newErrors.purchase_date = '올바른 날짜를 입력해주세요.';
       } else if (purchaseDate > today) {
-        newErrors.purchase_date = '구매일자는 오늘 날짜보다 이후일 수 없습니다.';
+        newErrors.purchase_date =
+          '구매일자는 오늘 날짜보다 이후일 수 없습니다.';
       }
     }
 
@@ -175,38 +176,39 @@ export function HardwareFormModal({
   };
 
   // Handle input changes
-  const handleInputChange = (field: keyof HardwareFormData) => (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const value = event.target.value;
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({
+  const handleInputChange =
+    (field: keyof HardwareFormData) =>
+    (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const value = event.target.value;
+      setFormData(prev => ({
         ...prev,
-        [field]: ''
+        [field]: value,
       }));
-    }
-  };
 
-  const handleSelectChange = (field: keyof HardwareFormData) => (value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+      // Clear error when user starts typing
+      if (errors[field]) {
+        setErrors(prev => ({
+          ...prev,
+          [field]: '',
+        }));
+      }
+    };
 
-    // Clear error when user makes selection
-    if (errors[field]) {
-      setErrors(prev => ({
+  const handleSelectChange =
+    (field: keyof HardwareFormData) => (value: string) => {
+      setFormData(prev => ({
         ...prev,
-        [field]: ''
+        [field]: value,
       }));
-    }
-  };
+
+      // Clear error when user makes selection
+      if (errors[field]) {
+        setErrors(prev => ({
+          ...prev,
+          [field]: '',
+        }));
+      }
+    };
 
   return (
     <FormModal
@@ -215,30 +217,29 @@ export function HardwareFormModal({
       title={isEditing ? '하드웨어 정보 수정' : '새 하드웨어 등록'}
       onSubmit={handleSubmit}
       loading={loading}
-      maxWidth="md"
+      maxWidth='md'
       submitText={isEditing ? '수정' : '등록'}
     >
       <Box sx={{ mt: 2 }}>
         <Grid container spacing={3}>
           {/* Basic Information */}
           <Grid item xs={12}>
-            <Alert severity="info" sx={{ mb: 2 }}>
-              {isEditing 
+            <Alert severity='info' sx={{ mb: 2 }}>
+              {isEditing
                 ? '하드웨어 정보를 수정합니다. 필수 항목은 반드시 입력해주세요.'
-                : '새로운 하드웨어를 등록합니다. 필수 항목은 반드시 입력해주세요.'
-              }
+                : '새로운 하드웨어를 등록합니다. 필수 항목은 반드시 입력해주세요.'}
             </Alert>
           </Grid>
 
           {/* Hardware Type */}
           <Grid item xs={12} sm={6}>
             <FormSelect
-              label="하드웨어 유형"
+              label='하드웨어 유형'
               value={formData.type}
               onChange={handleSelectChange('type')}
               options={[
                 { value: '', label: '선택하세요' },
-                ...HARDWARE_TYPES.map(type => ({ value: type, label: type }))
+                ...HARDWARE_TYPES.map(type => ({ value: type, label: type })),
               ]}
               required
               error={!!errors.type}
@@ -250,42 +251,42 @@ export function HardwareFormModal({
           {/* Manufacturer */}
           <Grid item xs={12} sm={6}>
             <FormInput
-              label="제조사"
+              label='제조사'
               value={formData.manufacturer}
               onChange={handleInputChange('manufacturer')}
               required
               error={!!errors.manufacturer}
               helperText={errors.manufacturer}
               fullWidth
-              placeholder="예: Dell, HP, Lenovo"
+              placeholder='예: Dell, HP, Lenovo'
             />
           </Grid>
 
           {/* Model */}
           <Grid item xs={12} sm={6}>
             <FormInput
-              label="모델명"
+              label='모델명'
               value={formData.model}
               onChange={handleInputChange('model')}
               required
               error={!!errors.model}
               helperText={errors.model}
               fullWidth
-              placeholder="예: OptiPlex 7090, ThinkPad X1"
+              placeholder='예: OptiPlex 7090, ThinkPad X1'
             />
           </Grid>
 
           {/* Serial Number */}
           <Grid item xs={12} sm={6}>
             <FormInput
-              label="시리얼 번호"
+              label='시리얼 번호'
               value={formData.serial_number}
               onChange={handleInputChange('serial_number')}
               required
               error={!!errors.serial_number}
               helperText={errors.serial_number}
               fullWidth
-              placeholder="제품의 고유 시리얼 번호"
+              placeholder='제품의 고유 시리얼 번호'
             />
           </Grid>
 
@@ -293,10 +294,13 @@ export function HardwareFormModal({
           {isEditing && (
             <Grid item xs={12} sm={6}>
               <FormSelect
-                label="상태"
+                label='상태'
                 value={formData.status}
                 onChange={handleSelectChange('status')}
-                options={HARDWARE_STATUSES.map(status => ({ value: status, label: status }))}
+                options={HARDWARE_STATUSES.map(status => ({
+                  value: status,
+                  label: status,
+                }))}
                 required
                 error={!!errors.status}
                 helperText={errors.status}
@@ -308,8 +312,8 @@ export function HardwareFormModal({
           {/* Purchase Date */}
           <Grid item xs={12} sm={6}>
             <FormInput
-              label="구매일자"
-              type="date"
+              label='구매일자'
+              type='date'
               value={formData.purchase_date}
               onChange={handleInputChange('purchase_date')}
               error={!!errors.purchase_date}
@@ -322,14 +326,14 @@ export function HardwareFormModal({
           {/* Price */}
           <Grid item xs={12} sm={6}>
             <FormInput
-              label="구매가격"
-              type="number"
+              label='구매가격'
+              type='number'
               value={formData.price}
               onChange={handleInputChange('price')}
               error={!!errors.price}
               helperText={errors.price}
               fullWidth
-              placeholder="0"
+              placeholder='0'
               InputProps={{
                 startAdornment: <span style={{ marginRight: '8px' }}>₩</span>,
               }}
@@ -339,13 +343,13 @@ export function HardwareFormModal({
           {/* Notes */}
           <Grid item xs={12}>
             <FormInput
-              label="메모"
+              label='메모'
               value={formData.notes}
               onChange={handleInputChange('notes')}
               multiline
               rows={3}
               fullWidth
-              placeholder="추가 정보나 특이사항을 입력하세요"
+              placeholder='추가 정보나 특이사항을 입력하세요'
             />
           </Grid>
         </Grid>

@@ -3,9 +3,9 @@
  */
 
 export { AssignmentScheduler } from './AssignmentScheduler';
-export type { 
-  ScheduledAssignment, 
-  NotificationSettings, 
-  SchedulingConflict, 
-  TimeSlot 
+export type {
+  ScheduledAssignment,
+  NotificationSettings,
+  SchedulingConflict,
+  TimeSlot,
 } from './AssignmentScheduler';

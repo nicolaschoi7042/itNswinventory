@@ -129,7 +129,9 @@ export function RecentActivities({
 
   const getActivityIcon = (activity: Activity): ReactNode => {
     // First try to get icon by action type
-    const actionKey = activity.action.toLowerCase().split(' ')[0] as keyof typeof actionIcons;
+    const actionKey = activity.action
+      .toLowerCase()
+      .split(' ')[0] as keyof typeof actionIcons;
     if (actionIcons[actionKey]) {
       const ActionIcon = actionIcons[actionKey];
       return <ActionIcon />;
@@ -178,7 +180,9 @@ export function RecentActivities({
     }
   };
 
-  const formatActivityText = (activity: Activity): { primary: string; secondary?: string } => {
+  const formatActivityText = (
+    activity: Activity
+  ): { primary: string; secondary?: string } => {
     let primary = activity.action;
     let secondary = activity.details;
 
@@ -224,7 +228,7 @@ export function RecentActivities({
             {icon}
           </Avatar>
         </ListItemAvatar>
-        
+
         <ListItemText
           primary={
             <Typography
@@ -235,16 +239,18 @@ export function RecentActivities({
             </Typography>
           }
           secondary={
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
-              <Typography variant="caption" color="text.secondary">
+            <Box
+              sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}
+            >
+              <Typography variant='caption' color='text.secondary'>
                 {activity.user}
               </Typography>
               {showTimestamp && (
                 <>
-                  <Typography variant="caption" color="text.disabled">
+                  <Typography variant='caption' color='text.disabled'>
                     •
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography variant='caption' color='text.secondary'>
                     {formatTimestamp(activity.timestamp)}
                   </Typography>
                 </>
@@ -256,11 +262,17 @@ export function RecentActivities({
         {activity.status && (
           <Chip
             label={activity.status}
-            size="small"
-            color={activity.status === 'success' ? 'success' : 
-                   activity.status === 'error' ? 'error' :
-                   activity.status === 'warning' ? 'warning' : 'info'}
-            variant="outlined"
+            size='small'
+            color={
+              activity.status === 'success'
+                ? 'success'
+                : activity.status === 'error'
+                  ? 'error'
+                  : activity.status === 'warning'
+                    ? 'warning'
+                    : 'info'
+            }
+            variant='outlined'
           />
         )}
       </ListItem>
@@ -272,11 +284,15 @@ export function RecentActivities({
       {Array.from(new Array(5)).map((_, index) => (
         <ListItem key={index} sx={{ px: 0 }}>
           <ListItemAvatar>
-            <Skeleton variant="circular" width={dense ? 32 : 40} height={dense ? 32 : 40} />
+            <Skeleton
+              variant='circular'
+              width={dense ? 32 : 40}
+              height={dense ? 32 : 40}
+            />
           </ListItemAvatar>
           <ListItemText
-            primary={<Skeleton variant="text" width="60%" />}
-            secondary={<Skeleton variant="text" width="40%" />}
+            primary={<Skeleton variant='text' width='60%' />}
+            secondary={<Skeleton variant='text' width='40%' />}
           />
         </ListItem>
       ))}
@@ -301,7 +317,7 @@ export function RecentActivities({
           mb: 2,
         }}
       />
-      <Typography variant="body2" color="text.secondary">
+      <Typography variant='body2' color='text.secondary'>
         {emptyMessage}
       </Typography>
     </Box>
@@ -312,26 +328,26 @@ export function RecentActivities({
       {showHeader && (
         <CardHeader
           title={
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            <Typography variant='h6' sx={{ fontWeight: 600 }}>
               {title}
             </Typography>
           }
           action={
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {onRefresh && (
-                <Tooltip title="새로고침">
-                  <IconButton size="small" onClick={onRefresh}>
+                <Tooltip title='새로고침'>
+                  <IconButton size='small' onClick={onRefresh}>
                     <RefreshIcon />
                   </IconButton>
                 </Tooltip>
               )}
-              
+
               {(onFilter || onViewAll) && (
                 <>
-                  <IconButton size="small" onClick={handleMenuOpen}>
+                  <IconButton size='small' onClick={handleMenuOpen}>
                     <MoreVertIcon />
                   </IconButton>
-                  
+
                   <Menu
                     anchorEl={anchorEl}
                     open={Boolean(anchorEl)}
@@ -347,12 +363,12 @@ export function RecentActivities({
                         }}
                       >
                         <ListItemIcon>
-                          <FilterListIcon fontSize="small" />
+                          <FilterListIcon fontSize='small' />
                         </ListItemIcon>
                         Filter Activities
                       </MenuItem>
                     )}
-                    
+
                     {onViewAll && (
                       <MenuItem
                         onClick={() => {
@@ -361,7 +377,7 @@ export function RecentActivities({
                         }}
                       >
                         <ListItemIcon>
-                          <ViewListIcon fontSize="small" />
+                          <ViewListIcon fontSize='small' />
                         </ListItemIcon>
                         View All
                       </MenuItem>
@@ -386,24 +402,22 @@ export function RecentActivities({
               <Box key={activity.id}>
                 {renderActivityItem(activity, index)}
                 {index < displayActivities.length - 1 && (
-                  <Divider variant="inset" component="li" />
+                  <Divider variant='inset' component='li' />
                 )}
               </Box>
             ))}
           </List>
         )}
 
-        {!loading && displayActivities.length > 0 && activities.length > maxItems && (
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
-            <Button
-              size="small"
-              onClick={onViewAll}
-              disabled={!onViewAll}
-            >
-              View {activities.length - maxItems} more activities
-            </Button>
-          </Box>
-        )}
+        {!loading &&
+          displayActivities.length > 0 &&
+          activities.length > maxItems && (
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
+              <Button size='small' onClick={onViewAll} disabled={!onViewAll}>
+                View {activities.length - maxItems} more activities
+              </Button>
+            </Box>
+          )}
       </CardContent>
     </Card>
   );
@@ -425,15 +439,18 @@ export function ActivityTimeline({
 }: ActivityTimelineProps) {
   // Group activities by date if requested
   const groupedActivities = groupByDate
-    ? activities.reduce((groups, activity) => {
-        const date = new Date(activity.timestamp).toDateString();
-        if (!groups[date]) {
-          groups[date] = [];
-        }
-        groups[date].push(activity);
-        return groups;
-      }, {} as Record<string, Activity[]>)
-    : { 'All': activities };
+    ? activities.reduce(
+        (groups, activity) => {
+          const date = new Date(activity.timestamp).toDateString();
+          if (!groups[date]) {
+            groups[date] = [];
+          }
+          groups[date].push(activity);
+          return groups;
+        },
+        {} as Record<string, Activity[]>
+      )
+    : { All: activities };
 
   return (
     <Box>
@@ -441,7 +458,7 @@ export function ActivityTimeline({
         <Box key={date} sx={{ mb: 3 }}>
           {groupByDate && showDate && (
             <Typography
-              variant="h6"
+              variant='h6'
               sx={{
                 mb: 2,
                 pb: 1,
@@ -450,15 +467,16 @@ export function ActivityTimeline({
                 fontWeight: 600,
               }}
             >
-              {date === new Date().toDateString() ? 'Today' : 
-               new Date(date).toLocaleDateString('ko-KR', {
-                 year: 'numeric',
-                 month: 'long',
-                 day: 'numeric'
-               })}
+              {date === new Date().toDateString()
+                ? 'Today'
+                : new Date(date).toLocaleDateString('ko-KR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
             </Typography>
           )}
-          
+
           <RecentActivities
             activities={dateActivities}
             showHeader={false}
@@ -482,13 +500,13 @@ export function useActivities(initialActivities: Activity[] = []) {
       id: Date.now().toString(),
       timestamp: new Date().toISOString(),
     };
-    
+
     setActivities(prev => [activity, ...prev]);
   };
 
   const refreshActivities = async (fetchFn?: () => Promise<Activity[]>) => {
     if (!fetchFn) return;
-    
+
     setLoading(true);
     try {
       const newActivities = await fetchFn();
@@ -500,40 +518,44 @@ export function useActivities(initialActivities: Activity[] = []) {
     }
   };
 
-  const filterActivities = (
-    filters: {
-      user?: string;
-      action?: string;
-      targetType?: Activity['targetType'];
-      dateFrom?: Date;
-      dateTo?: Date;
-    }
-  ): Activity[] => {
+  const filterActivities = (filters: {
+    user?: string;
+    action?: string;
+    targetType?: Activity['targetType'];
+    dateFrom?: Date;
+    dateTo?: Date;
+  }): Activity[] => {
     return activities.filter(activity => {
-      if (filters.user && !activity.user.toLowerCase().includes(filters.user.toLowerCase())) {
+      if (
+        filters.user &&
+        !activity.user.toLowerCase().includes(filters.user.toLowerCase())
+      ) {
         return false;
       }
-      
-      if (filters.action && !activity.action.toLowerCase().includes(filters.action.toLowerCase())) {
+
+      if (
+        filters.action &&
+        !activity.action.toLowerCase().includes(filters.action.toLowerCase())
+      ) {
         return false;
       }
-      
+
       if (filters.targetType && activity.targetType !== filters.targetType) {
         return false;
       }
-      
+
       if (filters.dateFrom || filters.dateTo) {
         const activityDate = new Date(activity.timestamp);
-        
+
         if (filters.dateFrom && activityDate < filters.dateFrom) {
           return false;
         }
-        
+
         if (filters.dateTo && activityDate > filters.dateTo) {
           return false;
         }
       }
-      
+
       return true;
     });
   };

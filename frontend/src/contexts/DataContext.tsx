@@ -6,7 +6,13 @@
 
 'use client';
 
-import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useEffect,
+  useCallback,
+} from 'react';
 import { apiService } from '@/services/api.service';
 import type { ApiResponse } from '@/types/api';
 import type { Employee } from '@/types/employee';
@@ -52,8 +58,14 @@ export interface DataState {
 
 // Action types
 type DataAction =
-  | { type: 'SET_LOADING'; payload: { key: keyof DataState['loading']; loading: boolean } }
-  | { type: 'SET_ERROR'; payload: { key: keyof DataState['errors']; error: string | null } }
+  | {
+      type: 'SET_LOADING';
+      payload: { key: keyof DataState['loading']; loading: boolean };
+    }
+  | {
+      type: 'SET_ERROR';
+      payload: { key: keyof DataState['errors']; error: string | null };
+    }
   | { type: 'SET_EMPLOYEES'; payload: Employee[] }
   | { type: 'SET_HARDWARE'; payload: Hardware[] }
   | { type: 'SET_SOFTWARE'; payload: Software[] }
@@ -202,7 +214,7 @@ function dataReducer(state: DataState, action: DataAction): DataState {
     case 'UPDATE_EMPLOYEE':
       return {
         ...state,
-        employees: state.employees.map(item => 
+        employees: state.employees.map(item =>
           item.id === action.payload.id ? action.payload : item
         ),
       };
@@ -222,7 +234,7 @@ function dataReducer(state: DataState, action: DataAction): DataState {
     case 'UPDATE_HARDWARE':
       return {
         ...state,
-        hardware: state.hardware.map(item => 
+        hardware: state.hardware.map(item =>
           item.id === action.payload.id ? action.payload : item
         ),
       };
@@ -242,7 +254,7 @@ function dataReducer(state: DataState, action: DataAction): DataState {
     case 'UPDATE_SOFTWARE':
       return {
         ...state,
-        software: state.software.map(item => 
+        software: state.software.map(item =>
           item.id === action.payload.id ? action.payload : item
         ),
       };
@@ -262,7 +274,7 @@ function dataReducer(state: DataState, action: DataAction): DataState {
     case 'UPDATE_ASSIGNMENT':
       return {
         ...state,
-        assignments: state.assignments.map(item => 
+        assignments: state.assignments.map(item =>
           item.id === action.payload.id ? action.payload : item
         ),
       };
@@ -270,7 +282,9 @@ function dataReducer(state: DataState, action: DataAction): DataState {
     case 'REMOVE_ASSIGNMENT':
       return {
         ...state,
-        assignments: state.assignments.filter(item => item.id !== action.payload),
+        assignments: state.assignments.filter(
+          item => item.id !== action.payload
+        ),
       };
 
     case 'ADD_USER':
@@ -282,7 +296,7 @@ function dataReducer(state: DataState, action: DataAction): DataState {
     case 'UPDATE_USER':
       return {
         ...state,
-        users: state.users.map(item => 
+        users: state.users.map(item =>
           item.id === action.payload.id ? action.payload : item
         ),
       };
@@ -319,7 +333,7 @@ interface DataContextType extends DataState {
   loadAssignments: () => Promise<void>;
   loadUsers: () => Promise<void>;
   loadActivities: () => Promise<void>;
-  
+
   // Data manipulation functions
   addEmployee: (employee: Employee) => void;
   updateEmployee: (employee: Employee) => void;
@@ -337,10 +351,13 @@ interface DataContextType extends DataState {
   updateUser: (user: User) => void;
   removeUser: (id: string) => void;
   addActivity: (activity: Activity) => void;
-  
+
   // Utility functions
   clearAllData: () => void;
-  isDataStale: (key: keyof DataState['lastUpdated'], maxAge?: number) => boolean;
+  isDataStale: (
+    key: keyof DataState['lastUpdated'],
+    maxAge?: number
+  ) => boolean;
 }
 
 // Create context
@@ -351,37 +368,44 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(dataReducer, initialState);
 
   // Helper function to handle API calls with loading and error states
-  const handleApiCall = useCallback(async <T,>(
-    key: keyof DataState['loading'],
-    apiCall: () => Promise<ApiResponse<T>>,
-    successAction: (data: T) => DataAction
-  ) => {
-    dispatch({ type: 'SET_LOADING', payload: { key, loading: true } });
-    dispatch({ type: 'SET_ERROR', payload: { key, error: null } });
+  const handleApiCall = useCallback(
+    async <T,>(
+      key: keyof DataState['loading'],
+      apiCall: () => Promise<ApiResponse<T>>,
+      successAction: (data: T) => DataAction
+    ) => {
+      dispatch({ type: 'SET_LOADING', payload: { key, loading: true } });
+      dispatch({ type: 'SET_ERROR', payload: { key, error: null } });
 
-    try {
-      const response = await apiCall();
-      if (response.success && response.data) {
-        dispatch(successAction(response.data));
-      } else {
-        const errorMessage = response.error || response.message || 'Failed to load data';
+      try {
+        const response = await apiCall();
+        if (response.success && response.data) {
+          dispatch(successAction(response.data));
+        } else {
+          const errorMessage =
+            response.error || response.message || 'Failed to load data';
+          dispatch({
+            type: 'SET_ERROR',
+            payload: { key, error: errorMessage },
+          });
+        }
+      } catch (error: any) {
+        const errorMessage = error.message || 'An error occurred';
         dispatch({ type: 'SET_ERROR', payload: { key, error: errorMessage } });
+        console.error(`Error loading ${key}:`, error);
+      } finally {
+        dispatch({ type: 'SET_LOADING', payload: { key, loading: false } });
       }
-    } catch (error: any) {
-      const errorMessage = error.message || 'An error occurred';
-      dispatch({ type: 'SET_ERROR', payload: { key, error: errorMessage } });
-      console.error(`Error loading ${key}:`, error);
-    } finally {
-      dispatch({ type: 'SET_LOADING', payload: { key, loading: false } });
-    }
-  }, []);
+    },
+    []
+  );
 
   // Data loading functions
   const loadEmployees = useCallback(async () => {
     await handleApiCall(
       'employees',
       () => apiService.employees.getAll(),
-      (data) => ({ type: 'SET_EMPLOYEES', payload: data })
+      data => ({ type: 'SET_EMPLOYEES', payload: data })
     );
   }, [handleApiCall]);
 
@@ -389,7 +413,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     await handleApiCall(
       'hardware',
       () => apiService.hardware.getAll(),
-      (data) => ({ type: 'SET_HARDWARE', payload: data })
+      data => ({ type: 'SET_HARDWARE', payload: data })
     );
   }, [handleApiCall]);
 
@@ -397,7 +421,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     await handleApiCall(
       'software',
       () => apiService.software.getAll(),
-      (data) => ({ type: 'SET_SOFTWARE', payload: data })
+      data => ({ type: 'SET_SOFTWARE', payload: data })
     );
   }, [handleApiCall]);
 
@@ -405,7 +429,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     await handleApiCall(
       'assignments',
       () => apiService.assignments.getAll(),
-      (data) => ({ type: 'SET_ASSIGNMENTS', payload: data })
+      data => ({ type: 'SET_ASSIGNMENTS', payload: data })
     );
   }, [handleApiCall]);
 
@@ -413,7 +437,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     await handleApiCall(
       'users',
       () => apiService.users.getAll(),
-      (data) => ({ type: 'SET_USERS', payload: data })
+      data => ({ type: 'SET_USERS', payload: data })
     );
   }, [handleApiCall]);
 
@@ -421,7 +445,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     await handleApiCall(
       'activities',
       () => apiService.activities.getRecent(50),
-      (data) => ({ type: 'SET_ACTIVITIES', payload: data })
+      data => ({ type: 'SET_ACTIVITIES', payload: data })
     );
   }, [handleApiCall]);
 
@@ -434,7 +458,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       loadAssignments(),
       loadActivities(),
     ]);
-  }, [loadEmployees, loadHardware, loadSoftware, loadAssignments, loadActivities]);
+  }, [
+    loadEmployees,
+    loadHardware,
+    loadSoftware,
+    loadAssignments,
+    loadActivities,
+  ]);
 
   // Data manipulation functions
   const addEmployee = useCallback((employee: Employee) => {
@@ -506,11 +536,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Check if data is stale
-  const isDataStale = useCallback((key: keyof DataState['lastUpdated'], maxAge: number = 300000): boolean => {
-    const lastUpdated = state.lastUpdated[key];
-    if (!lastUpdated) return true;
-    return Date.now() - lastUpdated > maxAge;
-  }, [state.lastUpdated]);
+  const isDataStale = useCallback(
+    (key: keyof DataState['lastUpdated'], maxAge: number = 300000): boolean => {
+      const lastUpdated = state.lastUpdated[key];
+      if (!lastUpdated) return true;
+      return Date.now() - lastUpdated > maxAge;
+    },
+    [state.lastUpdated]
+  );
 
   // Context value
   const value: DataContextType = {
@@ -542,11 +575,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     isDataStale,
   };
 
-  return (
-    <DataContext.Provider value={value}>
-      {children}
-    </DataContext.Provider>
-  );
+  return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }
 
 // Hook to use the data context

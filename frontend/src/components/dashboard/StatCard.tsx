@@ -117,29 +117,31 @@ export function StatCard({
 
   const getTrendIcon = () => {
     if (!trend) return null;
-    
+
     const isPositive = trend.value > 0;
     const TrendIcon = isPositive ? TrendingUpIcon : TrendingDownIcon;
     const trendColor = isPositive ? 'success' : 'error';
-    
+
     return (
       <Chip
         icon={<TrendIcon />}
         label={`${trend.value > 0 ? '+' : ''}${trend.value}${trend.label ? ` ${trend.label}` : '%'}`}
         color={trendColor}
-        size="small"
-        variant="outlined"
+        size='small'
+        variant='outlined'
       />
     );
   };
 
   return (
-    <Card 
+    <Card
       sx={cardSx}
       onClick={onClick}
       elevation={variant === 'outlined' ? 0 : 1}
     >
-      <CardContent sx={{ p: config.padding, pb: `${config.padding}px !important` }}>
+      <CardContent
+        sx={{ p: config.padding, pb: `${config.padding}px !important` }}
+      >
         {loading && (
           <Box
             sx={{
@@ -177,15 +179,17 @@ export function StatCard({
                   color: variant === 'gradient' ? 'inherit' : `${color}.main`,
                 }}
               >
-                {icon && React.isValidElement(icon) && React.cloneElement(icon, {
-                  style: { fontSize: config.iconSize },
-                })}
+                {icon &&
+                  React.isValidElement(icon) &&
+                  React.cloneElement(icon, {
+                    style: { fontSize: config.iconSize },
+                  })}
               </Box>
             )}
-            
+
             <Typography
               variant={config.titleVariant}
-              color="text.secondary"
+              color='text.secondary'
               sx={{
                 fontWeight: 500,
                 ...(variant === 'gradient' && {
@@ -201,28 +205,28 @@ export function StatCard({
           {(showMore || onInfoClick) && (
             <Box>
               {onInfoClick && (
-                <Tooltip title="More information">
+                <Tooltip title='More information'>
                   <IconButton
-                    size="small"
-                    onClick={(e) => {
+                    size='small'
+                    onClick={e => {
                       e.stopPropagation();
                       onInfoClick();
                     }}
                   >
-                    <InfoIcon fontSize="small" />
+                    <InfoIcon fontSize='small' />
                   </IconButton>
                 </Tooltip>
               )}
-              
+
               {showMore && (
                 <IconButton
-                  size="small"
-                  onClick={(e) => {
+                  size='small'
+                  onClick={e => {
                     e.stopPropagation();
                     setShowDetails(!showDetails);
                   }}
                 >
-                  <MoreVertIcon fontSize="small" />
+                  <MoreVertIcon fontSize='small' />
                 </IconButton>
               )}
             </Box>
@@ -235,7 +239,12 @@ export function StatCard({
           sx={{
             fontWeight: 700,
             mb: subtitle || trend || progress ? 1 : 0,
-            color: variant === 'gradient' ? 'inherit' : color === 'primary' ? 'text.primary' : `${color}.main`,
+            color:
+              variant === 'gradient'
+                ? 'inherit'
+                : color === 'primary'
+                  ? 'text.primary'
+                  : `${color}.main`,
           }}
         >
           {formatValue(value)}
@@ -244,8 +253,8 @@ export function StatCard({
         {/* Subtitle */}
         {subtitle && (
           <Typography
-            variant="body2"
-            color="text.secondary"
+            variant='body2'
+            color='text.secondary'
             sx={{
               mb: trend || progress ? 1 : 0,
               ...(variant === 'gradient' && {
@@ -270,17 +279,22 @@ export function StatCard({
               }}
             >
               {progress.label && (
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant='caption' color='text.secondary'>
                   {progress.label}
                 </Typography>
               )}
-              <Typography variant="caption" color="text.secondary">
-                {progress.value}{progress.max ? `/${progress.max}` : ''}
+              <Typography variant='caption' color='text.secondary'>
+                {progress.value}
+                {progress.max ? `/${progress.max}` : ''}
               </Typography>
             </Box>
             <LinearProgress
-              variant="determinate"
-              value={progress.max ? (progress.value / progress.max) * 100 : progress.value}
+              variant='determinate'
+              value={
+                progress.max
+                  ? (progress.value / progress.max) * 100
+                  : progress.value
+              }
               color={color}
               sx={{ height: 6, borderRadius: 1 }}
             />
@@ -298,7 +312,7 @@ export function StatCard({
           >
             {getTrendIcon()}
             {trend.period && (
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant='caption' color='text.secondary'>
                 {trend.period}
               </Typography>
             )}
@@ -316,7 +330,7 @@ export function StatCard({
             }}
           >
             {typeof additionalInfo === 'string' ? (
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant='body2' color='text.secondary'>
                 {additionalInfo}
               </Typography>
             ) : (
@@ -346,20 +360,20 @@ export function CounterStatCard({
   ...props
 }: CounterStatCardProps) {
   const value = `${count.toLocaleString()}${unit ? ` ${unit}` : ''}`;
-  
-  const finalProgress = progress || (total ? {
-    value: count,
-    max: total,
-    label: showPercentage ? `${Math.round((count / total) * 100)}% used` : undefined,
-  } : undefined);
 
-  return (
-    <StatCard
-      {...props}
-      value={value}
-      progress={finalProgress}
-    />
-  );
+  const finalProgress =
+    progress ||
+    (total
+      ? {
+          value: count,
+          max: total,
+          label: showPercentage
+            ? `${Math.round((count / total) * 100)}% used`
+            : undefined,
+        }
+      : undefined);
+
+  return <StatCard {...props} value={value} progress={finalProgress} />;
 }
 
 interface PercentageStatCardProps extends Omit<StatCardProps, 'value'> {
@@ -373,19 +387,13 @@ export function PercentageStatCard({
   ...props
 }: PercentageStatCardProps) {
   const value = `${Math.round(percentage)}%`;
-  
+
   const progress = {
     value: percentage,
     label: label || undefined,
   };
 
-  return (
-    <StatCard
-      {...props}
-      value={value}
-      progress={progress}
-    />
-  );
+  return <StatCard {...props} value={value} progress={progress} />;
 }
 
 interface StatusStatCardProps extends Omit<StatCardProps, 'value'> {
@@ -427,10 +435,10 @@ interface StatCardGridProps {
   spacing?: number;
 }
 
-export function StatCardGrid({ 
-  children, 
-  columns = 3, 
-  spacing = 3 
+export function StatCardGrid({
+  children,
+  columns = 3,
+  spacing = 3,
 }: StatCardGridProps) {
   return (
     <Box
@@ -439,7 +447,8 @@ export function StatCardGrid({
         gridTemplateColumns: `repeat(${columns}, 1fr)`,
         gap: spacing,
         '@media (max-width: 900px)': {
-          gridTemplateColumns: columns > 2 ? 'repeat(2, 1fr)' : `repeat(${columns}, 1fr)`,
+          gridTemplateColumns:
+            columns > 2 ? 'repeat(2, 1fr)' : `repeat(${columns}, 1fr)`,
         },
         '@media (max-width: 600px)': {
           gridTemplateColumns: '1fr',

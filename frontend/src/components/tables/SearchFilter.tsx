@@ -1,9 +1,9 @@
-import { 
-  Box, 
-  TextField, 
-  Select, 
-  MenuItem, 
-  FormControl, 
+import {
+  Box,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
   InputLabel,
   IconButton,
   InputAdornment,
@@ -65,7 +65,7 @@ export function SearchFilter({
   onClearAll,
   activeFilterCount = 0,
   searchFullWidth = false,
-  dense = false
+  dense = false,
 }: SearchFilterProps) {
   const handleClearSearch = () => {
     onSearchChange('');
@@ -80,14 +80,21 @@ export function SearchFilter({
             multiple={filter.multiple}
             size={dense ? 'small' : 'medium'}
             options={filter.options || []}
-            getOptionLabel={(option) => option.label}
-            value={filter.multiple 
-              ? (filter.options || []).filter(opt => (filter.value as string[]).includes(opt.value))
-              : (filter.options || []).find(opt => opt.value === filter.value) || null
+            getOptionLabel={option => option.label}
+            value={
+              filter.multiple
+                ? (filter.options || []).filter(opt =>
+                    (filter.value as string[]).includes(opt.value)
+                  )
+                : (filter.options || []).find(
+                    opt => opt.value === filter.value
+                  ) || null
             }
             onChange={(_, value) => {
               if (filter.multiple) {
-                const values = Array.isArray(value) ? value.map(v => v.value) : [];
+                const values = Array.isArray(value)
+                  ? value.map(v => v.value)
+                  : [];
                 filter.onChange(values);
               } else {
                 const singleValue = value as FilterOption | null;
@@ -100,11 +107,11 @@ export function SearchFilter({
                   {...getTagProps({ index })}
                   key={option.value}
                   label={option.label}
-                  size="small"
+                  size='small'
                 />
               ))
             }
-            renderInput={(params) => (
+            renderInput={params => (
               <TextField
                 {...params}
                 label={filter.label}
@@ -129,7 +136,7 @@ export function SearchFilter({
             sx={{ minWidth: 200 }}
           />
         );
-      
+
       case 'date':
       case 'number':
         return (
@@ -138,7 +145,7 @@ export function SearchFilter({
             type={filter.type}
             label={filter.label}
             value={filter.value}
-            onChange={(e) => filter.onChange(e.target.value)}
+            onChange={e => filter.onChange(e.target.value)}
             placeholder={filter.placeholder}
             size={dense ? 'small' : 'medium'}
             InputProps={{
@@ -148,21 +155,25 @@ export function SearchFilter({
             sx={{ minWidth: 150 }}
           />
         );
-      
+
       case 'select':
       default:
         return (
-          <FormControl key={index} size={dense ? 'small' : 'medium'} sx={{ minWidth: 150 }}>
+          <FormControl
+            key={index}
+            size={dense ? 'small' : 'medium'}
+            sx={{ minWidth: 150 }}
+          >
             <InputLabel>{filter.label}</InputLabel>
             <Select
               value={filter.value}
               label={filter.label}
-              onChange={(e) => filter.onChange(e.target.value)}
+              onChange={e => filter.onChange(e.target.value)}
             >
-              <MenuItem value="">
+              <MenuItem value=''>
                 <em>All</em>
               </MenuItem>
-              {(filter.options || []).map((option) => (
+              {(filter.options || []).map(option => (
                 <MenuItem key={option.value} value={option.value}>
                   {option.label}
                 </MenuItem>
@@ -175,56 +186,58 @@ export function SearchFilter({
 
   return (
     <Stack spacing={2} sx={{ mb: 3 }}>
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          gap: 2, 
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 2,
           flexWrap: 'wrap',
-          alignItems: 'center'
+          alignItems: 'center',
         }}
       >
         <TextField
           value={searchValue}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => onSearchChange(e.target.value)}
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+            onSearchChange(e.target.value)
+          }
           placeholder={searchPlaceholder}
-          variant="outlined"
+          variant='outlined'
           size={dense ? 'small' : 'medium'}
-          sx={{ 
-            minWidth: searchFullWidth ? '100%' : 250, 
-            flex: searchFullWidth ? 1 : 'none' 
+          sx={{
+            minWidth: searchFullWidth ? '100%' : 250,
+            flex: searchFullWidth ? 1 : 'none',
           }}
           InputProps={{
             startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon color="action" />
+              <InputAdornment position='start'>
+                <SearchIcon color='action' />
               </InputAdornment>
             ),
             endAdornment: searchValue && (
-              <InputAdornment position="end">
-                <IconButton
-                  onClick={handleClearSearch}
-                  size="small"
-                  edge="end"
-                >
-                  <ClearIcon fontSize="small" />
+              <InputAdornment position='end'>
+                <IconButton onClick={handleClearSearch} size='small' edge='end'>
+                  <ClearIcon fontSize='small' />
                 </IconButton>
               </InputAdornment>
             ),
           }}
         />
-        
+
         {filters.map((filter, index) => (
-          <FormControl key={index} size={dense ? 'small' : 'medium'} sx={{ minWidth: 150 }}>
+          <FormControl
+            key={index}
+            size={dense ? 'small' : 'medium'}
+            sx={{ minWidth: 150 }}
+          >
             <InputLabel>{filter.label}</InputLabel>
             <Select
               value={filter.value}
               label={filter.label}
-              onChange={(e) => filter.onChange(e.target.value)}
+              onChange={e => filter.onChange(e.target.value)}
             >
-              <MenuItem value="">
+              <MenuItem value=''>
                 <em>All</em>
               </MenuItem>
-              {filter.options.map((option) => (
+              {filter.options.map(option => (
                 <MenuItem key={option.value} value={option.value}>
                   {option.label}
                 </MenuItem>
@@ -235,7 +248,7 @@ export function SearchFilter({
 
         {showClearAll && activeFilterCount > 0 && (
           <Button
-            variant="outlined"
+            variant='outlined'
             size={dense ? 'small' : 'medium'}
             onClick={onClearAll}
             startIcon={<ClearIcon />}
@@ -246,16 +259,16 @@ export function SearchFilter({
       </Box>
 
       {advancedFilters.length > 0 && (
-        <Box 
-          sx={{ 
-            display: 'flex', 
-            gap: 2, 
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 2,
             flexWrap: 'wrap',
             alignItems: 'center',
-            pl: 1
+            pl: 1,
           }}
         >
-          <FilterListIcon color="action" fontSize="small" />
+          <FilterListIcon color='action' fontSize='small' />
           {advancedFilters.map(renderAdvancedFilter)}
         </Box>
       )}
@@ -274,7 +287,7 @@ export function createFilterOptions<T>(
     .filter(value => value != null && value !== '')
     .map(value => ({
       value: String(value),
-      label: labelFormatter ? labelFormatter(value) : String(value)
+      label: labelFormatter ? labelFormatter(value) : String(value),
     }))
     .sort((a, b) => a.label.localeCompare(b.label));
 }

@@ -5,7 +5,11 @@
  */
 
 import { ApiClient } from '@/lib/api-client';
-import type { Employee, CreateEmployeeData, UpdateEmployeeData } from '@/types/employee';
+import type {
+  Employee,
+  CreateEmployeeData,
+  UpdateEmployeeData,
+} from '@/types/employee';
 import type { ApiResponse } from '@/types/api';
 
 export class EmployeeService {
@@ -35,7 +39,10 @@ export class EmployeeService {
   /**
    * Update employee
    */
-  async update(id: string, data: UpdateEmployeeData): Promise<ApiResponse<Employee>> {
+  async update(
+    id: string,
+    data: UpdateEmployeeData
+  ): Promise<ApiResponse<Employee>> {
     return this.client.put<Employee>(`/employees/${id}`, data);
   }
 
@@ -50,14 +57,18 @@ export class EmployeeService {
    * Search employees
    */
   async search(query: string): Promise<ApiResponse<Employee[]>> {
-    return this.client.get<Employee[]>(`/employees/search?q=${encodeURIComponent(query)}`);
+    return this.client.get<Employee[]>(
+      `/employees/search?q=${encodeURIComponent(query)}`
+    );
   }
 
   /**
    * Get employees by department
    */
   async getByDepartment(department: string): Promise<ApiResponse<Employee[]>> {
-    return this.client.get<Employee[]>(`/employees?department=${encodeURIComponent(department)}`);
+    return this.client.get<Employee[]>(
+      `/employees?department=${encodeURIComponent(department)}`
+    );
   }
 
   /**
@@ -65,7 +76,10 @@ export class EmployeeService {
    */
   async exportToExcel(): Promise<ApiResponse<Blob>> {
     return this.client.get<Blob>('/employees/export/excel', {
-      headers: { 'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }
+      headers: {
+        Accept:
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      },
     });
   }
 }

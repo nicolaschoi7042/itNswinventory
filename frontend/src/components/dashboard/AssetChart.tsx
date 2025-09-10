@@ -31,7 +31,19 @@ import {
   PieChart as PieChartIcon,
   ShowChart as LineChartIcon,
 } from '@mui/icons-material';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend } from 'recharts';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  Legend,
+} from 'recharts';
 import { ReactNode, useState } from 'react';
 
 export interface AssetData {
@@ -65,7 +77,16 @@ export interface AssetChartProps {
 }
 
 const COLORS = {
-  default: ['#2196f3', '#4caf50', '#ff9800', '#f44336', '#9c27b0', '#00bcd4', '#795548', '#607d8b'],
+  default: [
+    '#2196f3',
+    '#4caf50',
+    '#ff9800',
+    '#f44336',
+    '#9c27b0',
+    '#00bcd4',
+    '#795548',
+    '#607d8b',
+  ],
   category: {
     hardware: '#2196f3',
     software: '#4caf50',
@@ -114,9 +135,15 @@ export function AssetChart({
   const getColors = (item: AssetData, index: number): string => {
     switch (colorScheme) {
       case 'category':
-        return COLORS.category[item.category as keyof typeof COLORS.category] || COLORS.default[index % COLORS.default.length];
+        return (
+          COLORS.category[item.category as keyof typeof COLORS.category] ||
+          COLORS.default[index % COLORS.default.length]
+        );
       case 'status':
-        return COLORS.status[item.status as keyof typeof COLORS.status] || COLORS.default[index % COLORS.default.length];
+        return (
+          COLORS.status[item.status as keyof typeof COLORS.status] ||
+          COLORS.default[index % COLORS.default.length]
+        );
       default:
         return COLORS.default[index % COLORS.default.length];
     }
@@ -135,7 +162,7 @@ export function AssetChart({
     // Sort data
     processedData.sort((a, b) => {
       let valueA: any, valueB: any;
-      
+
       switch (sortBy) {
         case 'name':
           valueA = a.name.toLowerCase();
@@ -162,7 +189,7 @@ export function AssetChart({
       const topItems = processedData.slice(0, maxItems - 1);
       const otherItems = processedData.slice(maxItems - 1);
       const otherValue = otherItems.reduce((sum, item) => sum + item.value, 0);
-      
+
       if (otherValue > 0) {
         topItems.push({
           id: 'others',
@@ -172,7 +199,7 @@ export function AssetChart({
           percentage: (otherValue / total) * 100,
         });
       }
-      
+
       return topItems;
     }
 
@@ -182,33 +209,38 @@ export function AssetChart({
   const chartData = processData();
 
   const renderPieChart = () => (
-    <ResponsiveContainer width="100%" height={height}>
+    <ResponsiveContainer width='100%' height={height}>
       <PieChart>
         <Pie
           data={chartData}
-          cx="50%"
-          cy="50%"
+          cx='50%'
+          cy='50%'
           outerRadius={chartType === 'donut' ? height * 0.3 : height * 0.35}
           innerRadius={chartType === 'donut' ? height * 0.15 : 0}
-          fill="#8884d8"
-          dataKey="value"
+          fill='#8884d8'
+          dataKey='value'
           onClick={onDataPointClick}
-          label={showValues ? ({ name, value, percentage }) => 
-            showPercentages ? `${name}: ${Math.round(percentage || 0)}%` : `${name}: ${value}`
-          : false}
+          label={
+            showValues
+              ? ({ name, value, percentage }) =>
+                  showPercentages
+                    ? `${name}: ${Math.round(percentage || 0)}%`
+                    : `${name}: ${value}`
+              : false
+          }
         >
           {chartData.map((entry, index) => (
-            <Cell 
-              key={`cell-${index}`} 
+            <Cell
+              key={`cell-${index}`}
               fill={getColors(entry, index)}
               style={{ cursor: onDataPointClick ? 'pointer' : 'default' }}
             />
           ))}
         </Pie>
-        <RechartsTooltip 
+        <RechartsTooltip
           formatter={(value: number, name: string, props: any) => [
             `${value} (${Math.round(props.payload.percentage || 0)}%)`,
-            name
+            name,
           ]}
         />
         {showLegend && <Legend />}
@@ -217,29 +249,33 @@ export function AssetChart({
   );
 
   const renderBarChart = () => (
-    <ResponsiveContainer width="100%" height={height}>
+    <ResponsiveContainer width='100%' height={height}>
       <BarChart
         data={chartData}
         margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
       >
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis 
-          dataKey="name" 
+        <CartesianGrid strokeDasharray='3 3' />
+        <XAxis
+          dataKey='name'
           angle={-45}
-          textAnchor="end"
+          textAnchor='end'
           height={dense ? 60 : 80}
           fontSize={dense ? 10 : 12}
         />
         <YAxis fontSize={dense ? 10 : 12} />
-        <RechartsTooltip 
+        <RechartsTooltip
           formatter={(value: number, name: string, props: any) => [
-            showPercentages ? `${value} (${Math.round(props.payload.percentage || 0)}%)` : value,
-            'Count'
+            showPercentages
+              ? `${value} (${Math.round(props.payload.percentage || 0)}%)`
+              : value,
+            'Count',
           ]}
         />
-        <Bar 
-          dataKey="value" 
-          onClick={(data) => onDataPointClick && onDataPointClick(data.payload as AssetData)}
+        <Bar
+          dataKey='value'
+          onClick={data =>
+            onDataPointClick && onDataPointClick(data.payload as AssetData)
+          }
           style={{ cursor: onDataPointClick ? 'pointer' : 'default' }}
         >
           {chartData.map((entry, index) => (
@@ -263,7 +299,7 @@ export function AssetChart({
             borderRadius: 1,
           }}
         >
-          <Typography color="text.secondary">Loading chart...</Typography>
+          <Typography color='text.secondary'>Loading chart...</Typography>
         </Box>
       );
     }
@@ -287,7 +323,7 @@ export function AssetChart({
               mb: 2,
             }}
           />
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant='body2' color='text.secondary'>
             No data available
           </Typography>
         </Box>
@@ -309,9 +345,11 @@ export function AssetChart({
             cursor: onDataPointClick ? 'pointer' : 'default',
             p: 0.5,
             borderRadius: 1,
-            '&:hover': onDataPointClick ? {
-              backgroundColor: 'action.hover',
-            } : {},
+            '&:hover': onDataPointClick
+              ? {
+                  backgroundColor: 'action.hover',
+                }
+              : {},
           }}
           onClick={() => onDataPointClick?.(item)}
         >
@@ -332,14 +370,14 @@ export function AssetChart({
           </Typography>
           <Typography
             variant={dense ? 'caption' : 'body2'}
-            color="text.secondary"
+            color='text.secondary'
           >
             {item.value}
           </Typography>
           {showPercentages && (
             <Typography
               variant={dense ? 'caption' : 'body2'}
-              color="text.secondary"
+              color='text.secondary'
             >
               ({Math.round(item.percentage || 0)}%)
             </Typography>
@@ -354,7 +392,7 @@ export function AssetChart({
       {showHeader && (
         <CardHeader
           title={
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            <Typography variant='h6' sx={{ fontWeight: 600 }}>
               {title}
             </Typography>
           }
@@ -364,28 +402,32 @@ export function AssetChart({
                 value={chartType}
                 exclusive
                 onChange={(_, newType) => newType && setChartType(newType)}
-                size="small"
+                size='small'
               >
-                <ToggleButton value="pie" aria-label="pie chart">
-                  <Tooltip title="Pie Chart">
-                    <PieChartIcon fontSize="small" />
+                <ToggleButton value='pie' aria-label='pie chart'>
+                  <Tooltip title='Pie Chart'>
+                    <PieChartIcon fontSize='small' />
                   </Tooltip>
                 </ToggleButton>
-                <ToggleButton value="donut" aria-label="donut chart">
-                  <Tooltip title="Donut Chart">
-                    <PieChartIcon fontSize="small" />
+                <ToggleButton value='donut' aria-label='donut chart'>
+                  <Tooltip title='Donut Chart'>
+                    <PieChartIcon fontSize='small' />
                   </Tooltip>
                 </ToggleButton>
-                <ToggleButton value="bar" aria-label="bar chart">
-                  <Tooltip title="Bar Chart">
-                    <BarChartIcon fontSize="small" />
+                <ToggleButton value='bar' aria-label='bar chart'>
+                  <Tooltip title='Bar Chart'>
+                    <BarChartIcon fontSize='small' />
                   </Tooltip>
                 </ToggleButton>
               </ToggleButtonGroup>
 
               {onRefresh && (
-                <Tooltip title="Refresh">
-                  <IconButton size="small" onClick={onRefresh} disabled={loading}>
+                <Tooltip title='Refresh'>
+                  <IconButton
+                    size='small'
+                    onClick={onRefresh}
+                    disabled={loading}
+                  >
                     <RefreshIcon />
                   </IconButton>
                 </Tooltip>
@@ -393,10 +435,10 @@ export function AssetChart({
 
               {onExport && (
                 <>
-                  <IconButton size="small" onClick={handleMenuOpen}>
+                  <IconButton size='small' onClick={handleMenuOpen}>
                     <MoreVertIcon />
                   </IconButton>
-                  
+
                   <Menu
                     anchorEl={anchorEl}
                     open={Boolean(anchorEl)}
@@ -404,21 +446,36 @@ export function AssetChart({
                     transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                     anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                   >
-                    <MenuItem onClick={() => { onExport('png'); handleMenuClose(); }}>
+                    <MenuItem
+                      onClick={() => {
+                        onExport('png');
+                        handleMenuClose();
+                      }}
+                    >
                       <ListItemIcon>
-                        <DownloadIcon fontSize="small" />
+                        <DownloadIcon fontSize='small' />
                       </ListItemIcon>
                       <ListItemText>Export as PNG</ListItemText>
                     </MenuItem>
-                    <MenuItem onClick={() => { onExport('pdf'); handleMenuClose(); }}>
+                    <MenuItem
+                      onClick={() => {
+                        onExport('pdf');
+                        handleMenuClose();
+                      }}
+                    >
                       <ListItemIcon>
-                        <DownloadIcon fontSize="small" />
+                        <DownloadIcon fontSize='small' />
                       </ListItemIcon>
                       <ListItemText>Export as PDF</ListItemText>
                     </MenuItem>
-                    <MenuItem onClick={() => { onExport('csv'); handleMenuClose(); }}>
+                    <MenuItem
+                      onClick={() => {
+                        onExport('csv');
+                        handleMenuClose();
+                      }}
+                    >
                       <ListItemIcon>
-                        <DownloadIcon fontSize="small" />
+                        <DownloadIcon fontSize='small' />
                       </ListItemIcon>
                       <ListItemText>Export Data as CSV</ListItemText>
                     </MenuItem>
@@ -433,7 +490,7 @@ export function AssetChart({
 
       <CardContent sx={{ pt: 0, flex: 1, overflow: 'auto' }}>
         {renderChart()}
-        
+
         {!showLegend && chartData.length > 0 && renderLegendList()}
       </CardContent>
     </Card>
@@ -485,19 +542,27 @@ export function AssetSummary({
     },
   ];
 
-  const getTotalValue = (data: AssetData[]) => data.reduce((sum, item) => sum + item.value, 0);
+  const getTotalValue = (data: AssetData[]) =>
+    data.reduce((sum, item) => sum + item.value, 0);
 
   return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
-      {categories.map((category) => {
+    <Box
+      sx={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 2,
+        justifyContent: 'center',
+      }}
+    >
+      {categories.map(category => {
         const total = getTotalValue(category.data);
-        
+
         return (
           <Chip
             key={category.name}
             icon={category.icon}
             label={
-              showTotals 
+              showTotals
                 ? `${category.name}: ${total.toLocaleString()}`
                 : category.name
             }
@@ -535,32 +600,38 @@ export function AssetDashboard({
   onRefresh,
 }: AssetDashboardProps) {
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: 3 }}>
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+        gap: 3,
+      }}
+    >
       <AssetChart
         data={data.hardware}
-        title="Hardware Distribution"
-        type="pie"
+        title='Hardware Distribution'
+        type='pie'
         loading={loading}
         onRefresh={onRefresh}
-        colorScheme="category"
+        colorScheme='category'
       />
-      
+
       <AssetChart
         data={data.software}
-        title="Software Licenses"
-        type="bar"
+        title='Software Licenses'
+        type='bar'
         loading={loading}
         onRefresh={onRefresh}
-        colorScheme="status"
+        colorScheme='status'
       />
-      
+
       <AssetChart
         data={data.assignments}
-        title="Asset Assignments"
-        type="donut"
+        title='Asset Assignments'
+        type='donut'
         loading={loading}
         onRefresh={onRefresh}
-        colorScheme="default"
+        colorScheme='default'
       />
 
       <Box sx={{ gridColumn: '1 / -1' }}>
@@ -604,9 +675,7 @@ export function useAssetChart(initialData: AssetData[] = []) {
 
   const updateDataPoint = (id: string, updates: Partial<AssetData>) => {
     setData(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, ...updates } : item
-      )
+      prev.map(item => (item.id === id ? { ...item, ...updates } : item))
     );
   };
 

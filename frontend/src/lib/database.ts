@@ -39,18 +39,20 @@ export interface LDAPUserData {
 /**
  * Find user by username
  */
-export async function findUserByUsername(username: string): Promise<DatabaseUser | null> {
+export async function findUserByUsername(
+  username: string
+): Promise<DatabaseUser | null> {
   const pool = getPool();
   try {
     const result = await pool.query(
       'SELECT id, username, full_name, email, role, is_active, created_at, last_login, password_hash FROM users WHERE username = $1',
       [username]
     );
-    
+
     if (result.rows.length === 0) {
       return null;
     }
-    
+
     return result.rows[0] as DatabaseUser;
   } catch (error) {
     console.error('Database error finding user:', error);
@@ -61,13 +63,15 @@ export async function findUserByUsername(username: string): Promise<DatabaseUser
 /**
  * Find or create LDAP user in local database
  */
-export async function findOrCreateLdapUser(ldapUser: LDAPUserData): Promise<DatabaseUser> {
+export async function findOrCreateLdapUser(
+  ldapUser: LDAPUserData
+): Promise<DatabaseUser> {
   const pool = getPool();
-  
+
   try {
     // Try to find existing user
-    let user = await findUserByUsername(ldapUser.username);
-    
+    const user = await findUserByUsername(ldapUser.username);
+
     if (user) {
       // Update existing user with latest LDAP information
       const updateResult = await pool.query(
@@ -80,7 +84,7 @@ export async function findOrCreateLdapUser(ldapUser: LDAPUserData): Promise<Data
          RETURNING id, username, full_name, email, role, is_active, created_at, last_login`,
         [ldapUser.fullName, ldapUser.email, ldapUser.role, ldapUser.username]
       );
-      
+
       return updateResult.rows[0] as DatabaseUser;
     } else {
       // Create new user
@@ -90,7 +94,7 @@ export async function findOrCreateLdapUser(ldapUser: LDAPUserData): Promise<Data
          RETURNING id, username, full_name, email, role, is_active, created_at, last_login`,
         [ldapUser.username, ldapUser.fullName, ldapUser.email, ldapUser.role]
       );
-      
+
       return insertResult.rows[0] as DatabaseUser;
     }
   } catch (error) {
@@ -102,18 +106,21 @@ export async function findOrCreateLdapUser(ldapUser: LDAPUserData): Promise<Data
 /**
  * Verify local user password
  */
-export async function verifyLocalUserPassword(username: string, password: string): Promise<DatabaseUser | null> {
+export async function verifyLocalUserPassword(
+  username: string,
+  password: string
+): Promise<DatabaseUser | null> {
   const user = await findUserByUsername(username);
-  
+
   if (!user || !user.password_hash) {
     return null;
   }
-  
+
   const isValidPassword = await bcrypt.compare(password, user.password_hash);
   if (!isValidPassword) {
     return null;
   }
-  
+
   return user;
 }
 
@@ -123,7 +130,10 @@ export async function verifyLocalUserPassword(username: string, password: string
 export async function updateLastLogin(userId: number): Promise<void> {
   const pool = getPool();
   try {
-    await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [userId]);
+    await pool.query(
+      'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1',
+      [userId]
+    );
   } catch (error) {
     console.error('Database error updating last login:', error);
     throw new Error('Database error occurred');
@@ -133,7 +143,11 @@ export async function updateLastLogin(userId: number): Promise<void> {
 /**
  * Log activity to database
  */
-export async function logActivity(userId: number, description: string, details?: object): Promise<void> {
+export async function logActivity(
+  userId: number,
+  description: string,
+  details?: object
+): Promise<void> {
   const pool = getPool();
   try {
     await pool.query(
@@ -153,7 +167,10 @@ export async function logActivity(userId: number, description: string, details?:
 export async function isUserActive(userId: number): Promise<boolean> {
   const pool = getPool();
   try {
-    const result = await pool.query('SELECT is_active FROM users WHERE id = $1', [userId]);
+    const result = await pool.query(
+      'SELECT is_active FROM users WHERE id = $1',
+      [userId]
+    );
     return result.rows.length > 0 && result.rows[0].is_active;
   } catch (error) {
     console.error('Database error checking user active status:', error);
@@ -172,7 +189,7 @@ export async function getAllUsers(): Promise<DatabaseUser[]> {
       FROM users
       ORDER BY created_at DESC
     `);
-    
+
     return result.rows as DatabaseUser[];
   } catch (error) {
     console.error('Database error getting all users:', error);
@@ -183,10 +200,16 @@ export async function getAllUsers(): Promise<DatabaseUser[]> {
 /**
  * Update user role (admin only)
  */
-export async function updateUserRole(userId: number, role: 'admin' | 'manager' | 'user'): Promise<void> {
+export async function updateUserRole(
+  userId: number,
+  role: 'admin' | 'manager' | 'user'
+): Promise<void> {
   const pool = getPool();
   try {
-    await pool.query('UPDATE users SET role = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [role, userId]);
+    await pool.query(
+      'UPDATE users SET role = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+      [role, userId]
+    );
   } catch (error) {
     console.error('Database error updating user role:', error);
     throw new Error('Database error occurred');
@@ -196,10 +219,16 @@ export async function updateUserRole(userId: number, role: 'admin' | 'manager' |
 /**
  * Update user active status (admin only)
  */
-export async function updateUserActiveStatus(userId: number, isActive: boolean): Promise<void> {
+export async function updateUserActiveStatus(
+  userId: number,
+  isActive: boolean
+): Promise<void> {
   const pool = getPool();
   try {
-    await pool.query('UPDATE users SET is_active = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [isActive, userId]);
+    await pool.query(
+      'UPDATE users SET is_active = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+      [isActive, userId]
+    );
   } catch (error) {
     console.error('Database error updating user active status:', error);
     throw new Error('Database error occurred');

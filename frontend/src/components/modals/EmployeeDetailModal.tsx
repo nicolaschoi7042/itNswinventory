@@ -23,7 +23,7 @@ import {
   Alert,
   IconButton,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -35,7 +35,7 @@ import {
   Business as BusinessIcon,
   Assignment as AssignmentIcon,
   Computer as ComputerIcon,
-  Apps as AppsIcon
+  Apps as AppsIcon,
 } from '@mui/icons-material';
 import { EmployeeWithAssets } from '@/types/employee';
 import { AssignmentService } from '@/services/assignment.service';
@@ -61,7 +61,7 @@ interface EmployeeDetailModalProps {
 export function EmployeeDetailModal({
   open,
   onClose,
-  employee
+  employee,
 }: EmployeeDetailModalProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -94,7 +94,11 @@ export function EmployeeDetailModal({
       }
     } catch (error) {
       console.error('Failed to load assignment history:', error);
-      setError(error instanceof Error ? error.message : 'Failed to load assignment history');
+      setError(
+        error instanceof Error
+          ? error.message
+          : 'Failed to load assignment history'
+      );
       setAssignments([]);
     } finally {
       setLoading(false);
@@ -116,13 +120,20 @@ export function EmployeeDetailModal({
   };
 
   // Get status color for assignments
-  const getStatusColor = (status: string): 'success' | 'warning' | 'error' | 'info' | 'default' => {
+  const getStatusColor = (
+    status: string
+  ): 'success' | 'warning' | 'error' | 'info' | 'default' => {
     switch (status) {
-      case '사용중': return 'success';
-      case '반납완료': return 'default';
-      case '수리중': return 'warning';
-      case '분실': return 'error';
-      default: return 'info';
+      case '사용중':
+        return 'success';
+      case '반납완료':
+        return 'default';
+      case '수리중':
+        return 'warning';
+      case '분실':
+        return 'error';
+      default:
+        return 'info';
     }
   };
 
@@ -133,11 +144,11 @@ export function EmployeeDetailModal({
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="lg"
+      maxWidth='lg'
       fullWidth
       fullScreen={isMobile}
       PaperProps={{
-        sx: { minHeight: '70vh' }
+        sx: { minHeight: '70vh' },
       }}
     >
       <DialogTitle
@@ -145,16 +156,16 @@ export function EmployeeDetailModal({
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          pb: 1
+          pb: 1,
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <PersonIcon color="primary" />
-          <Typography variant="h6" component="span">
+          <PersonIcon color='primary' />
+          <Typography variant='h6' component='span'>
             {employee.name} 상세 정보
           </Typography>
         </Box>
-        <IconButton onClick={onClose} size="small">
+        <IconButton onClick={onClose} size='small'>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -166,49 +177,71 @@ export function EmployeeDetailModal({
           {/* Employee Basic Information */}
           <Grid item xs={12} md={6}>
             <Paper sx={{ p: 3, height: 'fit-content' }}>
-              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <BusinessIcon color="primary" />
+              <Typography
+                variant='h6'
+                gutterBottom
+                sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}
+              >
+                <BusinessIcon color='primary' />
                 기본 정보
               </Typography>
-              
+
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <PersonIcon fontSize="small" color="action" />
-                  <Typography variant="body2" color="text.secondary" sx={{ minWidth: 60 }}>
+                  <PersonIcon fontSize='small' color='action' />
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{ minWidth: 60 }}
+                  >
                     사번:
                   </Typography>
-                  <Typography variant="body1" fontWeight="medium">
+                  <Typography variant='body1' fontWeight='medium'>
                     {employee.id}
                   </Typography>
                 </Box>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <BusinessIcon fontSize="small" color="action" />
-                  <Typography variant="body2" color="text.secondary" sx={{ minWidth: 60 }}>
+                  <BusinessIcon fontSize='small' color='action' />
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{ minWidth: 60 }}
+                  >
                     부서:
                   </Typography>
-                  <Chip label={employee.department} color="primary" size="small" />
+                  <Chip
+                    label={employee.department}
+                    color='primary'
+                    size='small'
+                  />
                 </Box>
 
                 {employee.position && (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <WorkIcon fontSize="small" color="action" />
-                    <Typography variant="body2" color="text.secondary" sx={{ minWidth: 60 }}>
+                    <WorkIcon fontSize='small' color='action' />
+                    <Typography
+                      variant='body2'
+                      color='text.secondary'
+                      sx={{ minWidth: 60 }}
+                    >
                       직책:
                     </Typography>
-                    <Typography variant="body1">
-                      {employee.position}
-                    </Typography>
+                    <Typography variant='body1'>{employee.position}</Typography>
                   </Box>
                 )}
 
                 {employee.email && (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <EmailIcon fontSize="small" color="action" />
-                    <Typography variant="body2" color="text.secondary" sx={{ minWidth: 60 }}>
+                    <EmailIcon fontSize='small' color='action' />
+                    <Typography
+                      variant='body2'
+                      color='text.secondary'
+                      sx={{ minWidth: 60 }}
+                    >
                       이메일:
                     </Typography>
-                    <Typography variant="body1" sx={{ color: 'primary.main' }}>
+                    <Typography variant='body1' sx={{ color: 'primary.main' }}>
                       {employee.email}
                     </Typography>
                   </Box>
@@ -216,23 +249,29 @@ export function EmployeeDetailModal({
 
                 {employee.phone && (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <PhoneIcon fontSize="small" color="action" />
-                    <Typography variant="body2" color="text.secondary" sx={{ minWidth: 60 }}>
+                    <PhoneIcon fontSize='small' color='action' />
+                    <Typography
+                      variant='body2'
+                      color='text.secondary'
+                      sx={{ minWidth: 60 }}
+                    >
                       연락처:
                     </Typography>
-                    <Typography variant="body1">
-                      {employee.phone}
-                    </Typography>
+                    <Typography variant='body1'>{employee.phone}</Typography>
                   </Box>
                 )}
 
                 {employee.hire_date && (
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <CalendarIcon fontSize="small" color="action" />
-                    <Typography variant="body2" color="text.secondary" sx={{ minWidth: 60 }}>
+                    <CalendarIcon fontSize='small' color='action' />
+                    <Typography
+                      variant='body2'
+                      color='text.secondary'
+                      sx={{ minWidth: 60 }}
+                    >
                       입사일:
                     </Typography>
-                    <Typography variant="body1">
+                    <Typography variant='body1'>
                       {formatDate(employee.hire_date)}
                     </Typography>
                   </Box>
@@ -244,52 +283,88 @@ export function EmployeeDetailModal({
           {/* Asset Assignment Summary */}
           <Grid item xs={12} md={6}>
             <Paper sx={{ p: 3, height: 'fit-content' }}>
-              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <AssignmentIcon color="primary" />
+              <Typography
+                variant='h6'
+                gutterBottom
+                sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}
+              >
+                <AssignmentIcon color='primary' />
                 자산 할당 현황
               </Typography>
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="body2" color="text.secondary">
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Typography variant='body2' color='text.secondary'>
                     현재 사용 중인 자산:
                   </Typography>
-                  <Chip 
+                  <Chip
                     label={`${employee.assignedAssets} 개`}
                     color={employee.assignedAssets > 0 ? 'success' : 'default'}
-                    variant="outlined"
+                    variant='outlined'
                   />
                 </Box>
 
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="body2" color="text.secondary">
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Typography variant='body2' color='text.secondary'>
                     총 할당 이력:
                   </Typography>
-                  <Typography variant="body1" fontWeight="medium">
+                  <Typography variant='body1' fontWeight='medium'>
                     {assignments.length} 건
                   </Typography>
                 </Box>
 
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="body2" color="text.secondary">
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Typography variant='body2' color='text.secondary'>
                     하드웨어:
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <ComputerIcon fontSize="small" color="action" />
-                    <Typography variant="body1">
-                      {assignments.filter(a => a.asset_type === 'hardware').length} 건
+                    <ComputerIcon fontSize='small' color='action' />
+                    <Typography variant='body1'>
+                      {
+                        assignments.filter(a => a.asset_type === 'hardware')
+                          .length
+                      }{' '}
+                      건
                     </Typography>
                   </Box>
                 </Box>
 
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="body2" color="text.secondary">
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Typography variant='body2' color='text.secondary'>
                     소프트웨어:
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <AppsIcon fontSize="small" color="action" />
-                    <Typography variant="body1">
-                      {assignments.filter(a => a.asset_type === 'software').length} 건
+                    <AppsIcon fontSize='small' color='action' />
+                    <Typography variant='body1'>
+                      {
+                        assignments.filter(a => a.asset_type === 'software')
+                          .length
+                      }{' '}
+                      건
                     </Typography>
                   </Box>
                 </Box>
@@ -299,8 +374,12 @@ export function EmployeeDetailModal({
 
           {/* Assignment History */}
           <Grid item xs={12}>
-            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-              <AssignmentIcon color="primary" />
+            <Typography
+              variant='h6'
+              gutterBottom
+              sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}
+            >
+              <AssignmentIcon color='primary' />
               자산 할당 이력
             </Typography>
 
@@ -311,7 +390,7 @@ export function EmployeeDetailModal({
             )}
 
             {error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
+              <Alert severity='error' sx={{ mb: 2 }}>
                 {error}
               </Alert>
             )}
@@ -321,11 +400,15 @@ export function EmployeeDetailModal({
                 {/* Current Assignments */}
                 {activeAssignments.length > 0 && (
                   <Box sx={{ mb: 3 }}>
-                    <Typography variant="subtitle1" color="success.main" sx={{ mb: 1, fontWeight: 'medium' }}>
+                    <Typography
+                      variant='subtitle1'
+                      color='success.main'
+                      sx={{ mb: 1, fontWeight: 'medium' }}
+                    >
                       현재 사용 중인 자산 ({activeAssignments.length}개)
                     </Typography>
-                    <TableContainer component={Paper} variant="outlined">
-                      <Table size="small">
+                    <TableContainer component={Paper} variant='outlined'>
+                      <Table size='small'>
                         <TableHead>
                           <TableRow>
                             <TableCell>자산 유형</TableCell>
@@ -339,38 +422,58 @@ export function EmployeeDetailModal({
                           {activeAssignments.map((assignment, index) => (
                             <TableRow key={`${assignment.id}-${index}`}>
                               <TableCell>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                <Box
+                                  sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 0.5,
+                                  }}
+                                >
                                   {assignment.asset_type === 'hardware' ? (
                                     <>
-                                      <ComputerIcon fontSize="small" color="primary" />
+                                      <ComputerIcon
+                                        fontSize='small'
+                                        color='primary'
+                                      />
                                       하드웨어
                                     </>
                                   ) : (
                                     <>
-                                      <AppsIcon fontSize="small" color="secondary" />
+                                      <AppsIcon
+                                        fontSize='small'
+                                        color='secondary'
+                                      />
                                       소프트웨어
                                     </>
                                   )}
                                 </Box>
                               </TableCell>
                               <TableCell>
-                                <Typography variant="body2" fontWeight="medium">
+                                <Typography variant='body2' fontWeight='medium'>
                                   {assignment.asset_name}
                                 </Typography>
-                                <Typography variant="caption" color="text.secondary">
+                                <Typography
+                                  variant='caption'
+                                  color='text.secondary'
+                                >
                                   {assignment.asset_id}
                                 </Typography>
                               </TableCell>
-                              <TableCell>{formatDate(assignment.assigned_date)}</TableCell>
                               <TableCell>
-                                <Chip 
+                                {formatDate(assignment.assigned_date)}
+                              </TableCell>
+                              <TableCell>
+                                <Chip
                                   label={assignment.status}
                                   color={getStatusColor(assignment.status)}
-                                  size="small"
+                                  size='small'
                                 />
                               </TableCell>
                               <TableCell>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography
+                                  variant='body2'
+                                  color='text.secondary'
+                                >
                                   {assignment.notes || '-'}
                                 </Typography>
                               </TableCell>
@@ -385,11 +488,15 @@ export function EmployeeDetailModal({
                 {/* Assignment History */}
                 {historyAssignments.length > 0 && (
                   <Box>
-                    <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 1, fontWeight: 'medium' }}>
+                    <Typography
+                      variant='subtitle1'
+                      color='text.secondary'
+                      sx={{ mb: 1, fontWeight: 'medium' }}
+                    >
                       할당 이력 ({historyAssignments.length}건)
                     </Typography>
-                    <TableContainer component={Paper} variant="outlined">
-                      <Table size="small">
+                    <TableContainer component={Paper} variant='outlined'>
+                      <Table size='small'>
                         <TableHead>
                           <TableRow>
                             <TableCell>자산 유형</TableCell>
@@ -404,40 +511,62 @@ export function EmployeeDetailModal({
                           {historyAssignments.map((assignment, index) => (
                             <TableRow key={`${assignment.id}-${index}`}>
                               <TableCell>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                <Box
+                                  sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 0.5,
+                                  }}
+                                >
                                   {assignment.asset_type === 'hardware' ? (
                                     <>
-                                      <ComputerIcon fontSize="small" color="action" />
+                                      <ComputerIcon
+                                        fontSize='small'
+                                        color='action'
+                                      />
                                       하드웨어
                                     </>
                                   ) : (
                                     <>
-                                      <AppsIcon fontSize="small" color="action" />
+                                      <AppsIcon
+                                        fontSize='small'
+                                        color='action'
+                                      />
                                       소프트웨어
                                     </>
                                   )}
                                 </Box>
                               </TableCell>
                               <TableCell>
-                                <Typography variant="body2">
+                                <Typography variant='body2'>
                                   {assignment.asset_name}
                                 </Typography>
-                                <Typography variant="caption" color="text.secondary">
+                                <Typography
+                                  variant='caption'
+                                  color='text.secondary'
+                                >
                                   {assignment.asset_id}
                                 </Typography>
                               </TableCell>
-                              <TableCell>{formatDate(assignment.assigned_date)}</TableCell>
-                              <TableCell>{formatDate(assignment.returned_date)}</TableCell>
                               <TableCell>
-                                <Chip 
+                                {formatDate(assignment.assigned_date)}
+                              </TableCell>
+                              <TableCell>
+                                {formatDate(assignment.returned_date)}
+                              </TableCell>
+                              <TableCell>
+                                <Chip
                                   label={assignment.status}
                                   color={getStatusColor(assignment.status)}
-                                  size="small"
-                                  variant="outlined"
+                                  size='small'
+                                  variant='outlined'
                                 />
                               </TableCell>
                               <TableCell>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography
+                                  variant='body2'
+                                  color='text.secondary'
+                                >
                                   {assignment.notes || '-'}
                                 </Typography>
                               </TableCell>
@@ -450,7 +579,7 @@ export function EmployeeDetailModal({
                 )}
 
                 {assignments.length === 0 && !loading && (
-                  <Alert severity="info">
+                  <Alert severity='info'>
                     이 직원에게는 아직 할당된 자산이 없습니다.
                   </Alert>
                 )}
@@ -463,7 +592,7 @@ export function EmployeeDetailModal({
       <Divider />
 
       <DialogActions sx={{ p: 2 }}>
-        <Button onClick={onClose} variant="outlined">
+        <Button onClick={onClose} variant='outlined'>
           닫기
         </Button>
       </DialogActions>

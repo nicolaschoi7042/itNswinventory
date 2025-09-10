@@ -12,13 +12,13 @@ interface AlertMessageProps {
   autoHideDuration?: number;
 }
 
-export function AlertMessage({ 
-  open, 
-  onClose, 
-  severity, 
-  title, 
+export function AlertMessage({
+  open,
+  onClose,
+  severity,
+  title,
   children,
-  autoHideDuration = 6000 
+  autoHideDuration = 6000,
 }: AlertMessageProps) {
   return (
     <Snackbar
@@ -27,10 +27,10 @@ export function AlertMessage({
       onClose={onClose}
       anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
     >
-      <Alert 
-        onClose={onClose} 
+      <Alert
+        onClose={onClose}
         severity={severity}
-        variant="filled"
+        variant='filled'
         sx={{ width: '100%' }}
       >
         {title && <AlertTitle>{title}</AlertTitle>}
@@ -48,9 +48,14 @@ interface InlineAlertProps {
   onClose?: () => void;
 }
 
-export function InlineAlert({ severity, title, children, onClose }: InlineAlertProps) {
+export function InlineAlert({
+  severity,
+  title,
+  children,
+  onClose,
+}: InlineAlertProps) {
   return (
-    <Alert 
+    <Alert
       severity={severity}
       {...(onClose && { onClose: () => onClose() })}
       sx={{ mb: 2 }}

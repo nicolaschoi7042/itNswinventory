@@ -5,12 +5,12 @@
  */
 
 import { ApiClient } from '@/lib/api-client';
-import type { 
-  Hardware, 
-  CreateHardwareData, 
+import type {
+  Hardware,
+  CreateHardwareData,
   UpdateHardwareData,
   HardwareSearchParams,
-  HardwareStats
+  HardwareStats,
 } from '@/types/hardware';
 import type { ApiResponse } from '@/types/api';
 
@@ -41,7 +41,10 @@ export class HardwareService {
   /**
    * Update hardware asset
    */
-  async update(id: string, data: UpdateHardwareData): Promise<ApiResponse<Hardware>> {
+  async update(
+    id: string,
+    data: UpdateHardwareData
+  ): Promise<ApiResponse<Hardware>> {
     return this.client.put<Hardware>(`/hardware/${id}`, data);
   }
 
@@ -57,11 +60,11 @@ export class HardwareService {
    */
   async search(params: HardwareSearchParams): Promise<ApiResponse<Hardware[]>> {
     const queryParams = new URLSearchParams();
-    
+
     if (params.query) {
       queryParams.append('q', params.query);
     }
-    
+
     if (params.filters) {
       Object.entries(params.filters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
@@ -69,26 +72,28 @@ export class HardwareService {
         }
       });
     }
-    
+
     if (params.sortBy) {
       queryParams.append('sortBy', params.sortBy);
     }
-    
+
     if (params.sortOrder) {
       queryParams.append('sortOrder', params.sortOrder);
     }
-    
+
     if (params.page) {
       queryParams.append('page', String(params.page));
     }
-    
+
     if (params.limit) {
       queryParams.append('limit', String(params.limit));
     }
 
     const queryString = queryParams.toString();
-    const url = queryString ? `/hardware/search?${queryString}` : '/hardware/search';
-    
+    const url = queryString
+      ? `/hardware/search?${queryString}`
+      : '/hardware/search';
+
     return this.client.get<Hardware[]>(url);
   }
 
@@ -96,21 +101,27 @@ export class HardwareService {
    * Simple search for backward compatibility
    */
   async simpleSearch(query: string): Promise<ApiResponse<Hardware[]>> {
-    return this.client.get<Hardware[]>(`/hardware/search?q=${encodeURIComponent(query)}`);
+    return this.client.get<Hardware[]>(
+      `/hardware/search?q=${encodeURIComponent(query)}`
+    );
   }
 
   /**
    * Get hardware by type
    */
   async getByType(type: string): Promise<ApiResponse<Hardware[]>> {
-    return this.client.get<Hardware[]>(`/hardware?type=${encodeURIComponent(type)}`);
+    return this.client.get<Hardware[]>(
+      `/hardware?type=${encodeURIComponent(type)}`
+    );
   }
 
   /**
    * Get hardware by status
    */
   async getByStatus(status: string): Promise<ApiResponse<Hardware[]>> {
-    return this.client.get<Hardware[]>(`/hardware?status=${encodeURIComponent(status)}`);
+    return this.client.get<Hardware[]>(
+      `/hardware?status=${encodeURIComponent(status)}`
+    );
   }
 
   /**
@@ -125,7 +136,10 @@ export class HardwareService {
    */
   async exportToExcel(): Promise<ApiResponse<Blob>> {
     return this.client.get<Blob>('/hardware/export/excel', {
-      headers: { 'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }
+      headers: {
+        Accept:
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      },
     });
   }
 
@@ -153,37 +167,54 @@ export class HardwareService {
   /**
    * Update hardware status
    */
-  async updateStatus(id: string, status: string, notes?: string): Promise<ApiResponse<Hardware>> {
-    return this.client.put<Hardware>(`/hardware/${id}/status`, { status, notes });
+  async updateStatus(
+    id: string,
+    status: string,
+    notes?: string
+  ): Promise<ApiResponse<Hardware>> {
+    return this.client.put<Hardware>(`/hardware/${id}/status`, {
+      status,
+      notes,
+    });
   }
 
   /**
    * Assign hardware to employee
    */
-  async assign(hardwareId: string, employeeId: string, notes?: string): Promise<ApiResponse<any>> {
+  async assign(
+    hardwareId: string,
+    employeeId: string,
+    notes?: string
+  ): Promise<ApiResponse<any>> {
     return this.client.post<any>('/assignments', {
       asset_type: 'hardware',
       asset_id: hardwareId,
       employee_id: employeeId,
       assigned_date: new Date().toISOString().split('T')[0],
-      notes
+      notes,
     });
   }
 
   /**
    * Return hardware asset
    */
-  async return(assignmentId: string, returnDate?: string, notes?: string): Promise<ApiResponse<any>> {
+  async return(
+    assignmentId: string,
+    returnDate?: string,
+    notes?: string
+  ): Promise<ApiResponse<any>> {
     return this.client.put<any>(`/assignments/${assignmentId}/return`, {
       return_date: returnDate || new Date().toISOString().split('T')[0],
-      notes
+      notes,
     });
   }
 
   /**
    * Bulk update hardware assets
    */
-  async bulkUpdate(updates: Array<{ id: string; data: UpdateHardwareData }>): Promise<ApiResponse<Hardware[]>> {
+  async bulkUpdate(
+    updates: Array<{ id: string; data: UpdateHardwareData }>
+  ): Promise<ApiResponse<Hardware[]>> {
     return this.client.post<Hardware[]>('/hardware/bulk-update', { updates });
   }
 
@@ -197,7 +228,10 @@ export class HardwareService {
   /**
    * Validate hardware data
    */
-  validateHardwareData(data: CreateHardwareData | UpdateHardwareData): { valid: boolean; errors: string[] } {
+  validateHardwareData(data: CreateHardwareData | UpdateHardwareData): {
+    valid: boolean;
+    errors: string[];
+  } {
     const errors: string[] = [];
 
     // Required field validation for creation
@@ -231,7 +265,7 @@ export class HardwareService {
     if (data.purchase_date) {
       const purchaseDate = new Date(data.purchase_date);
       const today = new Date();
-      
+
       if (isNaN(purchaseDate.getTime())) {
         errors.push('올바른 구매일자 형식을 입력해주세요.');
       } else if (purchaseDate > today) {
@@ -251,7 +285,7 @@ export class HardwareService {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -265,10 +299,17 @@ export class HardwareService {
   /**
    * Calculate hardware value statistics
    */
-  calculateValueStats(hardwareList: Hardware[]): { total: number; average: number; min: number; max: number } {
+  calculateValueStats(hardwareList: Hardware[]): {
+    total: number;
+    average: number;
+    min: number;
+    max: number;
+  } {
     const validPrices = hardwareList
       .map(hw => hw.price)
-      .filter((price): price is number => typeof price === 'number' && price > 0);
+      .filter(
+        (price): price is number => typeof price === 'number' && price > 0
+      );
 
     if (validPrices.length === 0) {
       return { total: 0, average: 0, min: 0, max: 0 };
@@ -286,7 +327,7 @@ export class HardwareService {
    * Filter hardware by multiple criteria
    */
   filterHardware(
-    hardwareList: Hardware[], 
+    hardwareList: Hardware[],
     filters: {
       search?: string;
       type?: string;
@@ -307,9 +348,11 @@ export class HardwareService {
           hardware.model,
           hardware.serial_number,
           hardware.assigned_to_name || '',
-          hardware.notes || ''
-        ].join(' ').toLowerCase();
-        
+          hardware.notes || '',
+        ]
+          .join(' ')
+          .toLowerCase();
+
         if (!searchFields.includes(searchLower)) {
           return false;
         }
@@ -321,7 +364,10 @@ export class HardwareService {
       }
 
       // Manufacturer filter
-      if (filters.manufacturer && hardware.manufacturer !== filters.manufacturer) {
+      if (
+        filters.manufacturer &&
+        hardware.manufacturer !== filters.manufacturer
+      ) {
         return false;
       }
 
@@ -338,18 +384,27 @@ export class HardwareService {
         if (filters.assignedTo === 'assigned' && !hardware.assigned_to) {
           return false;
         }
-        if (filters.assignedTo !== 'assigned' && filters.assignedTo !== 'unassigned' && 
-            hardware.assigned_to !== filters.assignedTo) {
+        if (
+          filters.assignedTo !== 'assigned' &&
+          filters.assignedTo !== 'unassigned' &&
+          hardware.assigned_to !== filters.assignedTo
+        ) {
           return false;
         }
       }
 
       // Price range filter
       if (filters.priceRange && hardware.price) {
-        if (filters.priceRange.min !== undefined && hardware.price < filters.priceRange.min) {
+        if (
+          filters.priceRange.min !== undefined &&
+          hardware.price < filters.priceRange.min
+        ) {
           return false;
         }
-        if (filters.priceRange.max !== undefined && hardware.price > filters.priceRange.max) {
+        if (
+          filters.priceRange.max !== undefined &&
+          hardware.price > filters.priceRange.max
+        ) {
           return false;
         }
       }

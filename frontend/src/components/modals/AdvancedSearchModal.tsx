@@ -1,6 +1,6 @@
 /**
  * Advanced Search Modal Component
- * 
+ *
  * Comprehensive search and filtering interface for assignments
  * with multiple criteria and saved searches.
  */
@@ -31,7 +31,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  useTheme
+  useTheme,
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -41,7 +41,7 @@ import {
   Bookmark as BookmarkIcon,
   ExpandMore as ExpandMoreIcon,
   Clear as ClearIcon,
-  CalendarToday as CalendarIcon
+  CalendarToday as CalendarIcon,
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
@@ -50,13 +50,10 @@ import {
   Assignment,
   AssignmentWithDetails,
   AssignmentFilters,
-  AssignmentStatus
+  AssignmentStatus,
 } from '@/types/assignment';
 
-import {
-  ASSIGNMENT_STATUSES,
-  ASSET_TYPE_LABELS
-} from '@/constants/assignment';
+import { ASSIGNMENT_STATUSES, ASSET_TYPE_LABELS } from '@/constants/assignment';
 
 // ============================================================================
 // INTERFACES
@@ -87,13 +84,15 @@ interface AdvancedSearchModalProps {
 
 const getUniqueValues = (
   assignments: (Assignment | AssignmentWithDetails)[],
-  extractor: (assignment: Assignment | AssignmentWithDetails) => string | undefined
+  extractor: (
+    assignment: Assignment | AssignmentWithDetails
+  ) => string | undefined
 ): string[] => {
   const values = assignments
     .map(extractor)
     .filter((value): value is string => Boolean(value))
     .filter((value, index, array) => array.indexOf(value) === index);
-  
+
   return values.sort();
 };
 
@@ -125,10 +124,10 @@ export function AdvancedSearchModal({
   currentSearchQuery,
   onClose,
   onApplyFilters,
-  onSaveSearch
+  onSaveSearch,
 }: AdvancedSearchModalProps) {
   const theme = useTheme();
-  
+
   // State for filters
   const [filters, setFilters] = useState<AssignmentFilters>(currentFilters);
   const [searchQuery, setSearchQuery] = useState(currentSearchQuery);
@@ -137,7 +136,7 @@ export function AdvancedSearchModal({
 
   // Extract unique values for autocomplete
   const uniqueEmployees = getUniqueValues(assignments, a => a.employee_name);
-  const uniqueDepartments = getUniqueValues(assignments, a => 
+  const uniqueDepartments = getUniqueValues(assignments, a =>
     'employee' in a && a.employee ? a.employee.department : undefined
   );
   const uniqueAssetIds = getUniqueValues(assignments, a => a.asset_id);
@@ -172,7 +171,7 @@ export function AdvancedSearchModal({
       filters,
       searchQuery,
       created: new Date().toISOString(),
-      used: 0
+      used: 0,
     };
 
     const updatedSearches = [newSearch, ...savedSearches].slice(0, 10);
@@ -186,7 +185,7 @@ export function AdvancedSearchModal({
   const handleLoadSearch = (search: SavedSearch) => {
     setFilters(search.filters);
     setSearchQuery(search.searchQuery);
-    
+
     // Update usage count
     const updatedSearches = savedSearches.map(s =>
       s.id === search.id ? { ...s, used: s.used + 1 } : s
@@ -212,10 +211,10 @@ export function AdvancedSearchModal({
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="md"
+      maxWidth='md'
       fullWidth
       PaperProps={{
-        sx: { borderRadius: 2, maxHeight: '90vh' }
+        sx: { borderRadius: 2, maxHeight: '90vh' },
       }}
     >
       {/* Dialog Header */}
@@ -225,16 +224,14 @@ export function AdvancedSearchModal({
           alignItems: 'center',
           justifyContent: 'space-between',
           pb: 2,
-          borderBottom: `1px solid ${theme.palette.divider}`
+          borderBottom: `1px solid ${theme.palette.divider}`,
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <FilterIcon color="primary" />
-          <Typography variant="h6">
-            고급 검색 및 필터
-          </Typography>
+          <FilterIcon color='primary' />
+          <Typography variant='h6'>고급 검색 및 필터</Typography>
         </Box>
-        <IconButton onClick={onClose} size="small">
+        <IconButton onClick={onClose} size='small'>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -245,21 +242,24 @@ export function AdvancedSearchModal({
         {savedSearches.length > 0 && (
           <Accordion sx={{ mb: 3 }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="subtitle1" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <BookmarkIcon fontSize="small" />
+              <Typography
+                variant='subtitle1'
+                sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+              >
+                <BookmarkIcon fontSize='small' />
                 저장된 검색 ({savedSearches.length})
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {savedSearches.map((search) => (
+                {savedSearches.map(search => (
                   <Chip
                     key={search.id}
                     label={`${search.name} (${search.used}회 사용)`}
                     onClick={() => handleLoadSearch(search)}
                     onDelete={() => handleDeleteSearch(search.id)}
-                    color="primary"
-                    variant="outlined"
+                    color='primary'
+                    variant='outlined'
                     sx={{ mb: 1 }}
                   />
                 ))}
@@ -271,24 +271,21 @@ export function AdvancedSearchModal({
         {/* Search Query */}
         <Card sx={{ mb: 3 }}>
           <CardContent>
-            <Typography variant="subtitle1" gutterBottom>
+            <Typography variant='subtitle1' gutterBottom>
               검색어
             </Typography>
             <TextField
               fullWidth
-              placeholder="직원명, 자산 ID, 할당 ID, 제조사 등으로 검색..."
+              placeholder='직원명, 자산 ID, 할당 ID, 제조사 등으로 검색...'
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               InputProps={{
-                startAdornment: <SearchIcon color="action" sx={{ mr: 1 }} />,
+                startAdornment: <SearchIcon color='action' sx={{ mr: 1 }} />,
                 endAdornment: searchQuery && (
-                  <IconButton
-                    size="small"
-                    onClick={() => setSearchQuery('')}
-                  >
-                    <ClearIcon fontSize="small" />
+                  <IconButton size='small' onClick={() => setSearchQuery('')}>
+                    <ClearIcon fontSize='small' />
                   </IconButton>
-                )
+                ),
               }}
             />
           </CardContent>
@@ -297,10 +294,10 @@ export function AdvancedSearchModal({
         {/* Basic Filters */}
         <Card sx={{ mb: 3 }}>
           <CardContent>
-            <Typography variant="subtitle1" gutterBottom>
+            <Typography variant='subtitle1' gutterBottom>
               기본 필터
             </Typography>
-            
+
             <Grid container spacing={2}>
               {/* Asset Type */}
               <Grid item xs={12} sm={6}>
@@ -308,15 +305,17 @@ export function AdvancedSearchModal({
                   <InputLabel>자산 유형</InputLabel>
                   <Select
                     value={filters.asset_type || ''}
-                    onChange={(e) => setFilters(prev => ({
-                      ...prev,
-                      asset_type: e.target.value as any || undefined
-                    }))}
-                    label="자산 유형"
+                    onChange={e =>
+                      setFilters(prev => ({
+                        ...prev,
+                        asset_type: (e.target.value as any) || undefined,
+                      }))
+                    }
+                    label='자산 유형'
                   >
-                    <MenuItem value="">전체</MenuItem>
-                    <MenuItem value="hardware">하드웨어</MenuItem>
-                    <MenuItem value="software">소프트웨어</MenuItem>
+                    <MenuItem value=''>전체</MenuItem>
+                    <MenuItem value='hardware'>하드웨어</MenuItem>
+                    <MenuItem value='software'>소프트웨어</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
@@ -327,14 +326,17 @@ export function AdvancedSearchModal({
                   <InputLabel>상태</InputLabel>
                   <Select
                     value={filters.status || ''}
-                    onChange={(e) => setFilters(prev => ({
-                      ...prev,
-                      status: e.target.value as AssignmentStatus || undefined
-                    }))}
-                    label="상태"
+                    onChange={e =>
+                      setFilters(prev => ({
+                        ...prev,
+                        status:
+                          (e.target.value as AssignmentStatus) || undefined,
+                      }))
+                    }
+                    label='상태'
                   >
-                    <MenuItem value="">전체</MenuItem>
-                    {Object.values(ASSIGNMENT_STATUSES).map((status) => (
+                    <MenuItem value=''>전체</MenuItem>
+                    {Object.values(ASSIGNMENT_STATUSES).map(status => (
                       <MenuItem key={status} value={status}>
                         {status}
                       </MenuItem>
@@ -347,16 +349,20 @@ export function AdvancedSearchModal({
               <Grid item xs={12} sm={6}>
                 <Autocomplete
                   options={uniqueEmployees}
-                  value={filters.employee_id ? 
-                    uniqueEmployees.find(emp => emp === filters.employee_id) || null : null
+                  value={
+                    filters.employee_id
+                      ? uniqueEmployees.find(
+                          emp => emp === filters.employee_id
+                        ) || null
+                      : null
                   }
-                  onChange={(_, value) => setFilters(prev => ({
-                    ...prev,
-                    employee_id: value || undefined
-                  }))}
-                  renderInput={(params) => (
-                    <TextField {...params} label="직원" />
-                  )}
+                  onChange={(_, value) =>
+                    setFilters(prev => ({
+                      ...prev,
+                      employee_id: value || undefined,
+                    }))
+                  }
+                  renderInput={params => <TextField {...params} label='직원' />}
                 />
               </Grid>
 
@@ -365,13 +371,13 @@ export function AdvancedSearchModal({
                 <Autocomplete
                   options={uniqueDepartments}
                   value={filters.department || null}
-                  onChange={(_, value) => setFilters(prev => ({
-                    ...prev,
-                    department: value || undefined
-                  }))}
-                  renderInput={(params) => (
-                    <TextField {...params} label="부서" />
-                  )}
+                  onChange={(_, value) =>
+                    setFilters(prev => ({
+                      ...prev,
+                      department: value || undefined,
+                    }))
+                  }
+                  renderInput={params => <TextField {...params} label='부서' />}
                 />
               </Grid>
             </Grid>
@@ -381,32 +387,44 @@ export function AdvancedSearchModal({
         {/* Date Filters */}
         <Card sx={{ mb: 3 }}>
           <CardContent>
-            <Typography variant="subtitle1" gutterBottom>
+            <Typography variant='subtitle1' gutterBottom>
               날짜 필터
             </Typography>
-            
+
             <Grid container spacing={2}>
               {/* Assignment Date Range */}
               <Grid item xs={12} sm={6}>
                 <DatePicker
-                  label="할당일 시작"
-                  value={filters.assigned_date_from ? new Date(filters.assigned_date_from) : null}
-                  onChange={(date) => setFilters(prev => ({
-                    ...prev,
-                    assigned_date_from: date?.toISOString().split('T')[0]
-                  }))}
+                  label='할당일 시작'
+                  value={
+                    filters.assigned_date_from
+                      ? new Date(filters.assigned_date_from)
+                      : null
+                  }
+                  onChange={date =>
+                    setFilters(prev => ({
+                      ...prev,
+                      assigned_date_from: date?.toISOString().split('T')[0],
+                    }))
+                  }
                   slotProps={{ textField: { fullWidth: true } }}
                 />
               </Grid>
-              
+
               <Grid item xs={12} sm={6}>
                 <DatePicker
-                  label="할당일 종료"
-                  value={filters.assigned_date_to ? new Date(filters.assigned_date_to) : null}
-                  onChange={(date) => setFilters(prev => ({
-                    ...prev,
-                    assigned_date_to: date?.toISOString().split('T')[0]
-                  }))}
+                  label='할당일 종료'
+                  value={
+                    filters.assigned_date_to
+                      ? new Date(filters.assigned_date_to)
+                      : null
+                  }
+                  onChange={date =>
+                    setFilters(prev => ({
+                      ...prev,
+                      assigned_date_to: date?.toISOString().split('T')[0],
+                    }))
+                  }
                   slotProps={{ textField: { fullWidth: true } }}
                 />
               </Grid>
@@ -414,24 +432,36 @@ export function AdvancedSearchModal({
               {/* Return Date Range */}
               <Grid item xs={12} sm={6}>
                 <DatePicker
-                  label="반납일 시작"
-                  value={filters.return_date_from ? new Date(filters.return_date_from) : null}
-                  onChange={(date) => setFilters(prev => ({
-                    ...prev,
-                    return_date_from: date?.toISOString().split('T')[0]
-                  }))}
+                  label='반납일 시작'
+                  value={
+                    filters.return_date_from
+                      ? new Date(filters.return_date_from)
+                      : null
+                  }
+                  onChange={date =>
+                    setFilters(prev => ({
+                      ...prev,
+                      return_date_from: date?.toISOString().split('T')[0],
+                    }))
+                  }
                   slotProps={{ textField: { fullWidth: true } }}
                 />
               </Grid>
-              
+
               <Grid item xs={12} sm={6}>
                 <DatePicker
-                  label="반납일 종료"
-                  value={filters.return_date_to ? new Date(filters.return_date_to) : null}
-                  onChange={(date) => setFilters(prev => ({
-                    ...prev,
-                    return_date_to: date?.toISOString().split('T')[0]
-                  }))}
+                  label='반납일 종료'
+                  value={
+                    filters.return_date_to
+                      ? new Date(filters.return_date_to)
+                      : null
+                  }
+                  onChange={date =>
+                    setFilters(prev => ({
+                      ...prev,
+                      return_date_to: date?.toISOString().split('T')[0],
+                    }))
+                  }
                   slotProps={{ textField: { fullWidth: true } }}
                 />
               </Grid>
@@ -442,21 +472,23 @@ export function AdvancedSearchModal({
         {/* Advanced Options */}
         <Card sx={{ mb: 3 }}>
           <CardContent>
-            <Typography variant="subtitle1" gutterBottom>
+            <Typography variant='subtitle1' gutterBottom>
               고급 옵션
             </Typography>
-            
+
             <FormControlLabel
               control={
                 <Switch
                   checked={filters.overdue === true}
-                  onChange={(e) => setFilters(prev => ({
-                    ...prev,
-                    overdue: e.target.checked ? true : undefined
-                  }))}
+                  onChange={e =>
+                    setFilters(prev => ({
+                      ...prev,
+                      overdue: e.target.checked ? true : undefined,
+                    }))
+                  }
                 />
               }
-              label="연체된 할당만 표시"
+              label='연체된 할당만 표시'
             />
           </CardContent>
         </Card>
@@ -464,20 +496,20 @@ export function AdvancedSearchModal({
         {/* Save Search */}
         <Card>
           <CardContent>
-            <Typography variant="subtitle1" gutterBottom>
+            <Typography variant='subtitle1' gutterBottom>
               검색 저장
             </Typography>
-            
+
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               <TextField
-                placeholder="검색 조건 이름"
+                placeholder='검색 조건 이름'
                 value={searchName}
-                onChange={(e) => setSearchName(e.target.value)}
-                size="small"
+                onChange={e => setSearchName(e.target.value)}
+                size='small'
                 sx={{ flexGrow: 1 }}
               />
               <Button
-                variant="outlined"
+                variant='outlined'
                 startIcon={<SaveIcon />}
                 onClick={handleSaveSearch}
                 disabled={!searchName.trim()}
@@ -489,27 +521,36 @@ export function AdvancedSearchModal({
         </Card>
 
         {/* Result Preview */}
-        <Box sx={{ mt: 2, p: 2, backgroundColor: 'background.default', borderRadius: 1 }}>
-          <Typography variant="caption" color="text.secondary">
+        <Box
+          sx={{
+            mt: 2,
+            p: 2,
+            backgroundColor: 'background.default',
+            borderRadius: 1,
+          }}
+        >
+          <Typography variant='caption' color='text.secondary'>
             예상 결과: 약 {getResultCount()}개 항목
           </Typography>
         </Box>
       </DialogContent>
 
       {/* Dialog Actions */}
-      <DialogActions sx={{ p: 3, borderTop: `1px solid ${theme.palette.divider}`, gap: 1 }}>
-        <Button onClick={handleReset} color="inherit" startIcon={<ClearIcon />}>
+      <DialogActions
+        sx={{ p: 3, borderTop: `1px solid ${theme.palette.divider}`, gap: 1 }}
+      >
+        <Button onClick={handleReset} color='inherit' startIcon={<ClearIcon />}>
           초기화
         </Button>
-        
+
         <Box sx={{ flexGrow: 1 }} />
-        
-        <Button onClick={onClose} color="inherit">
+
+        <Button onClick={onClose} color='inherit'>
           취소
         </Button>
-        
+
         <Button
-          variant="contained"
+          variant='contained'
           onClick={handleApply}
           startIcon={<SearchIcon />}
         >

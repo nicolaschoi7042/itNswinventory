@@ -11,9 +11,9 @@ import { getToken, setToken, clearSession } from './session-storage';
  */
 export function syncTokenToCookies(): void {
   if (typeof window === 'undefined') return;
-  
+
   const token = getToken();
-  
+
   if (token) {
     // Set secure cookie that middleware can read
     // HttpOnly=false so client can access it, but Secure and SameSite for protection
@@ -31,10 +31,10 @@ export function syncTokenToCookies(): void {
  */
 export function clearTokenEverywhere(): void {
   if (typeof window === 'undefined') return;
-  
+
   // Clear localStorage
   clearSession();
-  
+
   // Clear cookie
   document.cookie = 'inventory_token=; Path=/; Max-Age=0';
 }
@@ -45,19 +45,19 @@ export function clearTokenEverywhere(): void {
  */
 export function initializeSessionSync(): void {
   if (typeof window === 'undefined') return;
-  
+
   // Initial sync
   syncTokenToCookies();
-  
+
   // Listen for localStorage changes and sync to cookies
   const handleStorageChange = (event: StorageEvent) => {
     if (event.key === 'inventory_token') {
       syncTokenToCookies();
     }
   };
-  
+
   window.addEventListener('storage', handleStorageChange);
-  
+
   // Return cleanup function
   return () => {
     window.removeEventListener('storage', handleStorageChange);

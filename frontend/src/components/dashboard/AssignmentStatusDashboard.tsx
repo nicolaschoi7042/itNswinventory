@@ -1,6 +1,6 @@
 /**
  * Assignment Status Dashboard Component
- * 
+ *
  * Comprehensive dashboard for visualizing assignment status, metrics, and trends
  * with interactive elements and real-time updates.
  */
@@ -21,7 +21,7 @@ import {
   Chip,
   LinearProgress,
   useTheme,
-  alpha
+  alpha,
 } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
@@ -29,7 +29,7 @@ import {
   Schedule as ScheduleIcon,
   Warning as WarningIcon,
   CheckCircle as CheckCircleIcon,
-  Assignment as AssignmentIcon
+  Assignment as AssignmentIcon,
 } from '@mui/icons-material';
 
 // Import assignment types and utilities
@@ -37,13 +37,13 @@ import {
   Assignment,
   AssignmentWithDetails,
   AssignmentStats,
-  AssignmentStatus
+  AssignmentStatus,
 } from '@/types/assignment';
 
 import {
   calculateAssignmentStats,
   getAssignmentStatusInfo,
-  formatDate
+  formatDate,
 } from '@/utils/assignment.utils';
 
 // Import visualization components
@@ -51,7 +51,7 @@ import {
   StatusIndicator,
   AssignmentStatsVisualization,
   ProgressRing,
-  AssetTypeVisualization
+  AssetTypeVisualization,
 } from '@/components/visualization/StatusVisualization';
 
 // ============================================================================
@@ -84,7 +84,7 @@ export function AssignmentStatusDashboard({
   showTrends = true,
   showRecentActivity = true,
   maxRecentItems = 5,
-  variant = 'full'
+  variant = 'full',
 }: AssignmentStatusDashboardProps) {
   const theme = useTheme();
 
@@ -109,10 +109,14 @@ export function AssignmentStatusDashboard({
   const recentAssignments = useMemo(() => {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    
+
     return assignments
       .filter(assignment => new Date(assignment.assigned_date) >= sevenDaysAgo)
-      .sort((a, b) => new Date(b.assigned_date).getTime() - new Date(a.assigned_date).getTime())
+      .sort(
+        (a, b) =>
+          new Date(b.assigned_date).getTime() -
+          new Date(a.assigned_date).getTime()
+      )
       .slice(0, maxRecentItems);
   }, [assignments, maxRecentItems]);
 
@@ -129,23 +133,33 @@ export function AssignmentStatusDashboard({
       {
         status: '사용중',
         current: stats.active_assignments,
-        previous: Math.max(0, stats.active_assignments - Math.floor(Math.random() * 5)),
+        previous: Math.max(
+          0,
+          stats.active_assignments - Math.floor(Math.random() * 5)
+        ),
         change: 0,
         changePercent: 0,
-        trend: 'stable'
+        trend: 'stable',
       },
       {
         status: '연체',
         current: stats.overdue_assignments,
-        previous: Math.max(0, stats.overdue_assignments + Math.floor(Math.random() * 3)),
+        previous: Math.max(
+          0,
+          stats.overdue_assignments + Math.floor(Math.random() * 3)
+        ),
         change: 0,
         changePercent: 0,
-        trend: 'down'
-      }
+        trend: 'down',
+      },
     ].map(trend => {
       trend.change = trend.current - trend.previous;
-      trend.changePercent = trend.previous > 0 ? Math.round((trend.change / trend.previous) * 100) : 0;
-      trend.trend = trend.change > 0 ? 'up' : trend.change < 0 ? 'down' : 'stable';
+      trend.changePercent =
+        trend.previous > 0
+          ? Math.round((trend.change / trend.previous) * 100)
+          : 0;
+      trend.trend =
+        trend.change > 0 ? 'up' : trend.change < 0 ? 'down' : 'stable';
       return trend;
     });
   }, [stats]);
@@ -155,32 +169,42 @@ export function AssignmentStatusDashboard({
     return (
       <Card>
         <CardContent>
-          <Typography variant="h6" gutterBottom>
+          <Typography variant='h6' gutterBottom>
             할당 현황
           </Typography>
           <Grid container spacing={2}>
             <Grid item xs={6}>
               <Box sx={{ textAlign: 'center' }}>
-                <ProgressRing 
-                  value={statusDistribution.active_percent || 0} 
-                  color="success" 
+                <ProgressRing
+                  value={statusDistribution.active_percent || 0}
+                  color='success'
                   size={60}
                   label={`${stats.active_assignments}`}
                 />
-                <Typography variant="caption" display="block" color="text.secondary" sx={{ mt: 1 }}>
+                <Typography
+                  variant='caption'
+                  display='block'
+                  color='text.secondary'
+                  sx={{ mt: 1 }}
+                >
                   사용 중
                 </Typography>
               </Box>
             </Grid>
             <Grid item xs={6}>
               <Box sx={{ textAlign: 'center' }}>
-                <ProgressRing 
-                  value={statusDistribution.overdue_percent || 0} 
-                  color="error" 
+                <ProgressRing
+                  value={statusDistribution.overdue_percent || 0}
+                  color='error'
                   size={60}
                   label={`${stats.overdue_assignments}`}
                 />
-                <Typography variant="caption" display="block" color="text.secondary" sx={{ mt: 1 }}>
+                <Typography
+                  variant='caption'
+                  display='block'
+                  color='text.secondary'
+                  sx={{ mt: 1 }}
+                >
                   연체
                 </Typography>
               </Box>
@@ -195,17 +219,17 @@ export function AssignmentStatusDashboard({
   if (variant === 'compact') {
     return (
       <Box>
-        <AssignmentStatsVisualization stats={stats} variant="compact" />
-        
+        <AssignmentStatsVisualization stats={stats} variant='compact' />
+
         {overdueAssignments.length > 0 && (
           <Card sx={{ mt: 2 }}>
             <CardContent>
-              <Typography variant="subtitle1" color="error.main" gutterBottom>
+              <Typography variant='subtitle1' color='error.main' gutterBottom>
                 <WarningIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
                 연체 항목 ({overdueAssignments.length})
               </Typography>
               <List dense>
-                {overdueAssignments.map((assignment) => (
+                {overdueAssignments.map(assignment => (
                   <ListItem key={assignment.id} sx={{ px: 0 }}>
                     <ListItemText
                       primary={assignment.employee_name}
@@ -213,7 +237,7 @@ export function AssignmentStatusDashboard({
                       primaryTypographyProps={{ variant: 'body2' }}
                       secondaryTypographyProps={{ variant: 'caption' }}
                     />
-                    <StatusIndicator status={assignment.status} size="small" />
+                    <StatusIndicator status={assignment.status} size='small' />
                   </ListItem>
                 ))}
               </List>
@@ -228,83 +252,104 @@ export function AssignmentStatusDashboard({
   return (
     <Box>
       {/* Main Statistics */}
-      <AssignmentStatsVisualization stats={stats} variant="detailed" />
+      <AssignmentStatsVisualization stats={stats} variant='detailed' />
 
       <Grid container spacing={3} sx={{ mt: 2 }}>
         {/* Status Distribution */}
         <Grid item xs={12} md={6}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
+              <Typography variant='h6' gutterBottom>
                 상태별 분포
               </Typography>
-              
+
               <Box sx={{ mt: 2 }}>
                 {/* Active assignments progress */}
                 <Box sx={{ mb: 2 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="body2">사용 중</Typography>
-                    <Typography variant="body2" color="success.main">
-                      {stats.active_assignments} ({statusDistribution.active_percent}%)
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      mb: 1,
+                    }}
+                  >
+                    <Typography variant='body2'>사용 중</Typography>
+                    <Typography variant='body2' color='success.main'>
+                      {stats.active_assignments} (
+                      {statusDistribution.active_percent}%)
                     </Typography>
                   </Box>
                   <LinearProgress
-                    variant="determinate"
+                    variant='determinate'
                     value={statusDistribution.active_percent || 0}
-                    color="success"
+                    color='success'
                     sx={{ height: 8, borderRadius: 4 }}
                   />
                 </Box>
 
                 {/* Returned assignments progress */}
                 <Box sx={{ mb: 2 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="body2">반납 완료</Typography>
-                    <Typography variant="body2" color="info.main">
-                      {stats.returned_assignments} ({statusDistribution.returned_percent}%)
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      mb: 1,
+                    }}
+                  >
+                    <Typography variant='body2'>반납 완료</Typography>
+                    <Typography variant='body2' color='info.main'>
+                      {stats.returned_assignments} (
+                      {statusDistribution.returned_percent}%)
                     </Typography>
                   </Box>
                   <LinearProgress
-                    variant="determinate"
+                    variant='determinate'
                     value={statusDistribution.returned_percent || 0}
-                    color="info"
+                    color='info'
                     sx={{ height: 8, borderRadius: 4 }}
                   />
                 </Box>
 
                 {/* Overdue assignments progress */}
                 <Box sx={{ mb: 2 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="body2">연체</Typography>
-                    <Typography variant="body2" color="error.main">
-                      {stats.overdue_assignments} ({statusDistribution.overdue_percent}%)
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      mb: 1,
+                    }}
+                  >
+                    <Typography variant='body2'>연체</Typography>
+                    <Typography variant='body2' color='error.main'>
+                      {stats.overdue_assignments} (
+                      {statusDistribution.overdue_percent}%)
                     </Typography>
                   </Box>
                   <LinearProgress
-                    variant="determinate"
+                    variant='determinate'
                     value={statusDistribution.overdue_percent || 0}
-                    color="error"
+                    color='error'
                     sx={{ height: 8, borderRadius: 4 }}
                   />
                 </Box>
 
                 {/* Asset type distribution */}
                 <Divider sx={{ my: 2 }} />
-                <Typography variant="subtitle2" gutterBottom>
+                <Typography variant='subtitle2' gutterBottom>
                   자산 유형별
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
                   <Chip
                     label={`하드웨어: ${stats.by_asset_type.hardware}`}
-                    color="info"
-                    variant="outlined"
-                    size="small"
+                    color='info'
+                    variant='outlined'
+                    size='small'
                   />
                   <Chip
                     label={`소프트웨어: ${stats.by_asset_type.software}`}
-                    color="success"
-                    variant="outlined"
-                    size="small"
+                    color='success'
+                    variant='outlined'
+                    size='small'
                   />
                 </Box>
               </Box>
@@ -314,21 +359,34 @@ export function AssignmentStatusDashboard({
 
         {/* Recent Activity & Alerts */}
         <Grid item xs={12} md={6}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '100%' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2,
+              height: '100%',
+            }}
+          >
             {/* Overdue Alerts */}
             {overdueAssignments.length > 0 && (
               <Card>
                 <CardContent>
-                  <Typography variant="h6" color="error.main" gutterBottom>
+                  <Typography variant='h6' color='error.main' gutterBottom>
                     <WarningIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
                     연체 알림 ({overdueAssignments.length})
                   </Typography>
                   <List dense>
-                    {overdueAssignments.map((assignment) => (
+                    {overdueAssignments.map(assignment => (
                       <ListItem key={assignment.id} sx={{ px: 0 }}>
                         <ListItemAvatar>
-                          <Avatar sx={{ bgcolor: 'error.main', width: 32, height: 32 }}>
-                            <WarningIcon fontSize="small" />
+                          <Avatar
+                            sx={{
+                              bgcolor: 'error.main',
+                              width: 32,
+                              height: 32,
+                            }}
+                          >
+                            <WarningIcon fontSize='small' />
                           </Avatar>
                         </ListItemAvatar>
                         <ListItemText
@@ -337,7 +395,11 @@ export function AssignmentStatusDashboard({
                           primaryTypographyProps={{ variant: 'body2' }}
                           secondaryTypographyProps={{ variant: 'caption' }}
                         />
-                        <StatusIndicator status={assignment.status} size="small" variant="minimal" />
+                        <StatusIndicator
+                          status={assignment.status}
+                          size='small'
+                          variant='minimal'
+                        />
                       </ListItem>
                     ))}
                   </List>
@@ -349,16 +411,22 @@ export function AssignmentStatusDashboard({
             {showRecentActivity && recentAssignments.length > 0 && (
               <Card sx={{ flexGrow: 1 }}>
                 <CardContent>
-                  <Typography variant="h6" gutterBottom>
+                  <Typography variant='h6' gutterBottom>
                     <ScheduleIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
                     최근 할당 ({recentAssignments.length})
                   </Typography>
                   <List dense>
-                    {recentAssignments.map((assignment) => (
+                    {recentAssignments.map(assignment => (
                       <ListItem key={assignment.id} sx={{ px: 0 }}>
                         <ListItemAvatar>
-                          <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>
-                            <AssignmentIcon fontSize="small" />
+                          <Avatar
+                            sx={{
+                              bgcolor: 'primary.main',
+                              width: 32,
+                              height: 32,
+                            }}
+                          >
+                            <AssignmentIcon fontSize='small' />
                           </Avatar>
                         </ListItemAvatar>
                         <ListItemText
@@ -367,7 +435,10 @@ export function AssignmentStatusDashboard({
                           primaryTypographyProps={{ variant: 'body2' }}
                           secondaryTypographyProps={{ variant: 'caption' }}
                         />
-                        <StatusIndicator status={assignment.status} size="small" />
+                        <StatusIndicator
+                          status={assignment.status}
+                          size='small'
+                        />
                       </ListItem>
                     ))}
                   </List>
@@ -379,34 +450,55 @@ export function AssignmentStatusDashboard({
             {showTrends && (
               <Card>
                 <CardContent>
-                  <Typography variant="h6" gutterBottom>
+                  <Typography variant='h6' gutterBottom>
                     <TrendingUpIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
                     추세 분석
                   </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Box
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
+                  >
                     {trends.map((trend, index) => (
-                      <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <StatusIndicator status={trend.status} size="small" showLabel={false} />
-                        <Typography variant="body2" sx={{ flexGrow: 1 }}>
+                      <Box
+                        key={index}
+                        sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
+                      >
+                        <StatusIndicator
+                          status={trend.status}
+                          size='small'
+                          showLabel={false}
+                        />
+                        <Typography variant='body2' sx={{ flexGrow: 1 }}>
                           {getAssignmentStatusInfo(trend.status).label}
                         </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.5,
+                          }}
+                        >
                           {trend.trend === 'up' ? (
-                            <TrendingUpIcon color="error" fontSize="small" />
+                            <TrendingUpIcon color='error' fontSize='small' />
                           ) : trend.trend === 'down' ? (
-                            <TrendingDownIcon color="success" fontSize="small" />
+                            <TrendingDownIcon
+                              color='success'
+                              fontSize='small'
+                            />
                           ) : (
                             <Box sx={{ width: 16 }} />
                           )}
-                          <Typography 
-                            variant="caption" 
+                          <Typography
+                            variant='caption'
                             color={
-                              trend.trend === 'up' ? 'error.main' : 
-                              trend.trend === 'down' ? 'success.main' : 
-                              'text.secondary'
+                              trend.trend === 'up'
+                                ? 'error.main'
+                                : trend.trend === 'down'
+                                  ? 'success.main'
+                                  : 'text.secondary'
                             }
                           >
-                            {trend.change > 0 ? '+' : ''}{trend.change}
+                            {trend.change > 0 ? '+' : ''}
+                            {trend.change}
                           </Typography>
                         </Box>
                       </Box>

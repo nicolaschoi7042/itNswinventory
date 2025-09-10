@@ -3,7 +3,10 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Alert, Box, Button, Typography } from '@mui/material';
-import { AdminPanelSettings as AdminIcon, Person as PersonIcon } from '@mui/icons-material';
+import {
+  AdminPanelSettings as AdminIcon,
+  Person as PersonIcon,
+} from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
 
 interface RoleGuardProps {
@@ -21,8 +24,13 @@ export function AdminOnlyGuard({ children, fallback }: RoleGuardProps) {
 
   if (!user) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
-        <Alert severity="warning">
+      <Box
+        display='flex'
+        justifyContent='center'
+        alignItems='center'
+        minHeight='200px'
+      >
+        <Alert severity='warning'>
           <Typography>로그인이 필요합니다.</Typography>
         </Alert>
       </Box>
@@ -35,21 +43,23 @@ export function AdminOnlyGuard({ children, fallback }: RoleGuardProps) {
     }
 
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px" p={3}>
-        <Alert 
-          severity="error" 
-          icon={<AdminIcon />}
-          sx={{ maxWidth: 400 }}
-        >
-          <Typography variant="h6" gutterBottom>
+      <Box
+        display='flex'
+        justifyContent='center'
+        alignItems='center'
+        minHeight='200px'
+        p={3}
+      >
+        <Alert severity='error' icon={<AdminIcon />} sx={{ maxWidth: 400 }}>
+          <Typography variant='h6' gutterBottom>
             관리자 권한 필요
           </Typography>
-          <Typography variant="body2" paragraph>
+          <Typography variant='body2' paragraph>
             이 기능은 관리자만 사용할 수 있습니다.
           </Typography>
-          <Button 
-            variant="outlined" 
-            size="small"
+          <Button
+            variant='outlined'
+            size='small'
             onClick={() => router.push('/dashboard')}
           >
             대시보드로 이동
@@ -63,7 +73,7 @@ export function AdminOnlyGuard({ children, fallback }: RoleGuardProps) {
 }
 
 /**
- * Manager-level access guard  
+ * Manager-level access guard
  * Allows users with 'admin' or 'manager' role
  */
 export function ManagerGuard({ children, fallback }: RoleGuardProps) {
@@ -72,8 +82,13 @@ export function ManagerGuard({ children, fallback }: RoleGuardProps) {
 
   if (!user) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
-        <Alert severity="warning">
+      <Box
+        display='flex'
+        justifyContent='center'
+        alignItems='center'
+        minHeight='200px'
+      >
+        <Alert severity='warning'>
           <Typography>로그인이 필요합니다.</Typography>
         </Alert>
       </Box>
@@ -88,21 +103,23 @@ export function ManagerGuard({ children, fallback }: RoleGuardProps) {
     }
 
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px" p={3}>
-        <Alert 
-          severity="error" 
-          icon={<PersonIcon />}
-          sx={{ maxWidth: 400 }}
-        >
-          <Typography variant="h6" gutterBottom>
+      <Box
+        display='flex'
+        justifyContent='center'
+        alignItems='center'
+        minHeight='200px'
+        p={3}
+      >
+        <Alert severity='error' icon={<PersonIcon />} sx={{ maxWidth: 400 }}>
+          <Typography variant='h6' gutterBottom>
             매니저 권한 필요
           </Typography>
-          <Typography variant="body2" paragraph>
+          <Typography variant='body2' paragraph>
             이 기능은 관리자 또는 매니저만 사용할 수 있습니다.
           </Typography>
-          <Button 
-            variant="outlined" 
-            size="small"
+          <Button
+            variant='outlined'
+            size='small'
             onClick={() => router.push('/dashboard')}
           >
             대시보드로 이동
@@ -138,7 +155,13 @@ export function withAdminGuard<P extends object>(
 ) {
   return function AdminGuardedComponent(props: P) {
     return (
-      <AdminOnlyGuard fallback={fallbackComponent ? React.createElement(fallbackComponent, props) : undefined}>
+      <AdminOnlyGuard
+        fallback={
+          fallbackComponent
+            ? React.createElement(fallbackComponent, props)
+            : undefined
+        }
+      >
         <Component {...props} />
       </AdminOnlyGuard>
     );
@@ -154,7 +177,13 @@ export function withManagerGuard<P extends object>(
 ) {
   return function ManagerGuardedComponent(props: P) {
     return (
-      <ManagerGuard fallback={fallbackComponent ? React.createElement(fallbackComponent, props) : undefined}>
+      <ManagerGuard
+        fallback={
+          fallbackComponent
+            ? React.createElement(fallbackComponent, props)
+            : undefined
+        }
+      >
         <Component {...props} />
       </ManagerGuard>
     );
@@ -175,11 +204,11 @@ interface ConditionalRenderProps {
 
 export function ConditionalRender({
   adminOnly,
-  managerOnly, 
+  managerOnly,
   userOnly,
   authenticated,
   unauthenticated,
-  children
+  children,
 }: ConditionalRenderProps) {
   const { user, isAdmin, isManager, isAuthenticated } = useAuth();
 
@@ -223,12 +252,12 @@ interface RoleBasedButtonProps {
   [key: string]: any; // Allow other button props
 }
 
-export function RoleBasedButton({ 
-  adminOnly, 
-  managerOnly, 
-  onClick, 
-  children, 
-  ...buttonProps 
+export function RoleBasedButton({
+  adminOnly,
+  managerOnly,
+  onClick,
+  children,
+  ...buttonProps
 }: RoleBasedButtonProps) {
   const { isAdmin, isManager } = useAuth();
 

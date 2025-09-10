@@ -3,37 +3,45 @@
 import React, { useState, useEffect } from 'react';
 import { ManagerGuard } from '@/components/guards/RoleGuards';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  Box, 
-  Typography, 
-  Button, 
-  IconButton, 
+import {
+  Box,
+  Typography,
+  Button,
+  IconButton,
   Chip,
   Alert,
-  Snackbar
+  Snackbar,
 } from '@mui/material';
-import { 
-  Computer as ComputerIcon, 
+import {
+  Computer as ComputerIcon,
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Visibility as ViewIcon,
   FileDownload as ExcelIcon,
-  Assignment as AssignIcon
+  Assignment as AssignIcon,
 } from '@mui/icons-material';
-import { DataTable, Column } from '@/components/tables/DataTable';
-import { SearchFilter } from '@/components/tables/SearchFilter';
-import { HardwareFormModal, useHardwareFormModal, HardwareDetailModal, useHardwareDetailModal } from '@/components/modals';
-import { HighlightText, useHighlightRenderer } from '@/components/common/HighlightText';
+import { DataTable, Column } from '@/components/common/DataTable';
+import { SearchFilter } from '@/components/common/SearchFilter';
+import {
+  HardwareFormModal,
+  useHardwareFormModal,
+  HardwareDetailModal,
+  useHardwareDetailModal,
+} from '@/components/modals';
+import {
+  HighlightText,
+  useHighlightRenderer,
+} from '@/components/common/HighlightText';
 import MainLayout from '@/components/layout/MainLayout';
-import { 
-  Hardware, 
-  HardwareWithAssignee, 
-  CreateHardwareData, 
+import {
+  Hardware,
+  HardwareWithAssignee,
+  CreateHardwareData,
   UpdateHardwareData,
   HARDWARE_STATUSES,
   HARDWARE_TYPES,
-  HARDWARE_MANUFACTURERS 
+  HARDWARE_MANUFACTURERS,
 } from '@/types/hardware';
 import { HardwareService } from '@/services/hardware.service';
 import { AssignmentService } from '@/services/assignment.service';
@@ -70,7 +78,7 @@ export default function HardwarePage() {
     assignmentFilter: '',
     purchaseDateFrom: '',
     purchaseDateTo: '',
-    notification: { open: false, message: '', severity: 'info' }
+    notification: { open: false, message: '', severity: 'info' },
   });
 
   // Hardware form modal state
@@ -84,11 +92,11 @@ export default function HardwarePage() {
   // Load hardware data
   const loadHardware = async () => {
     setState(prev => ({ ...prev, loading: true, error: null }));
-    
+
     try {
       const [hardwareResponse, assignmentsResponse] = await Promise.all([
         hardwareService.getAll(),
-        assignmentService.getAll()
+        assignmentService.getAll(),
       ]);
 
       if (hardwareResponse.success && assignmentsResponse.success) {
@@ -96,40 +104,47 @@ export default function HardwarePage() {
         const assignments = assignmentsResponse.data || [];
 
         // Enhance hardware with assignment information
-        const hardwareWithAssignee: HardwareWithAssignee[] = hardware.map(hw => {
-          const currentAssignment = assignments.find(
-            assignment => 
-              assignment.asset_type === 'hardware' && 
-              assignment.asset_id === hw.id && 
-              assignment.status === '사용중'
-          );
+        const hardwareWithAssignee: HardwareWithAssignee[] = hardware.map(
+          hw => {
+            const currentAssignment = assignments.find(
+              assignment =>
+                assignment.asset_type === 'hardware' &&
+                assignment.asset_id === hw.id &&
+                assignment.status === '사용중'
+            );
 
-          return {
-            ...hw,
-            assignedEmployeeName: currentAssignment?.employee_name,
-            assignmentDate: currentAssignment?.assigned_date,
-            assignmentHistory: assignments.filter(
-              assignment => 
-                assignment.asset_type === 'hardware' && 
-                assignment.asset_id === hw.id
-            )
-          };
-        });
+            return {
+              ...hw,
+              assignedEmployeeName: currentAssignment?.employee_name,
+              assignmentDate: currentAssignment?.assigned_date,
+              assignmentHistory: assignments.filter(
+                assignment =>
+                  assignment.asset_type === 'hardware' &&
+                  assignment.asset_id === hw.id
+              ),
+            };
+          }
+        );
 
-        setState(prev => ({ 
-          ...prev, 
+        setState(prev => ({
+          ...prev,
           hardware: hardwareWithAssignee,
-          loading: false 
+          loading: false,
         }));
       } else {
-        throw new Error(hardwareResponse.error || assignmentsResponse.error || 'Failed to load data');
+        throw new Error(
+          hardwareResponse.error ||
+            assignmentsResponse.error ||
+            'Failed to load data'
+        );
       }
     } catch (error) {
       console.error('Failed to load hardware:', error);
-      setState(prev => ({ 
-        ...prev, 
+      setState(prev => ({
+        ...prev,
         loading: false,
-        error: error instanceof Error ? error.message : 'Failed to load hardware'
+        error:
+          error instanceof Error ? error.message : 'Failed to load hardware',
       }));
     }
   };
@@ -183,7 +198,7 @@ export default function HardwarePage() {
       statusFilter: '',
       assignmentFilter: '',
       purchaseDateFrom: '',
-      purchaseDateTo: ''
+      purchaseDateTo: '',
     }));
   };
 
@@ -191,13 +206,17 @@ export default function HardwarePage() {
   const handleCreateHardware = async (data: CreateHardwareData) => {
     try {
       const response = await hardwareService.create(data);
-      
+
       if (response.success) {
-        setState(prev => ({ 
-          ...prev, 
-          notification: { open: true, message: '하드웨어가 성공적으로 등록되었습니다.', severity: 'success' }
+        setState(prev => ({
+          ...prev,
+          notification: {
+            open: true,
+            message: '하드웨어가 성공적으로 등록되었습니다.',
+            severity: 'success',
+          },
         }));
-        
+
         // Reload hardware list
         await loadHardware();
       } else {
@@ -205,9 +224,13 @@ export default function HardwarePage() {
       }
     } catch (error) {
       console.error('Create hardware error:', error);
-      setState(prev => ({ 
-        ...prev, 
-        notification: { open: true, message: '하드웨어 등록에 실패했습니다.', severity: 'error' }
+      setState(prev => ({
+        ...prev,
+        notification: {
+          open: true,
+          message: '하드웨어 등록에 실패했습니다.',
+          severity: 'error',
+        },
       }));
     }
   };
@@ -215,16 +238,23 @@ export default function HardwarePage() {
   // Handle update hardware
   const handleUpdateHardware = async (data: UpdateHardwareData) => {
     if (!hardwareModal.hardware) return;
-    
+
     try {
-      const response = await hardwareService.update(hardwareModal.hardware.id, data);
-      
+      const response = await hardwareService.update(
+        hardwareModal.hardware.id,
+        data
+      );
+
       if (response.success) {
-        setState(prev => ({ 
-          ...prev, 
-          notification: { open: true, message: '하드웨어 정보가 성공적으로 수정되었습니다.', severity: 'success' }
+        setState(prev => ({
+          ...prev,
+          notification: {
+            open: true,
+            message: '하드웨어 정보가 성공적으로 수정되었습니다.',
+            severity: 'success',
+          },
         }));
-        
+
         // Reload hardware list
         await loadHardware();
       } else {
@@ -232,9 +262,13 @@ export default function HardwarePage() {
       }
     } catch (error) {
       console.error('Update hardware error:', error);
-      setState(prev => ({ 
-        ...prev, 
-        notification: { open: true, message: '하드웨어 정보 수정에 실패했습니다.', severity: 'error' }
+      setState(prev => ({
+        ...prev,
+        notification: {
+          open: true,
+          message: '하드웨어 정보 수정에 실패했습니다.',
+          severity: 'error',
+        },
       }));
     }
   };
@@ -243,30 +277,39 @@ export default function HardwarePage() {
   const handleDeleteHardware = async (hardware: HardwareWithAssignee) => {
     // Check if hardware is assigned
     if (hardware.assigned_to) {
-      setState(prev => ({ 
-        ...prev, 
-        notification: { 
-          open: true, 
-          message: '할당된 하드웨어는 삭제할 수 없습니다. 먼저 반납 처리하세요.', 
-          severity: 'warning' 
-        }
+      setState(prev => ({
+        ...prev,
+        notification: {
+          open: true,
+          message:
+            '할당된 하드웨어는 삭제할 수 없습니다. 먼저 반납 처리하세요.',
+          severity: 'warning',
+        },
       }));
       return;
     }
 
-    if (!window.confirm(`정말로 "${hardware.manufacturer} ${hardware.model} (${hardware.id})" 하드웨어를 삭제하시겠습니까?`)) {
+    if (
+      !window.confirm(
+        `정말로 "${hardware.manufacturer} ${hardware.model} (${hardware.id})" 하드웨어를 삭제하시겠습니까?`
+      )
+    ) {
       return;
     }
 
     try {
       const response = await hardwareService.delete(hardware.id);
-      
+
       if (response.success) {
-        setState(prev => ({ 
-          ...prev, 
-          notification: { open: true, message: '하드웨어가 성공적으로 삭제되었습니다.', severity: 'success' }
+        setState(prev => ({
+          ...prev,
+          notification: {
+            open: true,
+            message: '하드웨어가 성공적으로 삭제되었습니다.',
+            severity: 'success',
+          },
         }));
-        
+
         // Reload hardware list
         await loadHardware();
       } else {
@@ -274,9 +317,13 @@ export default function HardwarePage() {
       }
     } catch (error) {
       console.error('Delete hardware error:', error);
-      setState(prev => ({ 
-        ...prev, 
-        notification: { open: true, message: '하드웨어 삭제에 실패했습니다.', severity: 'error' }
+      setState(prev => ({
+        ...prev,
+        notification: {
+          open: true,
+          message: '하드웨어 삭제에 실패했습니다.',
+          severity: 'error',
+        },
       }));
     }
   };
@@ -293,9 +340,11 @@ export default function HardwarePage() {
         hardware.model,
         hardware.serial_number,
         hardware.assignedEmployeeName || '',
-        hardware.notes || ''
-      ].join(' ').toLowerCase();
-      
+        hardware.notes || '',
+      ]
+        .join(' ')
+        .toLowerCase();
+
       if (!searchFields.includes(searchLower)) {
         return false;
       }
@@ -307,7 +356,10 @@ export default function HardwarePage() {
     }
 
     // Manufacturer filter
-    if (state.manufacturerFilter && hardware.manufacturer !== state.manufacturerFilter) {
+    if (
+      state.manufacturerFilter &&
+      hardware.manufacturer !== state.manufacturerFilter
+    ) {
       return false;
     }
 
@@ -344,17 +396,25 @@ export default function HardwarePage() {
 
   // Get unique values for filter options
   const uniqueTypes = [...new Set(state.hardware.map(hw => hw.type))].sort();
-  const uniqueManufacturers = [...new Set(state.hardware.map(hw => hw.manufacturer))].sort();
-  const uniqueStatuses = [...new Set(state.hardware.map(hw => hw.status))].sort();
+  const uniqueManufacturers = [
+    ...new Set(state.hardware.map(hw => hw.manufacturer)),
+  ].sort();
+  const uniqueStatuses = [
+    ...new Set(state.hardware.map(hw => hw.status)),
+  ].sort();
 
   // Handle export to Excel
   const handleExportToExcel = async () => {
     try {
-      setState(prev => ({ 
-        ...prev, 
-        notification: { open: true, message: '엑셀 파일을 생성하고 있습니다...', severity: 'info' }
+      setState(prev => ({
+        ...prev,
+        notification: {
+          open: true,
+          message: '엑셀 파일을 생성하고 있습니다...',
+          severity: 'info',
+        },
       }));
-      
+
       const response = await hardwareService.exportToExcel();
       if (response.success && response.data) {
         // Create download link
@@ -364,59 +424,67 @@ export default function HardwarePage() {
         link.download = `hardware_assets_${new Date().toISOString().split('T')[0]}.xlsx`;
         link.click();
         window.URL.revokeObjectURL(url);
-        
-        setState(prev => ({ 
-          ...prev, 
-          notification: { open: true, message: '엑셀 파일이 다운로드되었습니다.', severity: 'success' }
+
+        setState(prev => ({
+          ...prev,
+          notification: {
+            open: true,
+            message: '엑셀 파일이 다운로드되었습니다.',
+            severity: 'success',
+          },
         }));
       }
     } catch (error) {
       console.error('Export failed:', error);
-      setState(prev => ({ 
-        ...prev, 
-        notification: { open: true, message: '엑셀 내보내기에 실패했습니다.', severity: 'error' }
+      setState(prev => ({
+        ...prev,
+        notification: {
+          open: true,
+          message: '엑셀 내보내기에 실패했습니다.',
+          severity: 'error',
+        },
       }));
     }
   };
 
   // Hardware table columns
   const highlightRenderer = useHighlightRenderer(state.searchQuery);
-  
+
   const columns: Column<HardwareWithAssignee>[] = [
     {
       id: 'id',
       label: '자산 번호',
       sortable: true,
       minWidth: 120,
-      render: (value: string) => highlightRenderer(value)
+      render: (value: string) => highlightRenderer(value),
     },
     {
       id: 'type',
       label: '유형',
       sortable: true,
       minWidth: 100,
-      render: (value: string) => highlightRenderer(value)
+      render: (value: string) => highlightRenderer(value),
     },
     {
       id: 'manufacturer',
       label: '제조사',
       sortable: true,
       minWidth: 100,
-      render: (value: string) => highlightRenderer(value)
+      render: (value: string) => highlightRenderer(value),
     },
     {
       id: 'model',
       label: '모델명',
       sortable: true,
       minWidth: 150,
-      render: (value: string) => highlightRenderer(value)
+      render: (value: string) => highlightRenderer(value),
     },
     {
       id: 'serial_number',
       label: '시리얼 번호',
       sortable: true,
       minWidth: 150,
-      render: (value: string) => highlightRenderer(value)
+      render: (value: string) => highlightRenderer(value),
     },
     {
       id: 'status',
@@ -426,35 +494,48 @@ export default function HardwarePage() {
       render: (value: string) => {
         const getStatusColor = (status: string) => {
           switch (status) {
-            case '대기중': return 'default';
-            case '사용중': return 'success';
-            case '수리중': return 'warning';
-            case '폐기': return 'error';
-            default: return 'default';
+            case '대기중':
+              return 'default';
+            case '사용중':
+              return 'success';
+            case '수리중':
+              return 'warning';
+            case '폐기':
+              return 'error';
+            default:
+              return 'default';
           }
         };
-        return <Chip label={value} size="small" color={getStatusColor(value)} />;
-      }
+        return (
+          <Chip label={value} size='small' color={getStatusColor(value)} />
+        );
+      },
     },
     {
       id: 'assigned_to_name',
       label: '사용자',
       sortable: true,
       minWidth: 120,
-      render: (value: string | undefined, hardware: HardwareWithAssignee) => 
-        value ? highlightRenderer(value) : (
-          <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+      render: (value: string | undefined, hardware: HardwareWithAssignee) =>
+        value ? (
+          highlightRenderer(value)
+        ) : (
+          <Typography
+            variant='body2'
+            color='text.secondary'
+            sx={{ fontStyle: 'italic' }}
+          >
             미할당
           </Typography>
-        )
+        ),
     },
     {
       id: 'purchase_date',
       label: '구매일',
       sortable: true,
       minWidth: 100,
-      render: (value: string | undefined) => 
-        value ? new Date(value).toLocaleDateString('ko-KR') : '-'
+      render: (value: string | undefined) =>
+        value ? new Date(value).toLocaleDateString('ko-KR') : '-',
     },
     {
       id: 'price',
@@ -462,8 +543,8 @@ export default function HardwarePage() {
       sortable: true,
       align: 'right',
       minWidth: 120,
-      render: (value: number | undefined) => 
-        value ? `₩${value.toLocaleString()}` : '-'
+      render: (value: number | undefined) =>
+        value ? `₩${value.toLocaleString()}` : '-',
     },
     {
       id: 'actions',
@@ -472,46 +553,46 @@ export default function HardwarePage() {
       render: (_, hardware: HardwareWithAssignee) => (
         <Box sx={{ display: 'flex', gap: 0.5 }}>
           <IconButton
-            size="small"
+            size='small'
             onClick={() => hardwareDetailModal.openModal(hardware)}
             sx={{ color: 'primary.main' }}
           >
-            <ViewIcon fontSize="small" />
+            <ViewIcon fontSize='small' />
           </IconButton>
-          
+
           <IconButton
-            size="small"
+            size='small'
             onClick={() => hardwareModal.openEditModal(hardware)}
             sx={{ color: 'warning.main' }}
           >
-            <EditIcon fontSize="small" />
+            <EditIcon fontSize='small' />
           </IconButton>
-          
+
           {!hardware.assigned_to && (
             <IconButton
-              size="small"
+              size='small'
               onClick={() => {
                 // TODO: Open assignment modal in Task 9.0
                 console.log('Assign hardware:', hardware.id);
               }}
               sx={{ color: 'success.main' }}
             >
-              <AssignIcon fontSize="small" />
+              <AssignIcon fontSize='small' />
             </IconButton>
           )}
-          
+
           {user?.role === 'admin' && (
             <IconButton
-              size="small"
+              size='small'
               onClick={() => handleDeleteHardware(hardware)}
               sx={{ color: 'error.main' }}
             >
-              <DeleteIcon fontSize="small" />
+              <DeleteIcon fontSize='small' />
             </IconButton>
           )}
         </Box>
-      )
-    }
+      ),
+    },
   ];
 
   // Count active filters
@@ -522,7 +603,7 @@ export default function HardwarePage() {
     state.statusFilter,
     state.assignmentFilter,
     state.purchaseDateFrom,
-    state.purchaseDateTo
+    state.purchaseDateTo,
   ].filter(filter => filter && filter.trim() !== '').length;
 
   return (
@@ -530,39 +611,45 @@ export default function HardwarePage() {
       <MainLayout>
         <Box sx={{ p: 3 }}>
           {/* Header */}
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-            <Box display="flex" alignItems="center" gap={2}>
-              <ComputerIcon color="primary" sx={{ fontSize: 32 }} />
+          <Box
+            display='flex'
+            justifyContent='space-between'
+            alignItems='center'
+            mb={3}
+          >
+            <Box display='flex' alignItems='center' gap={2}>
+              <ComputerIcon color='primary' sx={{ fontSize: 32 }} />
               <Box>
-                <Typography variant="h4" component="h1">
+                <Typography variant='h4' component='h1'>
                   하드웨어 관리
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  총 {state.hardware.length}개 자산 중 {filteredHardware.length}개 표시
+                <Typography variant='body2' color='text.secondary'>
+                  총 {state.hardware.length}개 자산 중 {filteredHardware.length}
+                  개 표시
                   {activeFiltersCount > 0 && (
-                    <Chip 
-                      label={`${activeFiltersCount}개 필터 적용`} 
-                      size="small" 
-                      color="primary" 
-                      sx={{ ml: 1 }} 
+                    <Chip
+                      label={`${activeFiltersCount}개 필터 적용`}
+                      size='small'
+                      color='primary'
+                      sx={{ ml: 1 }}
                     />
                   )}
                 </Typography>
               </Box>
             </Box>
-            
-            <Box display="flex" gap={2}>
+
+            <Box display='flex' gap={2}>
               <Button
-                variant="outlined"
+                variant='outlined'
                 startIcon={<ExcelIcon />}
                 onClick={handleExportToExcel}
                 disabled={state.loading || state.hardware.length === 0}
               >
                 엑셀 내보내기
               </Button>
-              
+
               <Button
-                variant="contained"
+                variant='contained'
                 startIcon={<AddIcon />}
                 onClick={hardwareModal.openCreateModal}
               >
@@ -573,7 +660,11 @@ export default function HardwarePage() {
 
           {/* Error Alert */}
           {state.error && (
-            <Alert severity="error" sx={{ mb: 3 }} onClose={() => setState(prev => ({ ...prev, error: null }))}>
+            <Alert
+              severity='error'
+              sx={{ mb: 3 }}
+              onClose={() => setState(prev => ({ ...prev, error: null }))}
+            >
               {state.error}
             </Alert>
           )}
@@ -592,8 +683,8 @@ export default function HardwarePage() {
                 onChange: handleTypeFilter,
                 options: [
                   { value: '', label: '전체' },
-                  ...uniqueTypes.map(type => ({ value: type, label: type }))
-                ]
+                  ...uniqueTypes.map(type => ({ value: type, label: type })),
+                ],
               },
               {
                 type: 'autocomplete',
@@ -601,7 +692,7 @@ export default function HardwarePage() {
                 value: state.manufacturerFilter,
                 onChange: handleManufacturerFilter,
                 options: uniqueManufacturers,
-                placeholder: '제조사를 선택하세요'
+                placeholder: '제조사를 선택하세요',
               },
               {
                 type: 'select',
@@ -610,8 +701,11 @@ export default function HardwarePage() {
                 onChange: handleStatusFilter,
                 options: [
                   { value: '', label: '전체' },
-                  ...uniqueStatuses.map(status => ({ value: status, label: status }))
-                ]
+                  ...uniqueStatuses.map(status => ({
+                    value: status,
+                    label: status,
+                  })),
+                ],
               },
               {
                 type: 'select',
@@ -621,21 +715,21 @@ export default function HardwarePage() {
                 options: [
                   { value: '', label: '전체' },
                   { value: 'assigned', label: '할당됨' },
-                  { value: 'unassigned', label: '미할당' }
-                ]
+                  { value: 'unassigned', label: '미할당' },
+                ],
               },
               {
                 type: 'date',
                 label: '구매일 시작',
                 value: state.purchaseDateFrom,
-                onChange: handlePurchaseDateFromFilter
+                onChange: handlePurchaseDateFromFilter,
               },
               {
                 type: 'date',
                 label: '구매일 종료',
                 value: state.purchaseDateTo,
-                onChange: handlePurchaseDateToFilter
-              }
+                onChange: handlePurchaseDateToFilter,
+              },
             ]}
           />
 
@@ -644,23 +738,33 @@ export default function HardwarePage() {
             columns={columns}
             data={filteredHardware}
             loading={state.loading}
-            onRowClick={(hardware) => hardwareDetailModal.openModal(hardware)}
+            onRowClick={hardware => hardwareDetailModal.openModal(hardware)}
             pagination
             pageSize={20}
             totalCount={filteredHardware.length}
-            emptyStateMessage="등록된 하드웨어가 없습니다."
-            searchEmptyStateMessage="검색 조건에 맞는 하드웨어가 없습니다."
+            emptyStateMessage='등록된 하드웨어가 없습니다.'
+            searchEmptyStateMessage='검색 조건에 맞는 하드웨어가 없습니다.'
           />
 
           {/* Notification Snackbar */}
           <Snackbar
             open={state.notification.open}
             autoHideDuration={6000}
-            onClose={() => setState(prev => ({ ...prev, notification: { ...prev.notification, open: false } }))}
+            onClose={() =>
+              setState(prev => ({
+                ...prev,
+                notification: { ...prev.notification, open: false },
+              }))
+            }
           >
-            <Alert 
-              severity={state.notification.severity} 
-              onClose={() => setState(prev => ({ ...prev, notification: { ...prev.notification, open: false } }))}
+            <Alert
+              severity={state.notification.severity}
+              onClose={() =>
+                setState(prev => ({
+                  ...prev,
+                  notification: { ...prev.notification, open: false },
+                }))
+              }
             >
               {state.notification.message}
             </Alert>
@@ -671,7 +775,11 @@ export default function HardwarePage() {
             open={hardwareModal.open}
             onClose={hardwareModal.closeModal}
             hardware={hardwareModal.hardware}
-            onSubmit={hardwareModal.hardware ? handleUpdateHardware : handleCreateHardware}
+            onSubmit={
+              hardwareModal.hardware
+                ? handleUpdateHardware
+                : handleCreateHardware
+            }
             loading={state.loading}
           />
 

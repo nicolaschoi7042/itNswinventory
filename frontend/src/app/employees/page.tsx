@@ -3,29 +3,42 @@
 import React, { useState, useEffect } from 'react';
 import { ManagerGuard } from '@/components/guards/RoleGuards';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  Box, 
-  Typography, 
-  Button, 
-  IconButton, 
+import {
+  Box,
+  Typography,
+  Button,
+  IconButton,
   Chip,
   Alert,
-  Snackbar
+  Snackbar,
 } from '@mui/material';
-import { 
-  People as PeopleIcon, 
+import {
+  People as PeopleIcon,
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Visibility as ViewIcon,
-  FileDownload as ExcelIcon
+  FileDownload as ExcelIcon,
 } from '@mui/icons-material';
-import { DataTable, Column } from '@/components/tables/DataTable';
-import { SearchFilter } from '@/components/tables/SearchFilter';
-import { EmployeeFormModal, useEmployeeFormModal, EmployeeDetailModal, useEmployeeDetailModal } from '@/components/modals';
-import { HighlightText, useHighlightRenderer } from '@/components/common/HighlightText';
+import { DataTable, Column } from '@/components/common/DataTable';
+import { SearchFilter } from '@/components/common/SearchFilter';
+import {
+  EmployeeFormModal,
+  useEmployeeFormModal,
+  EmployeeDetailModal,
+  useEmployeeDetailModal,
+} from '@/components/modals';
+import {
+  HighlightText,
+  useHighlightRenderer,
+} from '@/components/common/HighlightText';
 import MainLayout from '@/components/layout/MainLayout';
-import { Employee, EmployeeWithAssets, CreateEmployeeData, UpdateEmployeeData } from '@/types/employee';
+import {
+  Employee,
+  EmployeeWithAssets,
+  CreateEmployeeData,
+  UpdateEmployeeData,
+} from '@/types/employee';
 import { EmployeeService } from '@/services/employee.service';
 import { AssignmentService } from '@/services/assignment.service';
 import { ApiClient } from '@/lib/api-client';
@@ -59,7 +72,7 @@ export default function EmployeesPage() {
     hireDateFrom: '',
     hireDateTo: '',
     assetsFilter: '',
-    notification: { open: false, message: '', severity: 'info' }
+    notification: { open: false, message: '', severity: 'info' },
   });
 
   // Employee form modal state
@@ -73,11 +86,11 @@ export default function EmployeesPage() {
   // Load employee data
   const loadEmployees = async () => {
     setState(prev => ({ ...prev, loading: true, error: null }));
-    
+
     try {
       const [employeesResponse, assignmentsResponse] = await Promise.all([
         employeeService.getAll(),
-        assignmentService.getAll()
+        assignmentService.getAll(),
       ]);
 
       if (employeesResponse.success && assignmentsResponse.success) {
@@ -85,27 +98,36 @@ export default function EmployeesPage() {
         const assignments = assignmentsResponse.data || [];
 
         // Calculate assigned assets count for each employee
-        const employeesWithAssets: EmployeeWithAssets[] = employees.map(employee => ({
-          ...employee,
-          assignedAssets: assignments.filter(
-            assignment => assignment.employee_id === employee.id && assignment.status === '사용중'
-          ).length
-        }));
+        const employeesWithAssets: EmployeeWithAssets[] = employees.map(
+          employee => ({
+            ...employee,
+            assignedAssets: assignments.filter(
+              assignment =>
+                assignment.employee_id === employee.id &&
+                assignment.status === '사용중'
+            ).length,
+          })
+        );
 
-        setState(prev => ({ 
-          ...prev, 
+        setState(prev => ({
+          ...prev,
           employees: employeesWithAssets,
-          loading: false 
+          loading: false,
         }));
       } else {
-        throw new Error(employeesResponse.error || assignmentsResponse.error || 'Failed to load data');
+        throw new Error(
+          employeesResponse.error ||
+            assignmentsResponse.error ||
+            'Failed to load data'
+        );
       }
     } catch (error) {
       console.error('Failed to load employees:', error);
-      setState(prev => ({ 
-        ...prev, 
+      setState(prev => ({
+        ...prev,
         loading: false,
-        error: error instanceof Error ? error.message : 'Failed to load employees'
+        error:
+          error instanceof Error ? error.message : 'Failed to load employees',
       }));
     }
   };
@@ -153,35 +175,45 @@ export default function EmployeesPage() {
       positionFilter: '',
       hireDateFrom: '',
       hireDateTo: '',
-      assetsFilter: ''
+      assetsFilter: '',
     }));
   };
 
   // Filter employees based on all filters
   const filteredEmployees = state.employees.filter(employee => {
     // Search filter
-    const matchesSearch = !state.searchQuery || 
+    const matchesSearch =
+      !state.searchQuery ||
       employee.name.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
-      employee.department.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
+      employee.department
+        .toLowerCase()
+        .includes(state.searchQuery.toLowerCase()) ||
       employee.id.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
-      (employee.position && employee.position.toLowerCase().includes(state.searchQuery.toLowerCase())) ||
-      (employee.email && employee.email.toLowerCase().includes(state.searchQuery.toLowerCase()));
-    
+      (employee.position &&
+        employee.position
+          .toLowerCase()
+          .includes(state.searchQuery.toLowerCase())) ||
+      (employee.email &&
+        employee.email.toLowerCase().includes(state.searchQuery.toLowerCase()));
+
     // Department filter
-    const matchesDepartment = !state.departmentFilter || 
-      employee.department === state.departmentFilter;
+    const matchesDepartment =
+      !state.departmentFilter || employee.department === state.departmentFilter;
 
     // Position filter
-    const matchesPosition = !state.positionFilter || 
+    const matchesPosition =
+      !state.positionFilter ||
       (employee.position && employee.position === state.positionFilter);
 
     // Hire date range filter
-    const matchesHireDateFrom = !state.hireDateFrom || 
-      !employee.hire_date || 
+    const matchesHireDateFrom =
+      !state.hireDateFrom ||
+      !employee.hire_date ||
       new Date(employee.hire_date) >= new Date(state.hireDateFrom);
-      
-    const matchesHireDateTo = !state.hireDateTo || 
-      !employee.hire_date || 
+
+    const matchesHireDateTo =
+      !state.hireDateTo ||
+      !employee.hire_date ||
       new Date(employee.hire_date) <= new Date(state.hireDateTo);
 
     // Assets filter
@@ -192,8 +224,14 @@ export default function EmployeesPage() {
       matchesAssets = employee.assignedAssets === 0;
     }
 
-    return matchesSearch && matchesDepartment && matchesPosition && 
-           matchesHireDateFrom && matchesHireDateTo && matchesAssets;
+    return (
+      matchesSearch &&
+      matchesDepartment &&
+      matchesPosition &&
+      matchesHireDateFrom &&
+      matchesHireDateTo &&
+      matchesAssets
+    );
   });
 
   // Count active filters
@@ -203,7 +241,7 @@ export default function EmployeesPage() {
     state.positionFilter,
     state.hireDateFrom,
     state.hireDateTo,
-    state.assetsFilter
+    state.assetsFilter,
   ].filter(Boolean).length;
 
   // Handle create employee
@@ -211,7 +249,7 @@ export default function EmployeesPage() {
     try {
       employeeModal.setModalLoading(true);
       const response = await employeeService.create(data);
-      
+
       if (response.success) {
         await loadEmployees(); // Reload the list
         setState(prev => ({
@@ -219,8 +257,8 @@ export default function EmployeesPage() {
           notification: {
             open: true,
             message: `직원 "${data.name}"이 성공적으로 등록되었습니다.`,
-            severity: 'success'
-          }
+            severity: 'success',
+          },
         }));
       } else {
         throw new Error(response.error || '직원 등록에 실패했습니다.');
@@ -231,9 +269,12 @@ export default function EmployeesPage() {
         ...prev,
         notification: {
           open: true,
-          message: error instanceof Error ? error.message : '직원 등록 중 오류가 발생했습니다.',
-          severity: 'error'
-        }
+          message:
+            error instanceof Error
+              ? error.message
+              : '직원 등록 중 오류가 발생했습니다.',
+          severity: 'error',
+        },
       }));
     } finally {
       employeeModal.setModalLoading(false);
@@ -246,8 +287,11 @@ export default function EmployeesPage() {
 
     try {
       employeeModal.setModalLoading(true);
-      const response = await employeeService.update(employeeModal.employee.id, data);
-      
+      const response = await employeeService.update(
+        employeeModal.employee.id,
+        data
+      );
+
       if (response.success) {
         await loadEmployees(); // Reload the list
         setState(prev => ({
@@ -255,8 +299,8 @@ export default function EmployeesPage() {
           notification: {
             open: true,
             message: `직원 "${data.name || employeeModal.employee?.name}" 정보가 성공적으로 수정되었습니다.`,
-            severity: 'success'
-          }
+            severity: 'success',
+          },
         }));
       } else {
         throw new Error(response.error || '직원 정보 수정에 실패했습니다.');
@@ -267,9 +311,12 @@ export default function EmployeesPage() {
         ...prev,
         notification: {
           open: true,
-          message: error instanceof Error ? error.message : '직원 정보 수정 중 오류가 발생했습니다.',
-          severity: 'error'
-        }
+          message:
+            error instanceof Error
+              ? error.message
+              : '직원 정보 수정 중 오류가 발생했습니다.',
+          severity: 'error',
+        },
       }));
     } finally {
       employeeModal.setModalLoading(false);
@@ -277,7 +324,9 @@ export default function EmployeesPage() {
   };
 
   // Handle employee form submission
-  const handleEmployeeFormSubmit = async (data: CreateEmployeeData | UpdateEmployeeData) => {
+  const handleEmployeeFormSubmit = async (
+    data: CreateEmployeeData | UpdateEmployeeData
+  ) => {
     if (employeeModal.employee) {
       await handleUpdateEmployee(data);
     } else {
@@ -292,14 +341,18 @@ export default function EmployeesPage() {
 
   // Handle delete employee
   const handleDelete = async (employee: EmployeeWithAssets) => {
-    if (!window.confirm(`정말로 "${employee.name}" 직원을 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없으며, 해당 직원의 모든 자산 할당도 함께 제거됩니다.`)) {
+    if (
+      !window.confirm(
+        `정말로 "${employee.name}" 직원을 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없으며, 해당 직원의 모든 자산 할당도 함께 제거됩니다.`
+      )
+    ) {
       return;
     }
 
     try {
       setState(prev => ({ ...prev, loading: true }));
       const response = await employeeService.delete(employee.id);
-      
+
       if (response.success) {
         await loadEmployees(); // Reload the list
         setState(prev => ({
@@ -308,8 +361,8 @@ export default function EmployeesPage() {
           notification: {
             open: true,
             message: `직원 "${employee.name}"이 성공적으로 삭제되었습니다.`,
-            severity: 'success'
-          }
+            severity: 'success',
+          },
         }));
       } else {
         throw new Error(response.error || '직원 삭제에 실패했습니다.');
@@ -321,9 +374,12 @@ export default function EmployeesPage() {
         loading: false,
         notification: {
           open: true,
-          message: error instanceof Error ? error.message : '직원 삭제 중 오류가 발생했습니다.',
-          severity: 'error'
-        }
+          message:
+            error instanceof Error
+              ? error.message
+              : '직원 삭제 중 오류가 발생했습니다.',
+          severity: 'error',
+        },
       }));
     }
   };
@@ -342,8 +398,8 @@ export default function EmployeesPage() {
         notification: {
           open: true,
           message: '엑셀 파일이 다운로드되었습니다.',
-          severity: 'success'
-        }
+          severity: 'success',
+        },
       }));
     } catch (error) {
       setState(prev => ({
@@ -351,8 +407,8 @@ export default function EmployeesPage() {
         notification: {
           open: true,
           message: '엑셀 다운로드 중 오류가 발생했습니다.',
-          severity: 'error'
-        }
+          severity: 'error',
+        },
       }));
     }
   };
@@ -367,21 +423,22 @@ export default function EmployeesPage() {
       label: '사번',
       width: 100,
       sortable: true,
-      render: (value: string) => highlightRenderer(value)
+      render: (value: string) => highlightRenderer(value),
     },
     {
       key: 'name',
       label: '이름',
       width: 120,
       sortable: true,
-      render: (value: string) => highlightRenderer(value, { variant: 'subtitle2' })
+      render: (value: string) =>
+        highlightRenderer(value, { variant: 'subtitle2' }),
     },
     {
       key: 'department',
       label: '부서',
       width: 120,
       sortable: true,
-      render: (value: string) => highlightRenderer(value)
+      render: (value: string) => highlightRenderer(value),
     },
     {
       key: 'assignedAssets',
@@ -389,13 +446,13 @@ export default function EmployeesPage() {
       width: 120,
       align: 'center',
       render: (value: number) => (
-        <Chip 
+        <Chip
           label={`${value} 개`}
           color={value > 0 ? 'primary' : 'default'}
-          size="small"
-          variant="outlined"
+          size='small'
+          variant='outlined'
         />
-      )
+      ),
     },
     {
       key: 'id', // Using id as key for actions column
@@ -404,35 +461,35 @@ export default function EmployeesPage() {
       align: 'center',
       render: (_, employee) => (
         <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-          <IconButton 
-            size="small" 
+          <IconButton
+            size='small'
             onClick={() => employeeDetailModal.openModal(employee)}
-            color="info"
+            color='info'
             title={`${employee.name} 상세보기`}
           >
-            <ViewIcon fontSize="small" />
+            <ViewIcon fontSize='small' />
           </IconButton>
-          <IconButton 
-            size="small" 
+          <IconButton
+            size='small'
             onClick={() => handleEdit(employee)}
-            color="primary"
+            color='primary'
             title={`${employee.name} 수정`}
           >
-            <EditIcon fontSize="small" />
+            <EditIcon fontSize='small' />
           </IconButton>
           {user?.role === 'admin' && (
-            <IconButton 
-              size="small" 
+            <IconButton
+              size='small'
               onClick={() => handleDelete(employee)}
-              color="error"
+              color='error'
               title={`${employee.name} 삭제`}
             >
-              <DeleteIcon fontSize="small" />
+              <DeleteIcon fontSize='small' />
             </IconButton>
           )}
         </Box>
-      )
-    }
+      ),
+    },
   ];
 
   return (
@@ -440,24 +497,29 @@ export default function EmployeesPage() {
       <ManagerGuard>
         <Box sx={{ p: 3 }}>
           {/* Header */}
-          <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
-            <Box display="flex" alignItems="center" gap={2}>
-              <PeopleIcon color="primary" sx={{ fontSize: 32 }} />
-              <Typography variant="h4" component="h1">
+          <Box
+            display='flex'
+            alignItems='center'
+            justifyContent='space-between'
+            mb={3}
+          >
+            <Box display='flex' alignItems='center' gap={2}>
+              <PeopleIcon color='primary' sx={{ fontSize: 32 }} />
+              <Typography variant='h4' component='h1'>
                 임직원 관리
               </Typography>
             </Box>
-            <Box display="flex" gap={1}>
+            <Box display='flex' gap={1}>
               <Button
-                variant="outlined"
+                variant='outlined'
                 startIcon={<ExcelIcon />}
                 onClick={handleExport}
-                color="success"
+                color='success'
               >
                 엑셀 내보내기
               </Button>
               <Button
-                variant="contained"
+                variant='contained'
                 startIcon={<AddIcon />}
                 onClick={handleAdd}
               >
@@ -470,7 +532,7 @@ export default function EmployeesPage() {
           <SearchFilter
             searchValue={state.searchQuery}
             onSearchChange={handleSearch}
-            searchPlaceholder="이름, 부서, 사번, 직책, 이메일로 검색..."
+            searchPlaceholder='이름, 부서, 사번, 직책, 이메일로 검색...'
             searchFullWidth={false}
             filters={[
               {
@@ -482,9 +544,9 @@ export default function EmployeesPage() {
                   { label: '개발팀', value: '개발팀' },
                   { label: '영업팀', value: '영업팀' },
                   { label: '인사팀', value: '인사팀' },
-                  { label: '재무팀', value: '재무팀' }
-                ]
-              }
+                  { label: '재무팀', value: '재무팀' },
+                ],
+              },
             ]}
             advancedFilters={[
               {
@@ -493,15 +555,17 @@ export default function EmployeesPage() {
                 type: 'autocomplete',
                 value: state.positionFilter,
                 onChange: handlePositionFilter,
-                options: Array.from(new Set(
-                  state.employees
-                    .map(emp => emp.position)
-                    .filter(Boolean)
-                )).map(position => ({
-                  value: position!,
-                  label: position!
-                })).sort((a, b) => a.label.localeCompare(b.label)),
-                placeholder: '직책 선택'
+                options: Array.from(
+                  new Set(
+                    state.employees.map(emp => emp.position).filter(Boolean)
+                  )
+                )
+                  .map(position => ({
+                    value: position!,
+                    label: position!,
+                  }))
+                  .sort((a, b) => a.label.localeCompare(b.label)),
+                placeholder: '직책 선택',
               },
               {
                 key: 'hireDateFrom',
@@ -509,15 +573,15 @@ export default function EmployeesPage() {
                 type: 'date',
                 value: state.hireDateFrom,
                 onChange: handleHireDateFromFilter,
-                placeholder: '시작 날짜'
+                placeholder: '시작 날짜',
               },
               {
-                key: 'hireDateTo', 
+                key: 'hireDateTo',
                 label: '입사일 (종료)',
                 type: 'date',
                 value: state.hireDateTo,
                 onChange: handleHireDateToFilter,
-                placeholder: '종료 날짜'
+                placeholder: '종료 날짜',
               },
               {
                 key: 'assets',
@@ -528,9 +592,9 @@ export default function EmployeesPage() {
                 options: [
                   { label: '전체', value: '' },
                   { label: '자산 있음', value: 'has-assets' },
-                  { label: '자산 없음', value: 'no-assets' }
-                ]
-              }
+                  { label: '자산 없음', value: 'no-assets' },
+                ],
+              },
             ]}
             showClearAll={true}
             onClearAll={handleClearAllFilters}
@@ -539,27 +603,31 @@ export default function EmployeesPage() {
 
           {/* Error Alert */}
           {state.error && (
-            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setState(prev => ({ ...prev, error: null }))}>
+            <Alert
+              severity='error'
+              sx={{ mb: 2 }}
+              onClose={() => setState(prev => ({ ...prev, error: null }))}
+            >
               {state.error}
             </Alert>
           )}
 
           {/* Results Count and Summary */}
           <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant='body2' color='text.secondary'>
               총 {state.employees.length}명 중 {filteredEmployees.length}명 표시
               {activeFilterCount > 0 && (
-                <Chip 
+                <Chip
                   label={`${activeFilterCount} 필터 적용됨`}
-                  size="small" 
-                  color="primary" 
-                  variant="outlined" 
+                  size='small'
+                  color='primary'
+                  variant='outlined'
                   sx={{ ml: 1 }}
                 />
               )}
             </Typography>
             {state.searchQuery && (
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant='body2' color='text.secondary'>
                 "{state.searchQuery}" 검색 결과
               </Typography>
             )}
@@ -570,30 +638,34 @@ export default function EmployeesPage() {
             data={filteredEmployees}
             columns={columns}
             loading={state.loading}
-            emptyMessage="등록된 임직원이 없습니다."
+            emptyMessage='등록된 임직원이 없습니다.'
             pagination={true}
             pageSize={10}
             sortable={true}
             stickyHeader={true}
-            maxHeight="70vh"
-            rowKey="id"
+            maxHeight='70vh'
+            rowKey='id'
           />
 
           {/* Notification Snackbar */}
           <Snackbar
             open={state.notification.open}
             autoHideDuration={4000}
-            onClose={() => setState(prev => ({ 
-              ...prev, 
-              notification: { ...prev.notification, open: false }
-            }))}
+            onClose={() =>
+              setState(prev => ({
+                ...prev,
+                notification: { ...prev.notification, open: false },
+              }))
+            }
           >
-            <Alert 
+            <Alert
               severity={state.notification.severity}
-              onClose={() => setState(prev => ({ 
-                ...prev, 
-                notification: { ...prev.notification, open: false }
-              }))}
+              onClose={() =>
+                setState(prev => ({
+                  ...prev,
+                  notification: { ...prev.notification, open: false },
+                }))
+              }
             >
               {state.notification.message}
             </Alert>

@@ -4,7 +4,12 @@
  * Based on the original vanilla JavaScript ApiService class
  */
 
-import { getToken, clearSession, isTokenExpired, isTokenExpiringSoon } from '@/lib/session-storage';
+import {
+  getToken,
+  clearSession,
+  isTokenExpired,
+  isTokenExpiringSoon,
+} from '@/lib/session-storage';
 import type { ApiResponse } from '@/types/api';
 
 export class ApiError extends Error {
@@ -58,7 +63,9 @@ class ApiClient {
    * Calculate retry delay with exponential backoff
    */
   private getRetryDelay(attempt: number): number {
-    const delay = this.retryOptions.baseDelay * Math.pow(this.retryOptions.backoffFactor, attempt);
+    const delay =
+      this.retryOptions.baseDelay *
+      Math.pow(this.retryOptions.backoffFactor, attempt);
     return Math.min(delay, this.retryOptions.maxDelay);
   }
 
@@ -80,7 +87,10 @@ class ApiClient {
     // Check token expiration before making request
     if (token && isTokenExpired()) {
       clearSession();
-      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+      if (
+        typeof window !== 'undefined' &&
+        !window.location.pathname.includes('/login')
+      ) {
         window.location.href = '/login';
       }
       throw new ApiError(401, 'Token expired', undefined, false);
@@ -97,14 +107,18 @@ class ApiClient {
 
     try {
       const response = await fetch(url, config);
-      
+
       // Handle different content types
       const contentType = response.headers.get('content-type');
       let data;
-      
+
       if (contentType && contentType.includes('application/json')) {
         data = await response.json();
-      } else if (contentType && (contentType.includes('application/vnd.openxmlformats') || contentType.includes('application/octet-stream'))) {
+      } else if (
+        contentType &&
+        (contentType.includes('application/vnd.openxmlformats') ||
+          contentType.includes('application/octet-stream'))
+      ) {
         // Handle Excel/binary downloads
         data = await response.blob();
       } else {
@@ -114,7 +128,10 @@ class ApiClient {
       // Handle authentication errors
       if (response.status === 401) {
         clearSession();
-        if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+        if (
+          typeof window !== 'undefined' &&
+          !window.location.pathname.includes('/login')
+        ) {
           window.location.href = '/login';
         }
         throw new ApiError(401, 'Unauthorized', data, false);
@@ -130,14 +147,20 @@ class ApiClient {
         );
 
         // Retry logic for retryable errors
-        if (this.isRetryableError(error) && attempt < this.retryOptions.maxRetries) {
+        if (
+          this.isRetryableError(error) &&
+          attempt < this.retryOptions.maxRetries
+        ) {
           const delay = this.getRetryDelay(attempt);
-          console.warn(`🔄 API request failed (attempt ${attempt + 1}/${this.retryOptions.maxRetries + 1}), retrying in ${delay}ms:`, {
-            url,
-            status: response.status,
-            error: error.message
-          });
-          
+          console.warn(
+            `🔄 API request failed (attempt ${attempt + 1}/${this.retryOptions.maxRetries + 1}), retrying in ${delay}ms:`,
+            {
+              url,
+              status: response.status,
+              error: error.message,
+            }
+          );
+
           await this.sleep(delay);
           return this.request<T>(endpoint, options, attempt + 1);
         }
@@ -147,27 +170,35 @@ class ApiClient {
 
       // Success - log retry recovery if this was a retry attempt
       if (attempt > 0) {
-        console.log(`✅ API request succeeded after ${attempt + 1} attempts:`, { url });
+        console.log(`✅ API request succeeded after ${attempt + 1} attempts:`, {
+          url,
+        });
       }
 
       return data;
     } catch (error) {
       if (error instanceof ApiError) {
         // Retry logic for network errors
-        if (this.isRetryableError(error) && attempt < this.retryOptions.maxRetries) {
+        if (
+          this.isRetryableError(error) &&
+          attempt < this.retryOptions.maxRetries
+        ) {
           const delay = this.getRetryDelay(attempt);
-          console.warn(`🔄 Network error (attempt ${attempt + 1}/${this.retryOptions.maxRetries + 1}), retrying in ${delay}ms:`, {
-            url,
-            error: error.message
-          });
-          
+          console.warn(
+            `🔄 Network error (attempt ${attempt + 1}/${this.retryOptions.maxRetries + 1}), retrying in ${delay}ms:`,
+            {
+              url,
+              error: error.message,
+            }
+          );
+
           await this.sleep(delay);
           return this.request<T>(endpoint, options, attempt + 1);
         }
-        
+
         throw error;
       }
-      
+
       // Network or other errors
       console.error('API Request failed:', error);
       const networkError = new ApiError(
@@ -180,11 +211,14 @@ class ApiClient {
       // Retry network errors
       if (attempt < this.retryOptions.maxRetries) {
         const delay = this.getRetryDelay(attempt);
-        console.warn(`🔄 Network error (attempt ${attempt + 1}/${this.retryOptions.maxRetries + 1}), retrying in ${delay}ms:`, {
-          url,
-          error: networkError.message
-        });
-        
+        console.warn(
+          `🔄 Network error (attempt ${attempt + 1}/${this.retryOptions.maxRetries + 1}), retrying in ${delay}ms:`,
+          {
+            url,
+            error: networkError.message,
+          }
+        );
+
         await this.sleep(delay);
         return this.request<T>(endpoint, options, attempt + 1);
       }
@@ -194,11 +228,14 @@ class ApiClient {
   }
 
   // HTTP Methods
-  async get<T = any>(endpoint: string, params?: Record<string, string>): Promise<ApiResponse<T>> {
-    const url = params 
+  async get<T = any>(
+    endpoint: string,
+    params?: Record<string, string>
+  ): Promise<ApiResponse<T>> {
+    const url = params
       ? `${endpoint}?${new URLSearchParams(params).toString()}`
       : endpoint;
-    
+
     return this.request<T>(url, { method: 'GET' });
   }
 
@@ -228,13 +265,19 @@ class ApiClient {
   }
 
   // Upload files (for future use)
-  async upload<T = any>(endpoint: string, formData: FormData): Promise<ApiResponse<T>> {
+  async upload<T = any>(
+    endpoint: string,
+    formData: FormData
+  ): Promise<ApiResponse<T>> {
     const token = getToken();
-    
+
     // Check token expiration
     if (token && isTokenExpired()) {
       clearSession();
-      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+      if (
+        typeof window !== 'undefined' &&
+        !window.location.pathname.includes('/login')
+      ) {
         window.location.href = '/login';
       }
       throw new ApiError(401, 'Token expired', undefined, false);
@@ -256,14 +299,21 @@ class ApiClient {
 
       if (response.status === 401) {
         clearSession();
-        if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+        if (
+          typeof window !== 'undefined' &&
+          !window.location.pathname.includes('/login')
+        ) {
           window.location.href = '/login';
         }
         throw new ApiError(401, 'Unauthorized', data, false);
       }
 
       if (!response.ok) {
-        throw new ApiError(response.status, data.message || `HTTP ${response.status}`, data);
+        throw new ApiError(
+          response.status,
+          data.message || `HTTP ${response.status}`,
+          data
+        );
       }
 
       return data;
@@ -271,7 +321,12 @@ class ApiClient {
       if (error instanceof ApiError) {
         throw error;
       }
-      throw new ApiError(0, error instanceof Error ? error.message : 'Upload failed', undefined, true);
+      throw new ApiError(
+        0,
+        error instanceof Error ? error.message : 'Upload failed',
+        undefined,
+        true
+      );
     }
   }
 }

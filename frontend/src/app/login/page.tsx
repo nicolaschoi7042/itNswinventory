@@ -35,13 +35,13 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, isAuthenticated, isLoading: authLoading } = useAuth();
-  
+
   // Form state
   const [credentials, setCredentials] = useState<LoginCredentials>({
     username: '',
     password: '',
   });
-  
+
   // UI state
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -52,39 +52,41 @@ export default function LoginPage() {
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
       // Check for intended destination from sessionStorage first
-      const intendedDestination = typeof window !== 'undefined' 
-        ? sessionStorage.getItem('intended_destination') 
-        : null;
-      
-      const redirectTo = intendedDestination || searchParams?.get('redirect') || '/dashboard';
-      
+      const intendedDestination =
+        typeof window !== 'undefined'
+          ? sessionStorage.getItem('intended_destination')
+          : null;
+
+      const redirectTo =
+        intendedDestination || searchParams?.get('redirect') || '/dashboard';
+
       // Clear the stored destination
       if (intendedDestination && typeof window !== 'undefined') {
         sessionStorage.removeItem('intended_destination');
       }
-      
+
       router.push(redirectTo);
     }
   }, [isAuthenticated, authLoading, router, searchParams]);
 
   // Handle form input changes
-  const handleInputChange = (field: keyof LoginCredentials) => (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setCredentials(prev => ({
-      ...prev,
-      [field]: event.target.value,
-    }));
-    
-    // Clear errors when user starts typing
-    if (error) setError(null);
-    if (info) setInfo(null);
-  };
+  const handleInputChange =
+    (field: keyof LoginCredentials) =>
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setCredentials(prev => ({
+        ...prev,
+        [field]: event.target.value,
+      }));
+
+      // Clear errors when user starts typing
+      if (error) setError(null);
+      if (info) setInfo(null);
+    };
 
   // Handle form submission
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    
+
     if (!credentials.username.trim() || !credentials.password.trim()) {
       setError('사용자명과 비밀번호를 모두 입력해주세요.');
       return;
@@ -96,24 +98,28 @@ export default function LoginPage() {
 
     try {
       const result = await login(credentials);
-      
+
       if (result.success) {
         setInfo('로그인 성공! 페이지를 이동합니다...');
-        
+
         // Redirect after successful login
         setTimeout(() => {
           // Check for intended destination from sessionStorage first
-          const intendedDestination = typeof window !== 'undefined' 
-            ? sessionStorage.getItem('intended_destination') 
-            : null;
-          
-          const redirectTo = intendedDestination || searchParams?.get('redirect') || '/dashboard';
-          
+          const intendedDestination =
+            typeof window !== 'undefined'
+              ? sessionStorage.getItem('intended_destination')
+              : null;
+
+          const redirectTo =
+            intendedDestination ||
+            searchParams?.get('redirect') ||
+            '/dashboard';
+
           // Clear the stored destination
           if (intendedDestination && typeof window !== 'undefined') {
             sessionStorage.removeItem('intended_destination');
           }
-          
+
           router.push(redirectTo);
         }, 1000);
       } else {
@@ -135,15 +141,18 @@ export default function LoginPage() {
   // Show loading spinner while checking authentication
   if (authLoading) {
     return (
-      <Container maxWidth="sm" sx={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        minHeight: '100vh' 
-      }}>
-        <Box textAlign="center">
+      <Container
+        maxWidth='sm'
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+        }}
+      >
+        <Box textAlign='center'>
           <CircularProgress size={60} sx={{ mb: 2 }} />
-          <Typography variant="h6" color="text.secondary">
+          <Typography variant='h6' color='text.secondary'>
             시스템 초기화 중...
           </Typography>
         </Box>
@@ -167,7 +176,7 @@ export default function LoginPage() {
         padding: 2,
       }}
     >
-      <Container maxWidth="xs">
+      <Container maxWidth='xs'>
         <Fade in timeout={800}>
           <Card
             elevation={3}
@@ -184,13 +193,14 @@ export default function LoginPage() {
           >
             <CardContent sx={{ p: 4 }}>
               {/* Header */}
-              <Box textAlign="center" mb={4}>
+              <Box textAlign='center' mb={4}>
                 <Box
                   sx={{
                     width: 80,
                     height: 80,
                     borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    background:
+                      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -200,49 +210,49 @@ export default function LoginPage() {
                 >
                   <LaptopIcon sx={{ fontSize: 40, color: 'white' }} />
                 </Box>
-                
+
                 <Typography
-                  variant="h6"
-                  component="h1"
+                  variant='h6'
+                  component='h1'
                   gutterBottom
                   sx={{
                     fontWeight: 'bold',
                     color: 'text.primary',
                     mb: 1,
                     whiteSpace: 'nowrap',
-                    fontSize: { xs: '1.1rem', sm: '1.25rem' }
+                    fontSize: { xs: '1.1rem', sm: '1.25rem' },
                   }}
                 >
                   IT 자산 및 SW 인벤토리 관리시스템
                 </Typography>
-                
+
                 <Typography
-                  variant="body2"
-                  color="text.secondary"
+                  variant='body2'
+                  color='text.secondary'
                   sx={{ mb: 3, fontSize: '0.875rem' }}
                 >
                   시스템에 로그인하여 자산 관리를 시작하세요
                 </Typography>
-                
+
                 <Divider sx={{ mx: 'auto', width: 100 }} />
               </Box>
 
               {/* Login Form */}
-              <Box component="form" onSubmit={handleSubmit} noValidate>
+              <Box component='form' onSubmit={handleSubmit} noValidate>
                 {/* Username Field */}
                 <TextField
                   fullWidth
-                  label="사용자명"
-                  type="text"
+                  label='사용자명'
+                  type='text'
                   value={credentials.username}
                   onChange={handleInputChange('username')}
                   required
-                  autoComplete="off"
-                  placeholder="사용자명을 입력하세요"
+                  autoComplete='off'
+                  placeholder='사용자명을 입력하세요'
                   InputProps={{
                     startAdornment: (
-                      <InputAdornment position="start">
-                        <PersonIcon color="action" />
+                      <InputAdornment position='start'>
+                        <PersonIcon color='action' />
                       </InputAdornment>
                     ),
                   }}
@@ -253,25 +263,25 @@ export default function LoginPage() {
                 {/* Password Field */}
                 <TextField
                   fullWidth
-                  label="비밀번호"
+                  label='비밀번호'
                   type={showPassword ? 'text' : 'password'}
                   value={credentials.password}
                   onChange={handleInputChange('password')}
                   required
-                  autoComplete="off"
-                  placeholder="비밀번호를 입력하세요"
+                  autoComplete='off'
+                  placeholder='비밀번호를 입력하세요'
                   InputProps={{
                     startAdornment: (
-                      <InputAdornment position="start">
-                        <LockIcon color="action" />
+                      <InputAdornment position='start'>
+                        <LockIcon color='action' />
                       </InputAdornment>
                     ),
                     endAdornment: (
-                      <InputAdornment position="end">
+                      <InputAdornment position='end'>
                         <IconButton
-                          aria-label="toggle password visibility"
+                          aria-label='toggle password visibility'
                           onClick={handleTogglePasswordVisibility}
-                          edge="end"
+                          edge='end'
                           disabled={isLoading}
                         >
                           {showPassword ? <VisibilityOff /> : <Visibility />}
@@ -285,14 +295,18 @@ export default function LoginPage() {
 
                 {/* Login Button */}
                 <Button
-                  type="submit"
+                  type='submit'
                   fullWidth
-                  variant="contained"
-                  size="large"
-                  disabled={isLoading || !credentials.username.trim() || !credentials.password.trim()}
+                  variant='contained'
+                  size='large'
+                  disabled={
+                    isLoading ||
+                    !credentials.username.trim() ||
+                    !credentials.password.trim()
+                  }
                   startIcon={
                     isLoading ? (
-                      <CircularProgress size={20} color="inherit" />
+                      <CircularProgress size={20} color='inherit' />
                     ) : (
                       <LoginIcon />
                     )
@@ -303,10 +317,12 @@ export default function LoginPage() {
                     textTransform: 'none',
                     fontSize: '1.1rem',
                     fontWeight: 500,
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    background:
+                      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                     boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
                     '&:hover': {
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      background:
+                        'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                       transform: 'translateY(-2px)',
                       boxShadow: '0 8px 25px rgba(102, 126, 234, 0.4)',
                     },
@@ -324,9 +340,9 @@ export default function LoginPage() {
                 {/* Error Alert */}
                 {error && (
                   <Fade in>
-                    <Alert 
-                      severity="error" 
-                      sx={{ 
+                    <Alert
+                      severity='error'
+                      sx={{
                         mb: 2,
                         borderRadius: '10px',
                       }}
@@ -340,9 +356,9 @@ export default function LoginPage() {
                 {/* Info Alert */}
                 {info && (
                   <Fade in>
-                    <Alert 
-                      severity="success" 
-                      sx={{ 
+                    <Alert
+                      severity='success'
+                      sx={{
                         mb: 2,
                         borderRadius: '10px',
                       }}
@@ -354,18 +370,15 @@ export default function LoginPage() {
               </Box>
 
               {/* Footer */}
-              <Box textAlign="center" mt={4}>
+              <Box textAlign='center' mt={4}>
                 <Typography
-                  variant="caption"
-                  color="text.secondary"
+                  variant='caption'
+                  color='text.secondary'
                   sx={{ display: 'block', mb: 1 }}
                 >
                   © 2024 Roboe Technology Inc.
                 </Typography>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                >
+                <Typography variant='caption' color='text.secondary'>
                   IT 자산 및 소프트웨어 인벤토리 관리 시스템 v2.0
                 </Typography>
               </Box>

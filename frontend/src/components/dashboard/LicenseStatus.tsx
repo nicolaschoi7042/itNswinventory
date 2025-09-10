@@ -80,13 +80,15 @@ export function LicenseStatus({
     return (license.usedLicenses / license.totalLicenses) * 100;
   };
 
-  const getLicenseStatus = (license: SoftwareLicense): {
+  const getLicenseStatus = (
+    license: SoftwareLicense
+  ): {
     status: 'success' | 'warning' | 'error' | 'info';
     label: string;
     color: string;
   } => {
     const usagePercentage = getUsagePercentage(license);
-    
+
     // Check if exceeded
     if (license.usedLicenses > license.totalLicenses) {
       return {
@@ -95,13 +97,15 @@ export function LicenseStatus({
         color: '#f44336',
       };
     }
-    
+
     // Check expiry
     if (license.expiryDate) {
       const expiryDate = new Date(license.expiryDate);
       const now = new Date();
-      const daysToExpiry = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-      
+      const daysToExpiry = Math.ceil(
+        (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+      );
+
       if (daysToExpiry <= 0) {
         return {
           status: 'error',
@@ -109,7 +113,7 @@ export function LicenseStatus({
           color: '#f44336',
         };
       }
-      
+
       if (daysToExpiry <= expiryWarningDays) {
         return {
           status: 'warning',
@@ -118,7 +122,7 @@ export function LicenseStatus({
         };
       }
     }
-    
+
     // Check usage threshold
     if (usagePercentage >= alertThreshold * 100) {
       return {
@@ -127,7 +131,7 @@ export function LicenseStatus({
         color: '#ff9800',
       };
     }
-    
+
     if (usagePercentage > 0) {
       return {
         status: 'success',
@@ -135,7 +139,7 @@ export function LicenseStatus({
         color: '#4caf50',
       };
     }
-    
+
     return {
       status: 'info',
       label: 'Unused',
@@ -143,7 +147,10 @@ export function LicenseStatus({
     };
   };
 
-  const getProgressColor = (percentage: number, status: string): 'primary' | 'success' | 'warning' | 'error' => {
+  const getProgressColor = (
+    percentage: number,
+    status: string
+  ): 'primary' | 'success' | 'warning' | 'error' => {
     if (status === 'error') return 'error';
     if (status === 'warning') return 'warning';
     if (percentage > 0) return 'success';
@@ -177,22 +184,24 @@ export function LicenseStatus({
         button={!!onViewDetails}
       >
         <ListItemIcon>
-          <SoftwareIcon color="primary" />
+          <SoftwareIcon color='primary' />
         </ListItemIcon>
-        
+
         <ListItemText
           primary={
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+            <Box
+              sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}
+            >
               <Typography
                 variant={dense ? 'body2' : 'body1'}
                 sx={{ fontWeight: 500, flex: 1 }}
               >
                 {license.name}
               </Typography>
-              
+
               <Chip
                 label={label}
-                size="small"
+                size='small'
                 sx={{
                   backgroundColor: `${color}20`,
                   color: color,
@@ -203,17 +212,19 @@ export function LicenseStatus({
           }
           secondary={
             <Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <Typography variant="caption" color="text.secondary">
+              <Box
+                sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
+              >
+                <Typography variant='caption' color='text.secondary'>
                   {license.usedLicenses} / {license.totalLicenses} licenses used
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant='caption' color='text.secondary'>
                   ({Math.round(usagePercentage)}%)
                 </Typography>
               </Box>
-              
+
               <LinearProgress
-                variant="determinate"
+                variant='determinate'
                 value={Math.min(usagePercentage, 100)}
                 color={getProgressColor(usagePercentage, status)}
                 sx={{
@@ -222,9 +233,13 @@ export function LicenseStatus({
                   backgroundColor: 'action.hover',
                 }}
               />
-              
+
               {license.manufacturer && (
-                <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                <Typography
+                  variant='caption'
+                  color='text.secondary'
+                  sx={{ mt: 0.5, display: 'block' }}
+                >
                   {license.manufacturer} • {license.licenseType}
                 </Typography>
               )}
@@ -233,8 +248,8 @@ export function LicenseStatus({
         />
 
         {onViewDetails && (
-          <IconButton size="small" edge="end">
-            <VisibilityIcon fontSize="small" />
+          <IconButton size='small' edge='end'>
+            <VisibilityIcon fontSize='small' />
           </IconButton>
         )}
       </ListItem>
@@ -243,37 +258,46 @@ export function LicenseStatus({
 
   const renderAlerts = () => {
     const criticalLicenses = getCriticalLicenses();
-    
+
     if (!showAlerts || criticalLicenses.length === 0) {
       return null;
     }
 
-    const expiredLicenses = criticalLicenses.filter(l => getLicenseStatus(l).label === 'Expired');
-    const exceededLicenses = criticalLicenses.filter(l => getLicenseStatus(l).label === 'Exceeded');
-    const expiringLicenses = criticalLicenses.filter(l => getLicenseStatus(l).label.includes('Expires'));
+    const expiredLicenses = criticalLicenses.filter(
+      l => getLicenseStatus(l).label === 'Expired'
+    );
+    const exceededLicenses = criticalLicenses.filter(
+      l => getLicenseStatus(l).label === 'Exceeded'
+    );
+    const expiringLicenses = criticalLicenses.filter(l =>
+      getLicenseStatus(l).label.includes('Expires')
+    );
 
     return (
       <Stack spacing={1} sx={{ mb: 2 }}>
         {exceededLicenses.length > 0 && (
-          <Alert severity="error" variant="outlined" size="small">
-            <Typography variant="body2">
-              {exceededLicenses.length} license(s) exceeded: {exceededLicenses.map(l => l.name).join(', ')}
+          <Alert severity='error' variant='outlined' size='small'>
+            <Typography variant='body2'>
+              {exceededLicenses.length} license(s) exceeded:{' '}
+              {exceededLicenses.map(l => l.name).join(', ')}
             </Typography>
           </Alert>
         )}
-        
+
         {expiredLicenses.length > 0 && (
-          <Alert severity="error" variant="outlined" size="small">
-            <Typography variant="body2">
-              {expiredLicenses.length} license(s) expired: {expiredLicenses.map(l => l.name).join(', ')}
+          <Alert severity='error' variant='outlined' size='small'>
+            <Typography variant='body2'>
+              {expiredLicenses.length} license(s) expired:{' '}
+              {expiredLicenses.map(l => l.name).join(', ')}
             </Typography>
           </Alert>
         )}
-        
+
         {expiringLicenses.length > 0 && (
-          <Alert severity="warning" variant="outlined" size="small">
-            <Typography variant="body2">
-              {expiringLicenses.length} license(s) expiring soon: {expiringLicenses.map(l => l.name).join(', ')}
+          <Alert severity='warning' variant='outlined' size='small'>
+            <Typography variant='body2'>
+              {expiringLicenses.length} license(s) expiring soon:{' '}
+              {expiringLicenses.map(l => l.name).join(', ')}
             </Typography>
           </Alert>
         )}
@@ -299,17 +323,27 @@ export function LicenseStatus({
           mb: 2,
         }}
       />
-      <Typography variant="body2" color="text.secondary">
+      <Typography variant='body2' color='text.secondary'>
         No software licenses found
       </Typography>
     </Box>
   );
 
   const renderStats = () => {
-    const totalLicenses = licenses.reduce((sum, license) => sum + license.totalLicenses, 0);
-    const totalUsed = licenses.reduce((sum, license) => sum + license.usedLicenses, 0);
-    const totalAvailable = licenses.reduce((sum, license) => sum + license.availableLicenses, 0);
-    const overallUsage = totalLicenses > 0 ? (totalUsed / totalLicenses) * 100 : 0;
+    const totalLicenses = licenses.reduce(
+      (sum, license) => sum + license.totalLicenses,
+      0
+    );
+    const totalUsed = licenses.reduce(
+      (sum, license) => sum + license.usedLicenses,
+      0
+    );
+    const totalAvailable = licenses.reduce(
+      (sum, license) => sum + license.availableLicenses,
+      0
+    );
+    const overallUsage =
+      totalLicenses > 0 ? (totalUsed / totalLicenses) * 100 : 0;
 
     return (
       <Box
@@ -326,46 +360,56 @@ export function LicenseStatus({
         }}
       >
         <Box sx={{ textAlign: 'center' }}>
-          <Typography variant="h6" color="primary" sx={{ fontWeight: 700 }}>
+          <Typography variant='h6' color='primary' sx={{ fontWeight: 700 }}>
             {licenses.length}
           </Typography>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant='caption' color='text.secondary'>
             Total Software
           </Typography>
         </Box>
-        
+
         <Box sx={{ textAlign: 'center' }}>
-          <Typography variant="h6" color="success.main" sx={{ fontWeight: 700 }}>
+          <Typography
+            variant='h6'
+            color='success.main'
+            sx={{ fontWeight: 700 }}
+          >
             {totalLicenses.toLocaleString()}
           </Typography>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant='caption' color='text.secondary'>
             Total Licenses
           </Typography>
         </Box>
-        
+
         <Box sx={{ textAlign: 'center' }}>
-          <Typography variant="h6" color="info.main" sx={{ fontWeight: 700 }}>
+          <Typography variant='h6' color='info.main' sx={{ fontWeight: 700 }}>
             {totalUsed.toLocaleString()}
           </Typography>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant='caption' color='text.secondary'>
             Used
           </Typography>
         </Box>
-        
+
         <Box sx={{ textAlign: 'center' }}>
-          <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 700 }}>
+          <Typography
+            variant='h6'
+            color='text.secondary'
+            sx={{ fontWeight: 700 }}
+          >
             {totalAvailable.toLocaleString()}
           </Typography>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant='caption' color='text.secondary'>
             Available
           </Typography>
         </Box>
-        
-        <Box sx={{ textAlign: 'center', gridColumn: { xs: '1 / -1', sm: 'auto' } }}>
-          <Typography variant="h6" sx={{ fontWeight: 700 }}>
+
+        <Box
+          sx={{ textAlign: 'center', gridColumn: { xs: '1 / -1', sm: 'auto' } }}
+        >
+          <Typography variant='h6' sx={{ fontWeight: 700 }}>
             {Math.round(overallUsage)}%
           </Typography>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant='caption' color='text.secondary'>
             Overall Usage
           </Typography>
         </Box>
@@ -378,15 +422,19 @@ export function LicenseStatus({
       {showHeader && (
         <CardHeader
           title={
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            <Typography variant='h6' sx={{ fontWeight: 600 }}>
               {title}
             </Typography>
           }
           action={
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {onRefresh && (
-                <Tooltip title="Refresh">
-                  <IconButton size="small" onClick={onRefresh} disabled={loading}>
+                <Tooltip title='Refresh'>
+                  <IconButton
+                    size='small'
+                    onClick={onRefresh}
+                    disabled={loading}
+                  >
                     <RefreshIcon />
                   </IconButton>
                 </Tooltip>
@@ -418,17 +466,16 @@ export function LicenseStatus({
           </List>
         )}
 
-        {!loading && displayLicenses.length > 0 && maxItems && licenses.length > maxItems && (
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
-            <Button
-              size="small"
-              onClick={onViewAll}
-              disabled={!onViewAll}
-            >
-              View {licenses.length - maxItems} more licenses
-            </Button>
-          </Box>
-        )}
+        {!loading &&
+          displayLicenses.length > 0 &&
+          maxItems &&
+          licenses.length > maxItems && (
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
+              <Button size='small' onClick={onViewAll} disabled={!onViewAll}>
+                View {licenses.length - maxItems} more licenses
+              </Button>
+            </Box>
+          )}
       </CardContent>
     </Card>
   );
@@ -440,13 +487,16 @@ export interface LicenseSummaryProps {
   showCriticalOnly?: boolean;
 }
 
-export function LicenseSummary({ 
-  licenses, 
-  showCriticalOnly = false 
+export function LicenseSummary({
+  licenses,
+  showCriticalOnly = false,
 }: LicenseSummaryProps) {
   const criticalLicenses = licenses.filter(license => {
-    const usagePercentage = (license.usedLicenses / license.totalLicenses) * 100;
-    return usagePercentage >= 80 || license.usedLicenses > license.totalLicenses;
+    const usagePercentage =
+      (license.usedLicenses / license.totalLicenses) * 100;
+    return (
+      usagePercentage >= 80 || license.usedLicenses > license.totalLicenses
+    );
   });
 
   const displayLicenses = showCriticalOnly ? criticalLicenses : licenses;
@@ -457,23 +507,25 @@ export function LicenseSummary({
 
   return (
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-      {displayLicenses.map((license) => {
-        const usagePercentage = (license.usedLicenses / license.totalLicenses) * 100;
+      {displayLicenses.map(license => {
+        const usagePercentage =
+          (license.usedLicenses / license.totalLicenses) * 100;
         const isOverLimit = license.usedLicenses > license.totalLicenses;
-        
+
         return (
           <Tooltip
             key={license.id}
             title={
               <Box>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                <Typography variant='body2' sx={{ fontWeight: 600 }}>
                   {license.name}
                 </Typography>
-                <Typography variant="caption">
-                  {license.usedLicenses} / {license.totalLicenses} licenses used ({Math.round(usagePercentage)}%)
+                <Typography variant='caption'>
+                  {license.usedLicenses} / {license.totalLicenses} licenses used
+                  ({Math.round(usagePercentage)}%)
                 </Typography>
                 {license.manufacturer && (
-                  <Typography variant="caption" sx={{ display: 'block' }}>
+                  <Typography variant='caption' sx={{ display: 'block' }}>
                     {license.manufacturer}
                   </Typography>
                 )}
@@ -482,9 +534,17 @@ export function LicenseSummary({
           >
             <Chip
               label={`${license.name}: ${license.usedLicenses}`}
-              color={isOverLimit ? 'error' : usagePercentage >= 80 ? 'warning' : 'default'}
-              size="small"
-              variant={isOverLimit || usagePercentage >= 80 ? 'filled' : 'outlined'}
+              color={
+                isOverLimit
+                  ? 'error'
+                  : usagePercentage >= 80
+                    ? 'warning'
+                    : 'default'
+              }
+              size='small'
+              variant={
+                isOverLimit || usagePercentage >= 80 ? 'filled' : 'outlined'
+              }
             />
           </Tooltip>
         );
@@ -513,8 +573,11 @@ export function useLicenseStatus(initialLicenses: SoftwareLicense[] = []) {
 
   const getCriticalLicenses = () => {
     return licenses.filter(license => {
-      const usagePercentage = (license.usedLicenses / license.totalLicenses) * 100;
-      return usagePercentage >= 80 || license.usedLicenses > license.totalLicenses;
+      const usagePercentage =
+        (license.usedLicenses / license.totalLicenses) * 100;
+      return (
+        usagePercentage >= 80 || license.usedLicenses > license.totalLicenses
+      );
     });
   };
 
@@ -537,4 +600,3 @@ export function useLicenseStatus(initialLicenses: SoftwareLicense[] = []) {
     getExpiringLicenses,
   };
 }
-

@@ -6,9 +6,9 @@
 // Hardware asset status options
 export const HARDWARE_STATUSES = [
   '대기중',
-  '사용중', 
+  '사용중',
   '수리중',
-  '폐기'
+  '폐기',
 ] as const;
 
 // Hardware asset types
@@ -23,7 +23,7 @@ export const HARDWARE_TYPES = [
   'Mobile Device',
   'Tablet',
   'Accessories',
-  'Other'
+  'Other',
 ] as const;
 
 // Hardware manufacturers (common ones)
@@ -40,31 +40,31 @@ export const HARDWARE_MANUFACTURERS = [
   'Canon',
   'Epson',
   'Cisco',
-  'Other'
+  'Other',
 ] as const;
 
 // Base hardware interface
 export interface Hardware {
-  id: string;                    // Asset tag (HW001, HW002, etc.)
-  type: string;                  // Hardware type
-  manufacturer: string;          // Manufacturer name
-  model: string;                 // Model name/number
-  serial_number: string;         // Serial number
-  purchase_date?: string;        // Purchase date (YYYY-MM-DD)
-  price?: number;               // Purchase price
-  status: typeof HARDWARE_STATUSES[number];
-  assigned_to?: string;         // Employee ID if assigned
-  assigned_to_name?: string;    // Employee name (from JOIN)
-  notes?: string;               // Additional notes
-  created_at?: string;          // Creation timestamp
-  updated_at?: string;          // Last update timestamp
-  is_active?: boolean;          // Soft delete flag
+  id: string; // Asset tag (HW001, HW002, etc.)
+  type: string; // Hardware type
+  manufacturer: string; // Manufacturer name
+  model: string; // Model name/number
+  serial_number: string; // Serial number
+  purchase_date?: string; // Purchase date (YYYY-MM-DD)
+  price?: number; // Purchase price
+  status: (typeof HARDWARE_STATUSES)[number];
+  assigned_to?: string; // Employee ID if assigned
+  assigned_to_name?: string; // Employee name (from JOIN)
+  notes?: string; // Additional notes
+  created_at?: string; // Creation timestamp
+  updated_at?: string; // Last update timestamp
+  is_active?: boolean; // Soft delete flag
 }
 
 // Hardware with extended information (for display)
 export interface HardwareWithAssignee extends Hardware {
   assignedEmployeeName?: string; // For display purposes
-  assignmentDate?: string;       // When it was assigned
+  assignmentDate?: string; // When it was assigned
   assignmentHistory?: Assignment[]; // Assignment history
 }
 
@@ -87,7 +87,7 @@ export interface UpdateHardwareData {
   serial_number?: string;
   purchase_date?: string;
   price?: number;
-  status?: typeof HARDWARE_STATUSES[number];
+  status?: (typeof HARDWARE_STATUSES)[number];
   notes?: string;
 }
 
@@ -105,12 +105,12 @@ export interface HardwareFilters {
 
 // Hardware search parameters
 export interface HardwareSearchParams {
-  query?: string;               // Search term
-  filters?: HardwareFilters;    // Filter options
-  sortBy?: string;              // Sort field
-  sortOrder?: 'asc' | 'desc';   // Sort direction
-  page?: number;                // Pagination
-  limit?: number;               // Items per page
+  query?: string; // Search term
+  filters?: HardwareFilters; // Filter options
+  sortBy?: string; // Sort field
+  sortOrder?: 'asc' | 'desc'; // Sort direction
+  page?: number; // Pagination
+  limit?: number; // Items per page
 }
 
 // Assignment interface (for assignment history)
@@ -137,12 +137,18 @@ export interface HardwareStats {
 }
 
 // Type guards
-export function isValidHardwareStatus(status: string): status is typeof HARDWARE_STATUSES[number] {
-  return HARDWARE_STATUSES.includes(status as typeof HARDWARE_STATUSES[number]);
+export function isValidHardwareStatus(
+  status: string
+): status is (typeof HARDWARE_STATUSES)[number] {
+  return HARDWARE_STATUSES.includes(
+    status as (typeof HARDWARE_STATUSES)[number]
+  );
 }
 
-export function isValidHardwareType(type: string): type is typeof HARDWARE_TYPES[number] {
-  return HARDWARE_TYPES.includes(type as typeof HARDWARE_TYPES[number]);
+export function isValidHardwareType(
+  type: string
+): type is (typeof HARDWARE_TYPES)[number] {
+  return HARDWARE_TYPES.includes(type as (typeof HARDWARE_TYPES)[number]);
 }
 
 // Hardware form validation schema
@@ -171,6 +177,6 @@ export interface HardwareTableColumn {
 export type HardwareTableData = HardwareWithAssignee;
 
 // Re-export commonly used types
-export type HardwareStatus = typeof HARDWARE_STATUSES[number];
-export type HardwareType = typeof HARDWARE_TYPES[number];
-export type HardwareManufacturer = typeof HARDWARE_MANUFACTURERS[number];
+export type HardwareStatus = (typeof HARDWARE_STATUSES)[number];
+export type HardwareType = (typeof HARDWARE_TYPES)[number];
+export type HardwareManufacturer = (typeof HARDWARE_MANUFACTURERS)[number];

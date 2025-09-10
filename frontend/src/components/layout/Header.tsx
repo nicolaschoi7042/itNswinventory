@@ -7,14 +7,14 @@ export function Header() {
   // TODO: Replace with actual user data from context/store
   const mockUser = {
     name: 'Admin User',
-    role: 'Admin'
+    role: 'Admin',
   };
 
   const mockStats = {
     totalHardware: 156,
     totalSoftware: 89,
     totalEmployees: 245,
-    totalAssignments: 312
+    totalAssignments: 312,
   };
 
   const handleLogout = () => {
@@ -40,10 +40,10 @@ export function Header() {
     >
       {/* Title */}
       <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
-        <Typography 
-          variant="h5" 
-          component="h1" 
-          sx={{ 
+        <Typography
+          variant='h5'
+          component='h1'
+          sx={{
             fontWeight: 300,
             display: 'flex',
             alignItems: 'center',
@@ -51,7 +51,7 @@ export function Header() {
             gap: 1.5,
           }}
         >
-          <Box component="span" sx={{ color: '#ffd700', fontSize: '1.8rem' }}>
+          <Box component='span' sx={{ color: '#ffd700', fontSize: '1.8rem' }}>
             💼
           </Box>
           IT Asset & Software Inventory Management System
@@ -59,74 +59,112 @@ export function Header() {
       </Box>
 
       {/* Stats and User Info */}
-      <Box sx={{ 
-        display: 'flex', 
-        flexDirection: { xs: 'column', sm: 'row' },
-        alignItems: 'center',
-        gap: { xs: 2, sm: 3 },
-      }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
+          alignItems: 'center',
+          gap: { xs: 2, sm: 3 },
+        }}
+      >
         {/* Stats */}
-        <Box sx={{ 
-          display: 'flex', 
-          gap: { xs: 2, sm: 2.5 },
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-        }}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: { xs: 2, sm: 2.5 },
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+          }}
+        >
           <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#ffd700' }}>
+            <Typography
+              variant='h6'
+              sx={{ fontWeight: 'bold', color: '#ffd700' }}
+            >
               {mockStats.totalHardware}
             </Typography>
-            <Typography variant="caption" sx={{ opacity: 0.9, fontSize: '0.7rem' }}>
+            <Typography
+              variant='caption'
+              sx={{ opacity: 0.9, fontSize: '0.7rem' }}
+            >
               하드웨어
             </Typography>
           </Box>
           <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#ffd700' }}>
+            <Typography
+              variant='h6'
+              sx={{ fontWeight: 'bold', color: '#ffd700' }}
+            >
               {mockStats.totalSoftware}
             </Typography>
-            <Typography variant="caption" sx={{ opacity: 0.9, fontSize: '0.7rem' }}>
+            <Typography
+              variant='caption'
+              sx={{ opacity: 0.9, fontSize: '0.7rem' }}
+            >
               소프트웨어
             </Typography>
           </Box>
           <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#ffd700' }}>
+            <Typography
+              variant='h6'
+              sx={{ fontWeight: 'bold', color: '#ffd700' }}
+            >
               {mockStats.totalEmployees}
             </Typography>
-            <Typography variant="caption" sx={{ opacity: 0.9, fontSize: '0.7rem' }}>
+            <Typography
+              variant='caption'
+              sx={{ opacity: 0.9, fontSize: '0.7rem' }}
+            >
               직원
             </Typography>
           </Box>
           <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#ffd700' }}>
+            <Typography
+              variant='h6'
+              sx={{ fontWeight: 'bold', color: '#ffd700' }}
+            >
               {mockStats.totalAssignments}
             </Typography>
-            <Typography variant="caption" sx={{ opacity: 0.9, fontSize: '0.7rem' }}>
+            <Typography
+              variant='caption'
+              sx={{ opacity: 0.9, fontSize: '0.7rem' }}
+            >
               할당
             </Typography>
           </Box>
         </Box>
 
         {/* User Info and Logout */}
-        <Box sx={{ 
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1.5,
-        }}>
-          <Box sx={{ 
-            textAlign: 'right',
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            padding: '0.5rem 1rem',
-            borderRadius: 1,
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-          }}>
-            <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.85rem' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+          }}
+        >
+          <Box
+            sx={{
+              textAlign: 'right',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              padding: '0.5rem 1rem',
+              borderRadius: 1,
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+            }}
+          >
+            <Typography
+              variant='body2'
+              sx={{ fontWeight: 500, fontSize: '0.85rem' }}
+            >
               {mockUser.name}
             </Typography>
-            <Typography variant="caption" sx={{ fontSize: '0.7rem', opacity: 0.8 }}>
+            <Typography
+              variant='caption'
+              sx={{ fontSize: '0.7rem', opacity: 0.8 }}
+            >
               {mockUser.role}
             </Typography>
           </Box>
-          
+
           <Button
             onClick={handleLogout}
             sx={{
@@ -144,7 +182,7 @@ export function Header() {
               },
               transition: 'all 0.3s ease',
             }}
-            startIcon={<LogoutIcon fontSize="small" />}
+            startIcon={<LogoutIcon fontSize='small' />}
           >
             로그아웃
           </Button>

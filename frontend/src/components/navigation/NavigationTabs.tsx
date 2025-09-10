@@ -151,11 +151,14 @@ export function NavigationTabs({
   };
 
   const renderTabContent = (tab: NavigationTab) => {
-    const icon = showBadges && tab.badge ? (
-      <Badge badgeContent={tab.badge} color="error" max={99}>
-        {tab.icon}
-      </Badge>
-    ) : tab.icon;
+    const icon =
+      showBadges && tab.badge ? (
+        <Badge badgeContent={tab.badge} color='error' max={99}>
+          {tab.icon}
+        </Badge>
+      ) : (
+        tab.icon
+      );
 
     if (showTooltips) {
       return (
@@ -203,12 +206,18 @@ export function NavigationTabs({
         value={currentTab}
         onChange={handleTabChange}
         orientation={orientation}
-        variant={variant === 'scrollable' ? 'scrollable' : variant === 'fullWidth' ? 'fullWidth' : 'standard'}
-        scrollButtons="auto"
+        variant={
+          variant === 'scrollable'
+            ? 'scrollable'
+            : variant === 'fullWidth'
+              ? 'fullWidth'
+              : 'standard'
+        }
+        scrollButtons='auto'
         allowScrollButtonsMobile
         centered={centered && variant !== 'scrollable'}
         indicatorColor={allowIndicator ? 'primary' : undefined}
-        textColor="primary"
+        textColor='primary'
         sx={{
           minHeight: dense ? 40 : 48,
           '& .MuiTab-root': {
@@ -225,7 +234,7 @@ export function NavigationTabs({
           },
         }}
       >
-        {visibleTabs.map((tab) => (
+        {visibleTabs.map(tab => (
           <Tab
             key={tab.id}
             label={renderTabContent(tab)}
@@ -266,17 +275,19 @@ export function NavigationTabs({
           },
         }}
       >
-        {visibleTabs.slice(0, 5).map((tab) => (
+        {visibleTabs.slice(0, 5).map(tab => (
           <BottomNavigationAction
             key={tab.id}
             label={showLabels ? tab.label : undefined}
             value={tab.id}
             icon={
               showBadges && tab.badge ? (
-                <Badge badgeContent={tab.badge} color="error" max={99}>
+                <Badge badgeContent={tab.badge} color='error' max={99}>
                   {tab.icon}
                 </Badge>
-              ) : tab.icon
+              ) : (
+                tab.icon
+              )
             }
             disabled={tab.disabled}
           />
@@ -288,8 +299,8 @@ export function NavigationTabs({
   // Drawer variant for side navigation
   const renderDrawerNavigation = () => (
     <Drawer
-      variant="temporary"
-      anchor="left"
+      variant='temporary'
+      anchor='left'
       open={drawerOpen}
       onClose={onDrawerClose}
       ModalProps={{
@@ -302,11 +313,18 @@ export function NavigationTabs({
         },
       }}
     >
-      <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+      <Box
+        sx={{
+          p: 2,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <Typography variant='h6' sx={{ fontWeight: 600 }}>
           메뉴
         </Typography>
-        <IconButton onClick={onDrawerClose} size="small">
+        <IconButton onClick={onDrawerClose} size='small'>
           <CloseIcon />
         </IconButton>
       </Box>
@@ -314,7 +332,7 @@ export function NavigationTabs({
       <Divider />
 
       <List sx={{ pt: 0 }}>
-        {visibleTabs.map((tab) => (
+        {visibleTabs.map(tab => (
           <ListItem key={tab.id} disablePadding>
             <ListItemButton
               selected={currentTab === tab.id}
@@ -339,12 +357,14 @@ export function NavigationTabs({
             >
               <ListItemIcon sx={{ minWidth: 40 }}>
                 {showBadges && tab.badge ? (
-                  <Badge badgeContent={tab.badge} color="error" max={99}>
+                  <Badge badgeContent={tab.badge} color='error' max={99}>
                     {tab.icon}
                   </Badge>
-                ) : tab.icon}
+                ) : (
+                  tab.icon
+                )}
               </ListItemIcon>
-              <ListItemText 
+              <ListItemText
                 primary={tab.label}
                 secondary={tab.description}
                 primaryTypographyProps={{
@@ -355,9 +375,7 @@ export function NavigationTabs({
                   fontSize: '0.75rem',
                 }}
               />
-              {tab.children && (
-                <ChevronRightIcon fontSize="small" />
-              )}
+              {tab.children && <ChevronRightIcon fontSize='small' />}
             </ListItemButton>
           </ListItem>
         ))}
@@ -369,8 +387,8 @@ export function NavigationTabs({
   const renderVerticalTabs = () => (
     <Box sx={{ display: 'flex', minHeight: 400 }}>
       <Tabs
-        orientation="vertical"
-        variant="scrollable"
+        orientation='vertical'
+        variant='scrollable'
         value={currentTab}
         onChange={handleTabChange}
         sx={{
@@ -386,7 +404,7 @@ export function NavigationTabs({
           },
         }}
       >
-        {visibleTabs.map((tab) => (
+        {visibleTabs.map(tab => (
           <Tab
             key={tab.id}
             label={renderTabContent(tab)}
@@ -405,7 +423,9 @@ export function NavigationTabs({
     case 'drawer':
       return renderDrawerNavigation();
     default:
-      return orientation === 'vertical' ? renderVerticalTabs() : renderStandardTabs();
+      return orientation === 'vertical'
+        ? renderVerticalTabs()
+        : renderStandardTabs();
   }
 }
 
@@ -429,7 +449,7 @@ export function ResponsiveNavigation({
         currentTab={currentTab}
         userRole={userRole}
         onChange={onChange}
-        variant="bottom"
+        variant='bottom'
         showLabels={false}
       />
     );
@@ -443,7 +463,7 @@ export function ResponsiveNavigation({
         currentTab={currentTab}
         userRole={userRole}
         onChange={onChange}
-        variant="scrollable"
+        variant='scrollable'
         dense
       />
     );
@@ -456,7 +476,7 @@ export function ResponsiveNavigation({
       currentTab={currentTab}
       userRole={userRole}
       onChange={onChange}
-      variant="standard"
+      variant='standard'
     />
   );
 }
@@ -501,7 +521,10 @@ export const navigationUtils = {
   },
 
   // Get tabs for user role
-  getTabsForRole: (tabs: NavigationTab[], role: 'admin' | 'manager' | 'user'): NavigationTab[] => {
+  getTabsForRole: (
+    tabs: NavigationTab[],
+    role: 'admin' | 'manager' | 'user'
+  ): NavigationTab[] => {
     return tabs.filter(tab => {
       if (!tab.roles || tab.roles.length === 0) return true;
       return tab.roles.includes(role);
@@ -509,7 +532,10 @@ export const navigationUtils = {
   },
 
   // Check if user can access tab
-  canAccessTab: (tab: NavigationTab, role: 'admin' | 'manager' | 'user'): boolean => {
+  canAccessTab: (
+    tab: NavigationTab,
+    role: 'admin' | 'manager' | 'user'
+  ): boolean => {
     if (!tab.roles || tab.roles.length === 0) return true;
     return tab.roles.includes(role);
   },
@@ -520,16 +546,20 @@ export const navigationUtils = {
   },
 
   // Update tab badge
-  updateTabBadge: (tabs: NavigationTab[], tabId: string, badge: number): NavigationTab[] => {
-    return tabs.map(tab => 
-      tab.id === tabId ? { ...tab, badge } : tab
-    );
+  updateTabBadge: (
+    tabs: NavigationTab[],
+    tabId: string,
+    badge: number
+  ): NavigationTab[] => {
+    return tabs.map(tab => (tab.id === tabId ? { ...tab, badge } : tab));
   },
 
   // Disable/enable tab
-  setTabDisabled: (tabs: NavigationTab[], tabId: string, disabled: boolean): NavigationTab[] => {
-    return tabs.map(tab => 
-      tab.id === tabId ? { ...tab, disabled } : tab
-    );
+  setTabDisabled: (
+    tabs: NavigationTab[],
+    tabId: string,
+    disabled: boolean
+  ): NavigationTab[] => {
+    return tabs.map(tab => (tab.id === tabId ? { ...tab, disabled } : tab));
   },
 };

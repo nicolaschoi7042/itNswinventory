@@ -1,15 +1,15 @@
 /**
  * Asset Availability Validation Utilities
- * 
+ *
  * Comprehensive validation system for asset availability checking
  * with real-time validation and conflict detection.
  */
 
-import { 
-  Assignment, 
-  AssignmentWithDetails, 
+import {
+  Assignment,
+  AssignmentWithDetails,
   AssetType,
-  AssignmentStatus 
+  AssignmentStatus,
 } from '@/types/assignment';
 import { Employee } from '@/types/employee';
 import { Hardware } from '@/types/hardware';
@@ -35,7 +35,13 @@ export interface AssetAvailabilityInfo {
 }
 
 export interface AssetRestriction {
-  type: 'department' | 'role' | 'location' | 'license_limit' | 'maintenance' | 'policy';
+  type:
+    | 'department'
+    | 'role'
+    | 'location'
+    | 'license_limit'
+    | 'maintenance'
+    | 'policy';
   message: string;
   severity: 'error' | 'warning' | 'info';
   canOverride?: boolean;
@@ -55,7 +61,13 @@ export interface AvailabilityValidationResult {
 }
 
 export interface ValidationIssue {
-  type: 'availability' | 'policy' | 'limit' | 'conflict' | 'maintenance' | 'compatibility';
+  type:
+    | 'availability'
+    | 'policy'
+    | 'limit'
+    | 'conflict'
+    | 'maintenance'
+    | 'compatibility';
   severity: 'error' | 'warning' | 'info';
   message: string;
   solution?: string;
@@ -85,9 +97,10 @@ export const getAssetAvailabilityInfo = (
   assignments: (Assignment | AssignmentWithDetails)[]
 ): AssetAvailabilityInfo => {
   // Find the asset
-  const asset = assetType === 'hardware' 
-    ? hardware.find(hw => hw.id === assetId)
-    : software.find(sw => sw.id === assetId);
+  const asset =
+    assetType === 'hardware'
+      ? hardware.find(hw => hw.id === assetId)
+      : software.find(sw => sw.id === assetId);
 
   if (!asset) {
     return {
@@ -96,14 +109,15 @@ export const getAssetAvailabilityInfo = (
       type: assetType,
       isAvailable: false,
       status: 'not_found',
-      reason: '자산을 찾을 수 없습니다.'
+      reason: '자산을 찾을 수 없습니다.',
     };
   }
 
   // Find current assignments for this asset
   const currentAssignments = assignments.filter(
-    assignment => assignment.asset_id === assetId && 
-    ['사용중', '대기중'].includes(assignment.status)
+    assignment =>
+      assignment.asset_id === assetId &&
+      ['사용중', '대기중'].includes(assignment.status)
   );
 
   const activeAssignment = currentAssignments.find(
@@ -124,11 +138,18 @@ export const getAssetAvailabilityInfo = (
       isAvailable: currentUsers < licenseCount,
       status: currentUsers >= licenseCount ? 'license_full' : 'available',
       currentAssignment: activeAssignment,
-      reason: currentUsers >= licenseCount ? '라이선스 한도에 도달했습니다.' : undefined,
+      reason:
+        currentUsers >= licenseCount
+          ? '라이선스 한도에 도달했습니다.'
+          : undefined,
       utilizationLevel,
       maxConcurrentUsers: licenseCount,
       currentUsers,
-      restrictions: getLicenseRestrictions(softwareAsset, currentUsers, licenseCount)
+      restrictions: getLicenseRestrictions(
+        softwareAsset,
+        currentUsers,
+        licenseCount
+      ),
     };
   }
 
@@ -143,9 +164,11 @@ export const getAssetAvailabilityInfo = (
     isAvailable,
     status: activeAssignment ? 'assigned' : asset.status || 'available',
     currentAssignment: activeAssignment,
-    reason: activeAssignment ? `현재 ${activeAssignment.employee_name}에게 할당됨` : undefined,
+    reason: activeAssignment
+      ? `현재 ${activeAssignment.employee_name}에게 할당됨`
+      : undefined,
     nextAvailable: activeAssignment?.return_date,
-    restrictions
+    restrictions,
   };
 };
 
@@ -160,7 +183,13 @@ export const validateAssetAssignment = (
   software: Software[],
   assignments: (Assignment | AssignmentWithDetails)[]
 ): AvailabilityValidationResult => {
-  const asset = getAssetAvailabilityInfo(assetId, assetType, hardware, software, assignments);
+  const asset = getAssetAvailabilityInfo(
+    assetId,
+    assetType,
+    hardware,
+    software,
+    assignments
+  );
   const issues: ValidationIssue[] = [];
   const warnings: ValidationIssue[] = [];
   const recommendations: string[] = [];
@@ -171,27 +200,30 @@ export const validateAssetAssignment = (
       type: 'availability',
       severity: 'error',
       message: asset.reason || '자산을 사용할 수 없습니다.',
-      solution: asset.nextAvailable 
-        ? `예상 반납일: ${asset.nextAvailable}` 
-        : '다른 자산을 선택하거나 현재 할당을 확인하세요.'
+      solution: asset.nextAvailable
+        ? `예상 반납일: ${asset.nextAvailable}`
+        : '다른 자산을 선택하거나 현재 할당을 확인하세요.',
     });
   }
 
   // Employee assignment limits
   const employeeAssignments = assignments.filter(
-    assignment => assignment.employee_id === employee.id && 
-    assignment.status === '사용중'
+    assignment =>
+      assignment.employee_id === employee.id && assignment.status === '사용중'
   );
 
   const limits = getAssetLimits(assetType);
-  
+
   // Check maximum assignments per employee
-  if (limits.maxAssignmentsPerEmployee && employeeAssignments.length >= limits.maxAssignmentsPerEmployee) {
+  if (
+    limits.maxAssignmentsPerEmployee &&
+    employeeAssignments.length >= limits.maxAssignmentsPerEmployee
+  ) {
     issues.push({
       type: 'limit',
       severity: 'error',
       message: `직원당 최대 ${limits.maxAssignmentsPerEmployee}개의 자산만 할당 가능합니다.`,
-      solution: '기존 할당을 반납한 후 새로운 할당을 진행하세요.'
+      solution: '기존 할당을 반납한 후 새로운 할당을 진행하세요.',
     });
   }
 
@@ -207,18 +239,21 @@ export const validateAssetAssignment = (
         severity: 'warning',
         message: `같은 카테고리 자산이 ${sameCategoryCount}개 할당되어 있습니다.`,
         solution: '필요시 기존 할당을 검토하세요.',
-        canOverride: true
+        canOverride: true,
       });
     }
   }
 
   // Department restrictions
-  if (limits.departmentRestrictions && !limits.departmentRestrictions.includes(employee.department)) {
+  if (
+    limits.departmentRestrictions &&
+    !limits.departmentRestrictions.includes(employee.department)
+  ) {
     issues.push({
       type: 'policy',
       severity: 'error',
       message: `${employee.department} 부서에서는 이 자산을 사용할 수 없습니다.`,
-      solution: '자산 정책을 확인하거나 관리자에게 문의하세요.'
+      solution: '자산 정책을 확인하거나 관리자에게 문의하세요.',
     });
   }
 
@@ -230,31 +265,39 @@ export const validateAssetAssignment = (
           type: 'policy',
           severity: restriction.severity,
           message: restriction.message,
-          canOverride: restriction.canOverride
+          canOverride: restriction.canOverride,
         });
       } else {
         warnings.push({
           type: 'policy',
           severity: restriction.severity,
           message: restriction.message,
-          canOverride: restriction.canOverride
+          canOverride: restriction.canOverride,
         });
       }
     });
   }
 
   // Software license utilization warnings
-  if (assetType === 'software' && asset.utilizationLevel && asset.utilizationLevel > 80) {
+  if (
+    assetType === 'software' &&
+    asset.utilizationLevel &&
+    asset.utilizationLevel > 80
+  ) {
     warnings.push({
       type: 'limit',
       severity: 'warning',
       message: `라이선스 사용률이 ${Math.round(asset.utilizationLevel)}%입니다.`,
-      solution: '라이선스 추가 구매를 고려하세요.'
+      solution: '라이선스 추가 구매를 고려하세요.',
     });
   }
 
   // Compatibility checks
-  const compatibilityIssues = checkAssetCompatibility(employee, asset, employeeAssignments);
+  const compatibilityIssues = checkAssetCompatibility(
+    employee,
+    asset,
+    employeeAssignments
+  );
   issues.push(...compatibilityIssues);
 
   // Generate recommendations
@@ -262,14 +305,20 @@ export const validateAssetAssignment = (
     recommendations.push('할당에 문제가 없습니다.');
   }
 
-  if (asset.type === 'software' && asset.currentUsers && asset.maxConcurrentUsers) {
+  if (
+    asset.type === 'software' &&
+    asset.currentUsers &&
+    asset.maxConcurrentUsers
+  ) {
     if (asset.currentUsers < asset.maxConcurrentUsers * 0.5) {
       recommendations.push('라이선스 여유가 충분합니다.');
     }
   }
 
   const canProceed = issues.length === 0;
-  const requiresApproval = warnings.some(w => w.severity === 'warning' && !w.canOverride);
+  const requiresApproval = warnings.some(
+    w => w.severity === 'warning' && !w.canOverride
+  );
 
   return {
     isValid: canProceed,
@@ -280,7 +329,9 @@ export const validateAssetAssignment = (
     recommendations,
     canProceed,
     requiresApproval,
-    approvalReason: requiresApproval ? '정책 예외 승인이 필요합니다.' : undefined
+    approvalReason: requiresApproval
+      ? '정책 예외 승인이 필요합니다.'
+      : undefined,
   };
 };
 
@@ -292,15 +343,17 @@ export const checkRealTimeAvailability = async (
   assetType: AssetType
 ): Promise<{ available: boolean; reason?: string; nextCheck?: number }> => {
   // Simulate real-time API check
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     setTimeout(() => {
       // Mock real-time check
       const isAvailable = Math.random() > 0.1; // 90% chance available
-      
+
       resolve({
         available: isAvailable,
-        reason: isAvailable ? undefined : '실시간 확인 결과 자산이 사용 중입니다.',
-        nextCheck: isAvailable ? undefined : Date.now() + 60000 // Check again in 1 minute
+        reason: isAvailable
+          ? undefined
+          : '실시간 확인 결과 자산이 사용 중입니다.',
+        nextCheck: isAvailable ? undefined : Date.now() + 60000, // Check again in 1 minute
       });
     }, 500);
   });
@@ -315,14 +368,16 @@ export const getAssetConflicts = (
   assignments: (Assignment | AssignmentWithDetails)[]
 ): Assignment[] => {
   const proposedDateTime = new Date(proposedDate);
-  
+
   return assignments.filter(assignment => {
     if (assignment.asset_id !== assetId) return false;
     if (assignment.status === '반납완료') return false;
-    
+
     const assignedDate = new Date(assignment.assigned_date);
-    const returnDate = assignment.return_date ? new Date(assignment.return_date) : null;
-    
+    const returnDate = assignment.return_date
+      ? new Date(assignment.return_date)
+      : null;
+
     // Check for date conflicts
     if (returnDate) {
       return proposedDateTime >= assignedDate && proposedDateTime <= returnDate;
@@ -343,39 +398,39 @@ const getLicenseRestrictions = (
   maxUsers: number
 ): AssetRestriction[] => {
   const restrictions: AssetRestriction[] = [];
-  
+
   const utilizationRate = (currentUsers / maxUsers) * 100;
-  
+
   if (utilizationRate >= 100) {
     restrictions.push({
       type: 'license_limit',
       message: '라이선스 한도에 도달했습니다.',
-      severity: 'error'
+      severity: 'error',
     });
   } else if (utilizationRate >= 90) {
     restrictions.push({
       type: 'license_limit',
       message: '라이선스 한도에 거의 도달했습니다.',
-      severity: 'warning'
+      severity: 'warning',
     });
   }
-  
+
   return restrictions;
 };
 
 const getHardwareRestrictions = (hardware: Hardware): AssetRestriction[] => {
   const restrictions: AssetRestriction[] = [];
-  
+
   // Check maintenance status
   if ((hardware as any).maintenance_status === 'scheduled') {
     restrictions.push({
       type: 'maintenance',
       message: '예정된 유지보수가 있습니다.',
       severity: 'warning',
-      canOverride: true
+      canOverride: true,
     });
   }
-  
+
   // Check hardware condition
   if ((hardware as any).condition === 'poor') {
     restrictions.push({
@@ -383,10 +438,10 @@ const getHardwareRestrictions = (hardware: Hardware): AssetRestriction[] => {
       message: '하드웨어 상태가 좋지 않습니다.',
       severity: 'warning',
       canOverride: true,
-      overridePermission: 'manager'
+      overridePermission: 'manager',
     });
   }
-  
+
   return restrictions;
 };
 
@@ -413,24 +468,24 @@ const checkAssetCompatibility = (
   existingAssignments: (Assignment | AssignmentWithDetails)[]
 ): ValidationIssue[] => {
   const issues: ValidationIssue[] = [];
-  
+
   // Check for conflicting asset types
   if (asset.type === 'hardware' && asset.name.includes('Mac')) {
-    const hasWindowsAssets = existingAssignments.some(assignment => 
+    const hasWindowsAssets = existingAssignments.some(assignment =>
       assignment.asset_description?.includes('Windows')
     );
-    
+
     if (hasWindowsAssets) {
       issues.push({
         type: 'compatibility',
         severity: 'warning',
         message: 'Windows와 Mac 자산이 동시에 할당됩니다.',
         solution: '호환성을 확인하세요.',
-        canOverride: true
+        canOverride: true,
       });
     }
   }
-  
+
   return issues;
 };
 
@@ -442,5 +497,5 @@ export {
   getAssetAvailabilityInfo,
   validateAssetAssignment,
   checkRealTimeAvailability,
-  getAssetConflicts
+  getAssetConflicts,
 };

@@ -16,7 +16,7 @@ export default function Error({ error, reset }: ErrorProps) {
   }, [error]);
 
   return (
-    <Container maxWidth="md">
+    <Container maxWidth='md'>
       <Box
         sx={{
           display: 'flex',
@@ -28,46 +28,59 @@ export default function Error({ error, reset }: ErrorProps) {
           gap: 3,
         }}
       >
-        <Typography variant="h4" component="h1" color="error.main" gutterBottom>
+        <Typography variant='h4' component='h1' color='error.main' gutterBottom>
           오류가 발생했습니다
         </Typography>
-        
-        <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 500 }}>
-          시스템에 일시적인 문제가 발생했습니다. 
-          페이지를 새로고침하거나 잠시 후 다시 시도해 주세요.
+
+        <Typography
+          variant='body1'
+          color='text.secondary'
+          sx={{ maxWidth: 500 }}
+        >
+          시스템에 일시적인 문제가 발생했습니다. 페이지를 새로고침하거나 잠시 후
+          다시 시도해 주세요.
         </Typography>
-        
+
         {error.message && (
-          <Box sx={{ 
-            backgroundColor: 'error.light', 
-            color: 'error.contrastText', 
-            p: 2, 
-            borderRadius: 1,
-            maxWidth: 600,
-            fontFamily: 'monospace',
-            fontSize: '0.875rem',
-            wordBreak: 'break-all',
-          }}>
+          <Box
+            sx={{
+              backgroundColor: 'error.light',
+              color: 'error.contrastText',
+              p: 2,
+              borderRadius: 1,
+              maxWidth: 600,
+              fontFamily: 'monospace',
+              fontSize: '0.875rem',
+              wordBreak: 'break-all',
+            }}
+          >
             {error.message}
           </Box>
         )}
-        
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
+
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 2,
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+          }}
+        >
           <Button
-            variant="contained"
-            size="large"
+            variant='contained'
+            size='large'
             startIcon={<RefreshIcon />}
             onClick={reset}
             sx={{ minWidth: 150 }}
           >
             다시 시도
           </Button>
-          
+
           <Button
-            variant="outlined"
-            size="large"
+            variant='outlined'
+            size='large'
             startIcon={<HomeIcon />}
-            onClick={() => window.location.href = '/dashboard'}
+            onClick={() => (window.location.href = '/dashboard')}
             sx={{ minWidth: 150 }}
           >
             대시보드로

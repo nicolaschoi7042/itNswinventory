@@ -916,6 +916,126 @@ app.get('/api/activities', authenticateToken, async (req, res) => {
     }
 });
 
+// 단일 사용자 조회
+app.get('/api/admin/users/:id', authenticateToken, authorize(['admin']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await pool.query(`
+            SELECT id, username, full_name, email, role, is_active, created_at, last_login
+            FROM users
+            WHERE id = $1
+        `, [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: '사용자를 찾을 수 없습니다.' });
+        }
+
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Get user error:', error);
+        res.status(500).json({ error: '사용자 조회 중 오류가 발생했습니다.' });
+    }
+});
+
+// 사용자 정보 수정
+app.put('/api/admin/users/:id', authenticateToken, authorize(['admin']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { username, full_name, email, role } = req.body;
+
+        // 필수 필드 확인
+        if (!username || !full_name || !role) {
+            return res.status(400).json({ error: '필수 필드가 누락되었습니다.' });
+        }
+
+        // 유효한 role 확인
+        if (!['admin', 'manager', 'user'].includes(role)) {
+            return res.status(400).json({ error: '유효하지 않은 권한입니다.' });
+        }
+
+        // 자기 자신의 권한은 변경할 수 없음
+        if (parseInt(id) === req.user.id && req.user.role !== role) {
+            return res.status(400).json({ error: '자신의 권한은 변경할 수 없습니다.' });
+        }
+
+        // 기존 사용자 정보 조회
+        const oldUser = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+        if (oldUser.rows.length === 0) {
+            return res.status(404).json({ error: '사용자를 찾을 수 없습니다.' });
+        }
+
+        // 사용자명 중복 확인 (자신 제외)
+        const existingUser = await pool.query(
+            'SELECT id FROM users WHERE username = $1 AND id != $2',
+            [username, id]
+        );
+        if (existingUser.rows.length > 0) {
+            return res.status(400).json({ error: '이미 존재하는 사용자명입니다.' });
+        }
+
+        // 사용자 정보 업데이트
+        const result = await pool.query(`
+            UPDATE users 
+            SET username = $1, full_name = $2, email = $3, role = $4, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $5
+            RETURNING id, username, full_name, email, role, is_active, created_at, updated_at
+        `, [username, full_name, email, role, id]);
+
+        await logActivity(
+            req.user.id,
+            `사용자 정보 수정: ${username}`,
+            'users',
+            id,
+            oldUser.rows[0],
+            result.rows[0]
+        );
+
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Update user error:', error);
+        res.status(500).json({ error: '사용자 정보 수정 중 오류가 발생했습니다.' });
+    }
+});
+
+// 사용자 삭제 (실제로는 비활성화)
+app.delete('/api/admin/users/:id', authenticateToken, authorize(['admin']), async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // 자기 자신은 삭제할 수 없음
+        if (parseInt(id) === req.user.id) {
+            return res.status(400).json({ error: '자신의 계정은 삭제할 수 없습니다.' });
+        }
+
+        // 기존 사용자 정보 조회
+        const oldUser = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+        if (oldUser.rows.length === 0) {
+            return res.status(404).json({ error: '사용자를 찾을 수 없습니다.' });
+        }
+
+        // 사용자 비활성화 (삭제 대신)
+        await pool.query(`
+            UPDATE users 
+            SET is_active = false, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $1
+        `, [id]);
+
+        await logActivity(
+            req.user.id,
+            `사용자 삭제 (비활성화): ${oldUser.rows[0].username}`,
+            'users',
+            id,
+            { is_active: oldUser.rows[0].is_active },
+            { is_active: false }
+        );
+
+        res.json({ message: '사용자가 성공적으로 삭제되었습니다.' });
+    } catch (error) {
+        console.error('Delete user error:', error);
+        res.status(500).json({ error: '사용자 삭제 중 오류가 발생했습니다.' });
+    }
+});
+
 // 기본 상태 확인
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', message: 'IT Inventory API Server is running' });

@@ -125,7 +125,16 @@ export function UserMenu({
     return roleLabels[role as keyof typeof roleLabels] || role;
   };
 
-  const getRoleColor = (role: string): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
+  const getRoleColor = (
+    role: string
+  ):
+    | 'default'
+    | 'primary'
+    | 'secondary'
+    | 'error'
+    | 'info'
+    | 'success'
+    | 'warning' => {
     const roleColors = {
       admin: 'error' as const,
       manager: 'warning' as const,
@@ -136,55 +145,87 @@ export function UserMenu({
 
   // Build default actions list
   const defaultActions: UserMenuAction[] = [
-    ...(onProfile ? [{
-      id: 'profile',
-      label: '프로필',
-      icon: <PersonIcon />,
-      onClick: onProfile,
-    }] : []),
-    ...(onSettings ? [{
-      id: 'settings',
-      label: '설정',
-      icon: <SettingsIcon />,
-      onClick: onSettings,
-    }] : []),
-    ...(onSecurity ? [{
-      id: 'security',
-      label: '보안',
-      icon: <SecurityIcon />,
-      onClick: onSecurity,
-    }] : []),
-    ...(onNotifications ? [{
-      id: 'notifications',
-      label: '알림 설정',
-      icon: <NotificationsIcon />,
-      onClick: onNotifications,
-    }] : []),
-    ...(onThemeToggle ? [{
-      id: 'theme',
-      label: '테마 변경',
-      icon: <DarkModeIcon />,
-      onClick: onThemeToggle,
-      divider: true,
-    }] : []),
-    ...(onLanguageChange ? [{
-      id: 'language',
-      label: '언어 설정',
-      icon: <LanguageIcon />,
-      onClick: onLanguageChange,
-    }] : []),
-    ...(onHelp ? [{
-      id: 'help',
-      label: '도움말',
-      icon: <HelpIcon />,
-      onClick: onHelp,
-    }] : []),
-    ...(onAbout ? [{
-      id: 'about',
-      label: '정보',
-      icon: <InfoIcon />,
-      onClick: onAbout,
-    }] : []),
+    ...(onProfile
+      ? [
+          {
+            id: 'profile',
+            label: '프로필',
+            icon: <PersonIcon />,
+            onClick: onProfile,
+          },
+        ]
+      : []),
+    ...(onSettings
+      ? [
+          {
+            id: 'settings',
+            label: '설정',
+            icon: <SettingsIcon />,
+            onClick: onSettings,
+          },
+        ]
+      : []),
+    ...(onSecurity
+      ? [
+          {
+            id: 'security',
+            label: '보안',
+            icon: <SecurityIcon />,
+            onClick: onSecurity,
+          },
+        ]
+      : []),
+    ...(onNotifications
+      ? [
+          {
+            id: 'notifications',
+            label: '알림 설정',
+            icon: <NotificationsIcon />,
+            onClick: onNotifications,
+          },
+        ]
+      : []),
+    ...(onThemeToggle
+      ? [
+          {
+            id: 'theme',
+            label: '테마 변경',
+            icon: <DarkModeIcon />,
+            onClick: onThemeToggle,
+            divider: true,
+          },
+        ]
+      : []),
+    ...(onLanguageChange
+      ? [
+          {
+            id: 'language',
+            label: '언어 설정',
+            icon: <LanguageIcon />,
+            onClick: onLanguageChange,
+          },
+        ]
+      : []),
+    ...(onHelp
+      ? [
+          {
+            id: 'help',
+            label: '도움말',
+            icon: <HelpIcon />,
+            onClick: onHelp,
+          },
+        ]
+      : []),
+    ...(onAbout
+      ? [
+          {
+            id: 'about',
+            label: '정보',
+            icon: <InfoIcon />,
+            onClick: onAbout,
+          },
+        ]
+      : []),
     {
       id: 'logout',
       label: '로그아웃',
@@ -200,20 +241,21 @@ export function UserMenu({
   const renderUserInfo = () => (
     <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        {showAvatar && (
-          user.avatar ? (
+        {showAvatar &&
+          (user.avatar ? (
             <Avatar
               src={user.avatar}
               alt={getUserDisplayName()}
               sx={{ width: compact ? 32 : 40, height: compact ? 32 : 40 }}
             />
           ) : (
-            <Avatar sx={{ width: compact ? 32 : 40, height: compact ? 32 : 40 }}>
+            <Avatar
+              sx={{ width: compact ? 32 : 40, height: compact ? 32 : 40 }}
+            >
               {getUserDisplayName().charAt(0).toUpperCase()}
             </Avatar>
-          )
-        )}
-        
+          ))}
+
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Typography
             variant={compact ? 'body2' : 'subtitle1'}
@@ -222,22 +264,22 @@ export function UserMenu({
           >
             {getUserDisplayName()}
           </Typography>
-          
+
           {user.email && (
             <Typography
-              variant="caption"
-              color="text.secondary"
+              variant='caption'
+              color='text.secondary'
               sx={{ display: 'block', lineHeight: 1.2 }}
               noWrap
             >
               {user.email}
             </Typography>
           )}
-          
+
           {user.department && !compact && (
             <Typography
-              variant="caption"
-              color="text.secondary"
+              variant='caption'
+              color='text.secondary'
               sx={{ display: 'block', lineHeight: 1.2 }}
               noWrap
             >
@@ -251,15 +293,20 @@ export function UserMenu({
         <Box sx={{ mt: 1 }}>
           <Chip
             label={getRoleLabel(user.role)}
-            size="small"
+            size='small'
             color={getRoleColor(user.role)}
-            variant="outlined"
+            variant='outlined'
             sx={{ fontSize: '0.7rem' }}
           />
-          
+
           {user.lastLogin && !compact && (
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-              마지막 로그인: {new Date(user.lastLogin).toLocaleDateString('ko-KR')}
+            <Typography
+              variant='caption'
+              color='text.secondary'
+              sx={{ display: 'block', mt: 0.5 }}
+            >
+              마지막 로그인:{' '}
+              {new Date(user.lastLogin).toLocaleDateString('ko-KR')}
             </Typography>
           )}
         </Box>
@@ -322,8 +369,8 @@ export function UserMenu({
         onClick={handleOpen}
         ref={variant === 'popover' ? anchorRef : undefined}
       >
-        {showAvatar && (
-          user.avatar ? (
+        {showAvatar &&
+          (user.avatar ? (
             <Avatar
               src={user.avatar}
               alt={getUserDisplayName()}
@@ -331,13 +378,12 @@ export function UserMenu({
             />
           ) : (
             <AccountCircleIcon sx={{ fontSize: compact ? 24 : 32 }} />
-          )
-        )}
-        
+          ))}
+
         {!compact && (
           <Box sx={{ textAlign: 'left', display: { xs: 'none', sm: 'block' } }}>
             <Typography
-              variant="body2"
+              variant='body2'
               sx={{ fontWeight: 600, color: 'inherit', lineHeight: 1.2 }}
               noWrap
             >
@@ -345,7 +391,7 @@ export function UserMenu({
             </Typography>
             {showRole && (
               <Typography
-                variant="caption"
+                variant='caption'
                 sx={{ color: 'inherit', opacity: 0.8, lineHeight: 1.2 }}
                 noWrap
               >
@@ -371,16 +417,15 @@ export function UserMenu({
       return (
         <Button
           onClick={handleOpen}
-          startIcon={showAvatar ? (
-            user.avatar ? (
-              <Avatar
-                src={user.avatar}
-                sx={{ width: 24, height: 24 }}
-              />
-            ) : (
-              <AccountCircleIcon />
-            )
-          ) : undefined}
+          startIcon={
+            showAvatar ? (
+              user.avatar ? (
+                <Avatar src={user.avatar} sx={{ width: 24, height: 24 }} />
+              ) : (
+                <AccountCircleIcon />
+              )
+            ) : undefined
+          }
           endIcon={showArrow ? <ArrowDownIcon /> : undefined}
           sx={{
             textTransform: 'none',
@@ -471,12 +516,12 @@ export function CompactUserMenu(props: Omit<UserMenuProps, 'compact'>) {
 
 // User menu button variant
 export function UserMenuButton(props: Omit<UserMenuProps, 'variant'>) {
-  return <UserMenu {...props} variant="button" />;
+  return <UserMenu {...props} variant='button' />;
 }
 
 // User menu with popover
 export function UserMenuPopover(props: Omit<UserMenuProps, 'variant'>) {
-  return <UserMenu {...props} variant="popover" />;
+  return <UserMenu {...props} variant='popover' />;
 }
 
 // Hook for user menu state
@@ -546,7 +591,8 @@ export const userMenuUtils = {
   // Get user initials for avatar
   getUserInitials: (user: User): string => {
     const name = user.fullName || user.username || 'U';
-    return name.split(' ')
+    return name
+      .split(' ')
       .map(word => word.charAt(0).toUpperCase())
       .slice(0, 2)
       .join('');

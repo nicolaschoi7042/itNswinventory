@@ -116,7 +116,7 @@ export interface Assignment {
   notes?: string;
   createdAt: string;
   updatedAt: string;
-  
+
   // Populated data
   employee?: Employee;
   hardware?: Hardware;

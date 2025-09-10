@@ -35,33 +35,23 @@ export {
   useToast,
 } from './AlertDialog';
 
-export {
-  EmployeeFormModal,
-  useEmployeeFormModal,
-} from './EmployeeFormModal';
+export { EmployeeFormModal, useEmployeeFormModal } from './EmployeeFormModal';
 
 export {
   EmployeeDetailModal,
   useEmployeeDetailModal,
 } from './EmployeeDetailModal';
 
-export {
-  HardwareFormModal,
-  useHardwareFormModal,
-} from './HardwareFormModal';
+export { HardwareFormModal, useHardwareFormModal } from './HardwareFormModal';
 
 export {
   HardwareDetailModal,
   useHardwareDetailModal,
 } from './HardwareDetailModal';
 
-export {
-  SoftwareFormModal,
-} from './SoftwareFormModal';
+export { SoftwareFormModal } from './SoftwareFormModal';
 
-export {
-  SoftwareDetailModal,
-} from './SoftwareDetailModal';
+export { SoftwareDetailModal } from './SoftwareDetailModal';
 
 export {
   SoftwareAssignmentModal,
@@ -73,21 +63,13 @@ export {
   useSoftwareReturnModal,
 } from './SoftwareReturnModal';
 
-export {
-  AssignmentFormModal,
-} from './AssignmentFormModal';
+export { AssignmentFormModal } from './AssignmentFormModal';
 
-export {
-  AssignmentDetailModal,
-} from './AssignmentDetailModal';
+export { AssignmentDetailModal } from './AssignmentDetailModal';
 
-export {
-  AssetReturnModal,
-} from './AssetReturnModal';
+export { AssetReturnModal } from './AssetReturnModal';
 
-export {
-  AdvancedSearchModal,
-} from './AdvancedSearchModal';
+export { AdvancedSearchModal } from './AdvancedSearchModal';
 
 // Re-export commonly used types
 export type { UserRole } from '../tables/TableActions';
@@ -217,17 +199,18 @@ export const commonModals = {
     isEdit: boolean,
     onSubmit: (event: React.FormEvent<HTMLFormElement>) => void | Promise<void>,
     options: { loading?: boolean; disabled?: boolean } = {}
-  ) => modalUtils.createFormModalProps(
-    isEdit ? 'Edit Employee' : 'Add New Employee',
-    onSubmit,
-    {
-      subtitle: isEdit 
-        ? 'Update employee information' 
-        : 'Enter new employee details',
-      submitLabel: isEdit ? 'Update Employee' : 'Create Employee',
-      ...options,
-    }
-  ),
+  ) =>
+    modalUtils.createFormModalProps(
+      isEdit ? 'Edit Employee' : 'Add New Employee',
+      onSubmit,
+      {
+        subtitle: isEdit
+          ? 'Update employee information'
+          : 'Enter new employee details',
+        submitLabel: isEdit ? 'Update Employee' : 'Create Employee',
+        ...options,
+      }
+    ),
 
   /**
    * Hardware form modal
@@ -236,18 +219,19 @@ export const commonModals = {
     isEdit: boolean,
     onSubmit: (event: React.FormEvent<HTMLFormElement>) => void | Promise<void>,
     options: { loading?: boolean; disabled?: boolean } = {}
-  ) => modalUtils.createFormModalProps(
-    isEdit ? 'Edit Hardware Asset' : 'Add New Hardware Asset',
-    onSubmit,
-    {
-      subtitle: isEdit 
-        ? 'Update hardware asset information' 
-        : 'Enter new hardware asset details',
-      submitLabel: isEdit ? 'Update Asset' : 'Create Asset',
-      size: 'large',
-      ...options,
-    }
-  ),
+  ) =>
+    modalUtils.createFormModalProps(
+      isEdit ? 'Edit Hardware Asset' : 'Add New Hardware Asset',
+      onSubmit,
+      {
+        subtitle: isEdit
+          ? 'Update hardware asset information'
+          : 'Enter new hardware asset details',
+        submitLabel: isEdit ? 'Update Asset' : 'Create Asset',
+        size: 'large',
+        ...options,
+      }
+    ),
 
   /**
    * Software form modal
@@ -256,18 +240,19 @@ export const commonModals = {
     isEdit: boolean,
     onSubmit: (event: React.FormEvent<HTMLFormElement>) => void | Promise<void>,
     options: { loading?: boolean; disabled?: boolean } = {}
-  ) => modalUtils.createFormModalProps(
-    isEdit ? 'Edit Software License' : 'Add New Software License',
-    onSubmit,
-    {
-      subtitle: isEdit 
-        ? 'Update software license information' 
-        : 'Enter new software license details',
-      submitLabel: isEdit ? 'Update License' : 'Create License',
-      size: 'large',
-      ...options,
-    }
-  ),
+  ) =>
+    modalUtils.createFormModalProps(
+      isEdit ? 'Edit Software License' : 'Add New Software License',
+      onSubmit,
+      {
+        subtitle: isEdit
+          ? 'Update software license information'
+          : 'Enter new software license details',
+        submitLabel: isEdit ? 'Update License' : 'Create License',
+        size: 'large',
+        ...options,
+      }
+    ),
 
   /**
    * Assignment form modal
@@ -275,15 +260,12 @@ export const commonModals = {
   assignmentForm: (
     onSubmit: (event: React.FormEvent<HTMLFormElement>) => void | Promise<void>,
     options: { loading?: boolean; disabled?: boolean } = {}
-  ) => modalUtils.createFormModalProps(
-    'Assign Asset',
-    onSubmit,
-    {
+  ) =>
+    modalUtils.createFormModalProps('Assign Asset', onSubmit, {
       subtitle: 'Assign an asset to an employee',
       submitLabel: 'Assign Asset',
       ...options,
-    }
-  ),
+    }),
 
   /**
    * User form modal
@@ -292,17 +274,18 @@ export const commonModals = {
     isEdit: boolean,
     onSubmit: (event: React.FormEvent<HTMLFormElement>) => void | Promise<void>,
     options: { loading?: boolean; disabled?: boolean } = {}
-  ) => modalUtils.createFormModalProps(
-    isEdit ? 'Edit User' : 'Add New User',
-    onSubmit,
-    {
-      subtitle: isEdit 
-        ? 'Update user information and permissions' 
-        : 'Create a new user account',
-      submitLabel: isEdit ? 'Update User' : 'Create User',
-      ...options,
-    }
-  ),
+  ) =>
+    modalUtils.createFormModalProps(
+      isEdit ? 'Edit User' : 'Add New User',
+      onSubmit,
+      {
+        subtitle: isEdit
+          ? 'Update user information and permissions'
+          : 'Create a new user account',
+        submitLabel: isEdit ? 'Update User' : 'Create User',
+        ...options,
+      }
+    ),
 
   /**
    * Delete confirmation dialogs
@@ -310,60 +293,64 @@ export const commonModals = {
   deleteEmployee: (
     employeeName: string,
     onConfirm: () => void | Promise<void>
-  ) => modalUtils.createConfirmProps(
-    'Delete Employee',
-    `Are you sure you want to delete "${employeeName}"?`,
-    onConfirm,
-    {
-      variant: 'error',
-      confirmLabel: 'Delete Employee',
-      destructive: true,
-      additionalInfo: 'This will also remove all asset assignments for this employee.',
-    }
-  ),
+  ) =>
+    modalUtils.createConfirmProps(
+      'Delete Employee',
+      `Are you sure you want to delete "${employeeName}"?`,
+      onConfirm,
+      {
+        variant: 'error',
+        confirmLabel: 'Delete Employee',
+        destructive: true,
+        additionalInfo:
+          'This will also remove all asset assignments for this employee.',
+      }
+    ),
 
   deleteHardware: (
     hardwareName: string,
     onConfirm: () => void | Promise<void>
-  ) => modalUtils.createConfirmProps(
-    'Delete Hardware Asset',
-    `Are you sure you want to delete "${hardwareName}"?`,
-    onConfirm,
-    {
-      variant: 'error',
-      confirmLabel: 'Delete Asset',
-      destructive: true,
-      additionalInfo: 'This will also remove any assignments for this asset.',
-    }
-  ),
+  ) =>
+    modalUtils.createConfirmProps(
+      'Delete Hardware Asset',
+      `Are you sure you want to delete "${hardwareName}"?`,
+      onConfirm,
+      {
+        variant: 'error',
+        confirmLabel: 'Delete Asset',
+        destructive: true,
+        additionalInfo: 'This will also remove any assignments for this asset.',
+      }
+    ),
 
   deleteSoftware: (
     softwareName: string,
     onConfirm: () => void | Promise<void>
-  ) => modalUtils.createConfirmProps(
-    'Delete Software License',
-    `Are you sure you want to delete "${softwareName}"?`,
-    onConfirm,
-    {
-      variant: 'error',
-      confirmLabel: 'Delete License',
-      destructive: true,
-      additionalInfo: 'This will also remove any assignments for this software.',
-    }
-  ),
+  ) =>
+    modalUtils.createConfirmProps(
+      'Delete Software License',
+      `Are you sure you want to delete "${softwareName}"?`,
+      onConfirm,
+      {
+        variant: 'error',
+        confirmLabel: 'Delete License',
+        destructive: true,
+        additionalInfo:
+          'This will also remove any assignments for this software.',
+      }
+    ),
 
-  deleteUser: (
-    username: string,
-    onConfirm: () => void | Promise<void>
-  ) => modalUtils.createConfirmProps(
-    'Delete User Account',
-    `Are you sure you want to delete user "${username}"?`,
-    onConfirm,
-    {
-      variant: 'error',
-      confirmLabel: 'Delete User',
-      destructive: true,
-      additionalInfo: 'This action cannot be undone and will revoke all access for this user.',
-    }
-  ),
+  deleteUser: (username: string, onConfirm: () => void | Promise<void>) =>
+    modalUtils.createConfirmProps(
+      'Delete User Account',
+      `Are you sure you want to delete user "${username}"?`,
+      onConfirm,
+      {
+        variant: 'error',
+        confirmLabel: 'Delete User',
+        destructive: true,
+        additionalInfo:
+          'This action cannot be undone and will revoke all access for this user.',
+      }
+    ),
 };

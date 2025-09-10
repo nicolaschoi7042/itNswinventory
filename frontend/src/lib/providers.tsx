@@ -15,9 +15,7 @@ export function Providers({ children }: ProvidersProps) {
     <AppRouterCacheProvider>
       <ThemeProvider theme={newYorkBusinessTheme}>
         <CssBaseline />
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </ThemeProvider>
     </AppRouterCacheProvider>
   );

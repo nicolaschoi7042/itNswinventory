@@ -1,6 +1,6 @@
 /**
  * Assignment Search Component
- * 
+ *
  * Advanced search functionality for assignments with intelligent text matching,
  * search suggestions, and real-time results.
  */
@@ -23,7 +23,7 @@ import {
   IconButton,
   Tooltip,
   useTheme,
-  alpha
+  alpha,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -32,20 +32,17 @@ import {
   Computer as ComputerIcon,
   Assignment as AssignmentIcon,
   FilterList as FilterIcon,
-  TrendingUp as TrendingIcon
+  TrendingUp as TrendingIcon,
 } from '@mui/icons-material';
 
 // Import assignment types and utilities
 import {
   Assignment,
   AssignmentWithDetails,
-  AssignmentFilters
+  AssignmentFilters,
 } from '@/types/assignment';
 
-import {
-  searchAssignments,
-  formatDate
-} from '@/utils/assignment.utils';
+import { searchAssignments, formatDate } from '@/utils/assignment.utils';
 
 // ============================================================================
 // TYPES AND INTERFACES
@@ -112,10 +109,11 @@ const generateSearchSuggestions = (
         type: 'employee',
         value: assignment.employee_name,
         label: assignment.employee_name,
-        description: 'employee' in assignment && assignment.employee 
-          ? `${assignment.employee.department} • ${assignment.employee.position}`
-          : '직원',
-        assignment: assignment as AssignmentWithDetails
+        description:
+          'employee' in assignment && assignment.employee
+            ? `${assignment.employee.department} • ${assignment.employee.position}`
+            : '직원',
+        assignment: assignment as AssignmentWithDetails,
       });
     }
 
@@ -132,17 +130,18 @@ const generateSearchSuggestions = (
     }
 
     // Asset suggestions
-    const assetName = 'asset' in assignment && assignment.asset
-      ? assignment.asset.name
-      : assignment.asset_description || assignment.asset_id;
-    
+    const assetName =
+      'asset' in assignment && assignment.asset
+        ? assignment.asset.name
+        : assignment.asset_description || assignment.asset_id;
+
     if (assetName.toLowerCase().includes(queryLower)) {
       addSuggestion({
         type: 'asset',
         value: assetName,
         label: assetName,
         description: `${assignment.asset_type === 'hardware' ? '하드웨어' : '소프트웨어'} • ${assignment.asset_id}`,
-        assignment: assignment as AssignmentWithDetails
+        assignment: assignment as AssignmentWithDetails,
       });
     }
 
@@ -153,7 +152,7 @@ const generateSearchSuggestions = (
         value: assignment.asset_id,
         label: assignment.asset_id,
         description: `자산 ID • ${assetName}`,
-        assignment: assignment as AssignmentWithDetails
+        assignment: assignment as AssignmentWithDetails,
       });
     }
 
@@ -164,12 +163,16 @@ const generateSearchSuggestions = (
         value: assignment.id,
         label: assignment.id,
         description: `할당 ID • ${assignment.employee_name}`,
-        assignment: assignment as AssignmentWithDetails
+        assignment: assignment as AssignmentWithDetails,
       });
     }
 
     // Manufacturer suggestions (for hardware)
-    if ('asset' in assignment && assignment.asset && assignment.asset.manufacturer) {
+    if (
+      'asset' in assignment &&
+      assignment.asset &&
+      assignment.asset.manufacturer
+    ) {
       if (assignment.asset.manufacturer.toLowerCase().includes(queryLower)) {
         addSuggestion({
           type: 'asset',
@@ -205,22 +208,25 @@ const getSearchHistory = (): SearchHistory[] => {
 
 const addToSearchHistory = (query: string, resultCount: number) => {
   if (query.length < 2) return;
-  
+
   try {
     const history = getSearchHistory();
     const newEntry: SearchHistory = {
       query,
       timestamp: Date.now(),
-      resultCount
+      resultCount,
     };
-    
+
     // Remove existing entry for the same query
     const filteredHistory = history.filter(item => item.query !== query);
-    
+
     // Add new entry at the beginning
     const updatedHistory = [newEntry, ...filteredHistory].slice(0, 10);
-    
-    localStorage.setItem('assignment_search_history', JSON.stringify(updatedHistory));
+
+    localStorage.setItem(
+      'assignment_search_history',
+      JSON.stringify(updatedHistory)
+    );
   } catch {
     // Ignore localStorage errors
   }
@@ -236,12 +242,12 @@ export function AssignmentSearch({
   onSearchChange,
   onSuggestionSelect,
   onAdvancedSearch,
-  placeholder = "직원명, 자산 ID, 할당 ID로 검색...",
+  placeholder = '직원명, 자산 ID, 할당 ID로 검색...',
   showSuggestions = true,
   showRecentSearches = true,
   maxSuggestions = 8,
   size = 'medium',
-  variant = 'outlined'
+  variant = 'outlined',
 }: AssignmentSearchProps) {
   const theme = useTheme();
   const [isFocused, setIsFocused] = useState(false);
@@ -250,7 +256,7 @@ export function AssignmentSearch({
   // Generate suggestions based on current query
   const suggestions = useMemo(() => {
     if (!showSuggestions || !isFocused) return [];
-    
+
     if (inputValue.length >= 2) {
       return generateSearchSuggestions(assignments, inputValue, maxSuggestions);
     } else if (showRecentSearches) {
@@ -263,9 +269,16 @@ export function AssignmentSearch({
         description: `최근 검색 • ${item.resultCount}개 결과`,
       }));
     }
-    
+
     return [];
-  }, [assignments, inputValue, isFocused, showSuggestions, showRecentSearches, maxSuggestions]);
+  }, [
+    assignments,
+    inputValue,
+    isFocused,
+    showSuggestions,
+    showRecentSearches,
+    maxSuggestions,
+  ]);
 
   // Update input value when external searchQuery changes
   useEffect(() => {
@@ -273,24 +286,30 @@ export function AssignmentSearch({
   }, [searchQuery]);
 
   // Handle search input change
-  const handleInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setInputValue(value);
-    onSearchChange(value);
-  }, [onSearchChange]);
+  const handleInputChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const value = event.target.value;
+      setInputValue(value);
+      onSearchChange(value);
+    },
+    [onSearchChange]
+  );
 
   // Handle suggestion selection
-  const handleSuggestionSelect = useCallback((suggestion: SearchSuggestion) => {
-    setInputValue(suggestion.value);
-    onSearchChange(suggestion.value);
-    setIsFocused(false);
-    
-    // Add to search history
-    const results = searchAssignments(assignments, suggestion.value);
-    addToSearchHistory(suggestion.value, results.length);
-    
-    onSuggestionSelect?.(suggestion);
-  }, [assignments, onSearchChange, onSuggestionSelect]);
+  const handleSuggestionSelect = useCallback(
+    (suggestion: SearchSuggestion) => {
+      setInputValue(suggestion.value);
+      onSearchChange(suggestion.value);
+      setIsFocused(false);
+
+      // Add to search history
+      const results = searchAssignments(assignments, suggestion.value);
+      addToSearchHistory(suggestion.value, results.length);
+
+      onSuggestionSelect?.(suggestion);
+    },
+    [assignments, onSearchChange, onSuggestionSelect]
+  );
 
   // Handle clear search
   const handleClear = useCallback(() => {
@@ -300,27 +319,30 @@ export function AssignmentSearch({
   }, [onSearchChange]);
 
   // Handle search submission
-  const handleSubmit = useCallback((event: React.FormEvent) => {
-    event.preventDefault();
-    if (inputValue.trim()) {
-      const results = searchAssignments(assignments, inputValue);
-      addToSearchHistory(inputValue, results.length);
-    }
-    setIsFocused(false);
-  }, [assignments, inputValue]);
+  const handleSubmit = useCallback(
+    (event: React.FormEvent) => {
+      event.preventDefault();
+      if (inputValue.trim()) {
+        const results = searchAssignments(assignments, inputValue);
+        addToSearchHistory(inputValue, results.length);
+      }
+      setIsFocused(false);
+    },
+    [assignments, inputValue]
+  );
 
   // Get suggestion icon
   const getSuggestionIcon = (type: string) => {
     switch (type) {
       case 'employee':
       case 'department':
-        return <PersonIcon fontSize="small" />;
+        return <PersonIcon fontSize='small' />;
       case 'asset':
-        return <ComputerIcon fontSize="small" />;
+        return <ComputerIcon fontSize='small' />;
       case 'assignment':
-        return <AssignmentIcon fontSize="small" />;
+        return <AssignmentIcon fontSize='small' />;
       default:
-        return <SearchIcon fontSize="small" />;
+        return <SearchIcon fontSize='small' />;
     }
   };
 
@@ -358,30 +380,26 @@ export function AssignmentSearch({
           }}
           InputProps={{
             startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon color="action" />
+              <InputAdornment position='start'>
+                <SearchIcon color='action' />
               </InputAdornment>
             ),
             endAdornment: (
-              <InputAdornment position="end">
+              <InputAdornment position='end'>
                 {inputValue && (
-                  <IconButton
-                    size="small"
-                    onClick={handleClear}
-                    edge="end"
-                  >
-                    <ClearIcon fontSize="small" />
+                  <IconButton size='small' onClick={handleClear} edge='end'>
+                    <ClearIcon fontSize='small' />
                   </IconButton>
                 )}
                 {onAdvancedSearch && (
-                  <Tooltip title="고급 검색">
+                  <Tooltip title='고급 검색'>
                     <IconButton
-                      size="small"
+                      size='small'
                       onClick={onAdvancedSearch}
-                      edge="end"
+                      edge='end'
                       sx={{ ml: 0.5 }}
                     >
-                      <FilterIcon fontSize="small" />
+                      <FilterIcon fontSize='small' />
                     </IconButton>
                   </Tooltip>
                 )}
@@ -397,7 +415,7 @@ export function AssignmentSearch({
                   borderWidth: 2,
                 },
               },
-            }
+            },
           }}
         />
       </form>
@@ -420,7 +438,9 @@ export function AssignmentSearch({
         >
           <List dense disablePadding>
             {suggestions.map((suggestion, index) => (
-              <React.Fragment key={`${suggestion.type}-${suggestion.value}-${index}`}>
+              <React.Fragment
+                key={`${suggestion.type}-${suggestion.value}-${index}`}
+              >
                 <ListItem
                   button
                   onClick={() => handleSuggestionSelect(suggestion)}
@@ -445,21 +465,22 @@ export function AssignmentSearch({
                   </ListItemAvatar>
                   <ListItemText
                     primary={
-                      <Typography variant="body2" fontWeight="medium">
+                      <Typography variant='body2' fontWeight='medium'>
                         {suggestion.label}
                       </Typography>
                     }
                     secondary={
                       suggestion.description && (
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant='caption' color='text.secondary'>
                           {suggestion.description}
                         </Typography>
                       )
                     }
                   />
-                  {suggestion.type === 'assignment' && !suggestion.description?.includes('최근 검색') && (
-                    <TrendingIcon fontSize="small" color="action" />
-                  )}
+                  {suggestion.type === 'assignment' &&
+                    !suggestion.description?.includes('최근 검색') && (
+                      <TrendingIcon fontSize='small' color='action' />
+                    )}
                 </ListItem>
                 {index < suggestions.length - 1 && <Divider />}
               </React.Fragment>
@@ -471,8 +492,9 @@ export function AssignmentSearch({
       {/* Search Results Summary */}
       {inputValue && !isFocused && (
         <Box sx={{ mt: 1 }}>
-          <Typography variant="caption" color="text.secondary">
-            "{inputValue}"에 대한 검색 결과: {searchAssignments(assignments, inputValue).length}개
+          <Typography variant='caption' color='text.secondary'>
+            "{inputValue}"에 대한 검색 결과:{' '}
+            {searchAssignments(assignments, inputValue).length}개
           </Typography>
         </Box>
       )}
@@ -495,7 +517,7 @@ export function SearchResults({
   assignments,
   searchQuery,
   onAssignmentClick,
-  maxResults = 50
+  maxResults = 50,
 }: SearchResultsProps) {
   const results = useMemo(() => {
     if (!searchQuery) return assignments;
@@ -506,23 +528,23 @@ export function SearchResults({
 
   return (
     <Box>
-      <Typography variant="subtitle2" gutterBottom>
+      <Typography variant='subtitle2' gutterBottom>
         검색 결과 ({results.length}개)
       </Typography>
-      
+
       {results.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 4 }}>
           <SearchIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant='body2' color='text.secondary'>
             "{searchQuery}"에 대한 검색 결과가 없습니다.
           </Typography>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant='caption' color='text.secondary'>
             다른 검색어를 시도해보세요.
           </Typography>
         </Box>
       ) : (
         <List>
-          {results.map((assignment) => (
+          {results.map(assignment => (
             <ListItem
               key={assignment.id}
               button={!!onAssignmentClick}
@@ -532,10 +554,17 @@ export function SearchResults({
               <ListItemAvatar>
                 <Avatar
                   sx={{
-                    bgcolor: assignment.asset_type === 'hardware' ? 'info.main' : 'success.main',
+                    bgcolor:
+                      assignment.asset_type === 'hardware'
+                        ? 'info.main'
+                        : 'success.main',
                   }}
                 >
-                  {assignment.asset_type === 'hardware' ? <ComputerIcon /> : <AssignmentIcon />}
+                  {assignment.asset_type === 'hardware' ? (
+                    <ComputerIcon />
+                  ) : (
+                    <AssignmentIcon />
+                  )}
                 </Avatar>
               </ListItemAvatar>
               <ListItemText
@@ -544,9 +573,9 @@ export function SearchResults({
               />
               <Chip
                 label={assignment.status}
-                size="small"
+                size='small'
                 color={assignment.status === '사용중' ? 'primary' : 'default'}
-                variant="outlined"
+                variant='outlined'
               />
             </ListItem>
           ))}

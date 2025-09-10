@@ -1,6 +1,6 @@
 /**
  * Authentication Hook
- * 
+ *
  * Provides authentication state and role-based access control
  */
 
@@ -26,7 +26,7 @@ export function useAuth() {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
     loading: true,
-    error: null
+    error: null,
   });
 
   useEffect(() => {
@@ -39,13 +39,13 @@ export function useAuth() {
       email: 'admin@company.com',
       role: 'admin',
       department: 'IT부서',
-      permissions: ['read', 'write', 'delete', 'manage_users']
+      permissions: ['read', 'write', 'delete', 'manage_users'],
     };
 
     setAuthState({
       user: mockUser,
       loading: false,
-      error: null
+      error: null,
     });
   }, []);
 
@@ -54,7 +54,9 @@ export function useAuth() {
   };
 
   const hasManagerRole = (): boolean => {
-    return authState.user?.role === 'admin' || authState.user?.role === 'manager';
+    return (
+      authState.user?.role === 'admin' || authState.user?.role === 'manager'
+    );
   };
 
   const hasPermission = (permission: string): boolean => {
@@ -64,29 +66,33 @@ export function useAuth() {
   const login = async (username: string, password: string): Promise<void> => {
     // Mock login implementation
     setAuthState(prev => ({ ...prev, loading: true, error: null }));
-    
+
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       const user: User = {
         id: 'user001',
         username,
         name: username === 'admin' ? '관리자' : '사용자',
         role: username === 'admin' ? 'admin' : 'user',
-        permissions: username === 'admin' ? ['read', 'write', 'delete', 'manage_users'] : ['read']
+        permissions:
+          username === 'admin'
+            ? ['read', 'write', 'delete', 'manage_users']
+            : ['read'],
       };
 
       setAuthState({
         user,
         loading: false,
-        error: null
+        error: null,
       });
     } catch (error) {
       setAuthState(prev => ({
         ...prev,
         loading: false,
-        error: error instanceof Error ? error.message : '로그인에 실패했습니다.'
+        error:
+          error instanceof Error ? error.message : '로그인에 실패했습니다.',
       }));
     }
   };
@@ -95,7 +101,7 @@ export function useAuth() {
     setAuthState({
       user: null,
       loading: false,
-      error: null
+      error: null,
     });
   };
 
@@ -107,6 +113,6 @@ export function useAuth() {
     hasManagerRole,
     hasPermission,
     login,
-    logout
+    logout,
   };
 }

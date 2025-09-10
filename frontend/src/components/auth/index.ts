@@ -9,5 +9,5 @@ export {
   ConditionalRender,
   RoleBasedButton,
   withAdminGuard,
-  withManagerGuard
+  withManagerGuard,
 } from '../guards/RoleGuards';

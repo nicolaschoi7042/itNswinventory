@@ -80,19 +80,12 @@ export function NavigationLayout({
       )}
 
       {/* Content */}
-      <Box sx={{ flex: 1, overflow: 'auto' }}>
-        {children}
-      </Box>
+      <Box sx={{ flex: 1, overflow: 'auto' }}>{children}</Box>
     </Box>
   );
 }
 
 // Compact navigation layout for mobile
 export function CompactNavigationLayout(props: NavigationLayoutProps) {
-  return (
-    <NavigationLayout
-      {...props}
-      showBreadcrumb={false}
-    />
-  );
+  return <NavigationLayout {...props} showBreadcrumb={false} />;
 }

@@ -16,31 +16,33 @@ export function HighlightText({
   variant = 'body2',
   color = 'inherit',
   highlightColor = '#d32f2f',
-  highlightBackground = '#ffebee'
+  highlightBackground = '#ffebee',
 }: HighlightTextProps) {
   if (!searchTerm || !text) {
     return (
-      <Typography variant={variant} color={color} component="span">
+      <Typography variant={variant} color={color} component='span'>
         {text || '-'}
       </Typography>
     );
   }
 
-  const parts = text.split(new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'));
+  const parts = text.split(
+    new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
+  );
 
   return (
-    <Typography variant={variant} color={color} component="span">
-      {parts.map((part, index) => 
+    <Typography variant={variant} color={color} component='span'>
+      {parts.map((part, index) =>
         part.toLowerCase() === searchTerm.toLowerCase() ? (
           <Box
             key={index}
-            component="span"
+            component='span'
             sx={{
               backgroundColor: highlightBackground,
               color: highlightColor,
               fontWeight: 'bold',
               px: 0.5,
-              borderRadius: 0.5
+              borderRadius: 0.5,
             }}
           >
             {part}
@@ -55,11 +57,8 @@ export function HighlightText({
 
 // Hook for creating highlighted text renderer
 export function useHighlightRenderer(searchTerm: string) {
-  return (text: string | undefined | null, options?: Partial<HighlightTextProps>) => (
-    <HighlightText
-      text={text || ''}
-      searchTerm={searchTerm}
-      {...options}
-    />
-  );
+  return (
+    text: string | undefined | null,
+    options?: Partial<HighlightTextProps>
+  ) => <HighlightText text={text || ''} searchTerm={searchTerm} {...options} />;
 }

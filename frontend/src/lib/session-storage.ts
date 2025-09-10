@@ -33,7 +33,7 @@ export function isLocalStorageAvailable(): boolean {
   if (typeof window === 'undefined') {
     return false;
   }
-  
+
   try {
     const test = 'test';
     localStorage.setItem(test, test);
@@ -51,7 +51,7 @@ export function getToken(): string | null {
   if (!isLocalStorageAvailable()) {
     return null;
   }
-  
+
   return localStorage.getItem(STORAGE_KEYS.TOKEN);
 }
 
@@ -62,10 +62,10 @@ export function setToken(token: string): void {
   if (!isLocalStorageAvailable()) {
     return;
   }
-  
+
   // Calculate expiration time (3 hours from now, matching JWT expiration)
-  const expiresAt = Date.now() + (3 * 60 * 60 * 1000);
-  
+  const expiresAt = Date.now() + 3 * 60 * 60 * 1000;
+
   localStorage.setItem(STORAGE_KEYS.TOKEN, token);
   localStorage.setItem(STORAGE_KEYS.EXPIRES_AT, expiresAt.toString());
 }
@@ -77,12 +77,12 @@ export function getUser(): SessionUser | null {
   if (!isLocalStorageAvailable()) {
     return null;
   }
-  
+
   const userJson = localStorage.getItem(STORAGE_KEYS.USER);
   if (!userJson) {
     return null;
   }
-  
+
   try {
     return JSON.parse(userJson) as SessionUser;
   } catch (error) {
@@ -98,7 +98,7 @@ export function setUser(user: SessionUser): void {
   if (!isLocalStorageAvailable()) {
     return;
   }
-  
+
   localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
 }
 
@@ -109,7 +109,7 @@ export function getCurrentTab(): string | null {
   if (!isLocalStorageAvailable()) {
     return null;
   }
-  
+
   return localStorage.getItem(STORAGE_KEYS.CURRENT_TAB);
 }
 
@@ -120,7 +120,7 @@ export function setCurrentTab(tab: string): void {
   if (!isLocalStorageAvailable()) {
     return;
   }
-  
+
   localStorage.setItem(STORAGE_KEYS.CURRENT_TAB, tab);
 }
 
@@ -131,12 +131,12 @@ export function getTokenExpiration(): number | null {
   if (!isLocalStorageAvailable()) {
     return null;
   }
-  
+
   const expiresAtStr = localStorage.getItem(STORAGE_KEYS.EXPIRES_AT);
   if (!expiresAtStr) {
     return null;
   }
-  
+
   const expiresAt = parseInt(expiresAtStr, 10);
   return isNaN(expiresAt) ? null : expiresAt;
 }
@@ -149,7 +149,7 @@ export function isTokenExpired(): boolean {
   if (!expiresAt) {
     return true;
   }
-  
+
   return Date.now() >= expiresAt;
 }
 
@@ -161,9 +161,9 @@ export function isTokenExpiringSoon(): boolean {
   if (!expiresAt) {
     return true;
   }
-  
+
   const fiveMinutes = 5 * 60 * 1000;
-  return Date.now() >= (expiresAt - fiveMinutes);
+  return Date.now() >= expiresAt - fiveMinutes;
 }
 
 /**
@@ -173,18 +173,21 @@ export function getSessionData(): SessionData | null {
   const token = getToken();
   const user = getUser();
   const expiresAt = getTokenExpiration();
-  
+
   if (!token || !user || !expiresAt) {
     return null;
   }
-  
+
   return { token, user, expiresAt };
 }
 
 /**
  * Set complete session data
  */
-export function setSessionData(data: { token: string; user: SessionUser }): void {
+export function setSessionData(data: {
+  token: string;
+  user: SessionUser;
+}): void {
   setToken(data.token);
   setUser(data.user);
 }
@@ -196,12 +199,12 @@ export function clearSession(): void {
   if (!isLocalStorageAvailable()) {
     return;
   }
-  
+
   localStorage.removeItem(STORAGE_KEYS.TOKEN);
   localStorage.removeItem(STORAGE_KEYS.USER);
   localStorage.removeItem(STORAGE_KEYS.CURRENT_TAB);
   localStorage.removeItem(STORAGE_KEYS.EXPIRES_AT);
-  
+
   console.log('🔒 Session cleared from localStorage');
 }
 
@@ -211,7 +214,7 @@ export function clearSession(): void {
 export function isAuthenticated(): boolean {
   const token = getToken();
   const user = getUser();
-  
+
   return !!(token && user && !isTokenExpired());
 }
 
@@ -260,8 +263,8 @@ export function getAuthHeader(): Record<string, string> {
   if (!token) {
     return {};
   }
-  
+
   return {
-    'Authorization': `Bearer ${token}`
+    Authorization: `Bearer ${token}`,
   };
 }

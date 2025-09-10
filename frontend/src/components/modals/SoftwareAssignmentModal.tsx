@@ -16,7 +16,7 @@ import {
   CircularProgress,
   Autocomplete,
   Chip,
-  LinearProgress
+  LinearProgress,
 } from '@mui/material';
 import { Assignment as AssignmentIcon } from '@mui/icons-material';
 
@@ -24,7 +24,7 @@ import { Assignment as AssignmentIcon } from '@mui/icons-material';
 import {
   SoftwareWithAssignments,
   SoftwareAssignmentData,
-  calculateLicenseUtilization
+  calculateLicenseUtilization,
 } from '@/types/software';
 import type { Employee } from '@/types/employee';
 import { SoftwareService } from '@/services/software.service';
@@ -50,7 +50,7 @@ export function SoftwareAssignmentModal({
   open,
   onClose,
   software,
-  onSuccess
+  onSuccess,
 }: SoftwareAssignmentModalProps) {
   const [state, setState] = useState<ModalState>({
     employees: [],
@@ -58,7 +58,7 @@ export function SoftwareAssignmentModal({
     notes: '',
     loading: true,
     submitting: false,
-    error: null
+    error: null,
   });
 
   // Load employees when modal opens
@@ -76,14 +76,17 @@ export function SoftwareAssignmentModal({
       setState(prev => ({
         ...prev,
         employees: employeesData,
-        loading: false
+        loading: false,
       }));
     } catch (error) {
       console.error('Failed to load employees:', error);
       setState(prev => ({
         ...prev,
         loading: false,
-        error: error instanceof Error ? error.message : '직원 목록을 불러오는데 실패했습니다.'
+        error:
+          error instanceof Error
+            ? error.message
+            : '직원 목록을 불러오는데 실패했습니다.',
       }));
     }
   };
@@ -93,7 +96,7 @@ export function SoftwareAssignmentModal({
       ...prev,
       selectedEmployee: null,
       notes: '',
-      error: null
+      error: null,
     }));
   };
 
@@ -101,7 +104,7 @@ export function SoftwareAssignmentModal({
     setState(prev => ({
       ...prev,
       selectedEmployee: value,
-      error: null
+      error: null,
     }));
   };
 
@@ -109,17 +112,17 @@ export function SoftwareAssignmentModal({
     setState(prev => ({
       ...prev,
       notes: event.target.value,
-      error: null
+      error: null,
     }));
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    
+
     if (!software || !state.selectedEmployee) {
       setState(prev => ({
         ...prev,
-        error: '소프트웨어와 직원을 모두 선택해주세요.'
+        error: '소프트웨어와 직원을 모두 선택해주세요.',
       }));
       return;
     }
@@ -129,7 +132,7 @@ export function SoftwareAssignmentModal({
     if (utilization.available <= 0) {
       setState(prev => ({
         ...prev,
-        error: '사용 가능한 라이선스가 없습니다.'
+        error: '사용 가능한 라이선스가 없습니다.',
       }));
       return;
     }
@@ -140,7 +143,7 @@ export function SoftwareAssignmentModal({
       const assignmentData: SoftwareAssignmentData = {
         software_id: software.id,
         employee_id: state.selectedEmployee.id,
-        notes: state.notes.trim() || undefined
+        notes: state.notes.trim() || undefined,
       };
 
       await SoftwareService.assignSoftware(assignmentData);
@@ -155,7 +158,10 @@ export function SoftwareAssignmentModal({
       setState(prev => ({
         ...prev,
         submitting: false,
-        error: error instanceof Error ? error.message : '소프트웨어 할당에 실패했습니다.'
+        error:
+          error instanceof Error
+            ? error.message
+            : '소프트웨어 할당에 실패했습니다.',
       }));
     }
   };
@@ -175,21 +181,19 @@ export function SoftwareAssignmentModal({
     <Dialog
       open={open}
       onClose={handleClose}
-      maxWidth="sm"
+      maxWidth='sm'
       fullWidth
       PaperProps={{
         component: 'form',
-        onSubmit: handleSubmit
+        onSubmit: handleSubmit,
       }}
     >
       <DialogTitle>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <AssignmentIcon color="primary" />
+          <AssignmentIcon color='primary' />
           <Box>
-            <Typography variant="h6">
-              소프트웨어 할당
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant='h6'>소프트웨어 할당</Typography>
+            <Typography variant='body2' color='text.secondary'>
               {software.name} {software.version && `v${software.version}`}
             </Typography>
           </Box>
@@ -198,38 +202,38 @@ export function SoftwareAssignmentModal({
 
       <DialogContent dividers>
         {state.error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert severity='error' sx={{ mb: 2 }}>
             {state.error}
           </Alert>
         )}
 
         {/* License Availability Info */}
         <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle2" gutterBottom>
+          <Typography variant='subtitle2' gutterBottom>
             라이선스 현황
           </Typography>
           <Box sx={{ mb: 1 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-              <Typography variant="body2">
+            <Box
+              sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}
+            >
+              <Typography variant='body2'>
                 사용률: {utilization.used}/{utilization.total}
               </Typography>
-              <Typography variant="body2">
-                {utilization.percentage}%
-              </Typography>
+              <Typography variant='body2'>{utilization.percentage}%</Typography>
             </Box>
             <LinearProgress
-              variant="determinate"
+              variant='determinate'
               value={utilization.percentage}
               color={utilization.color}
               sx={{ height: 6, borderRadius: 3 }}
             />
           </Box>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant='body2' color='text.secondary'>
             사용 가능: {utilization.available}개
           </Typography>
-          
+
           {utilization.available <= 0 && (
-            <Alert severity="warning" sx={{ mt: 1 }}>
+            <Alert severity='warning' sx={{ mt: 1 }}>
               사용 가능한 라이선스가 없습니다.
             </Alert>
           )}
@@ -239,15 +243,16 @@ export function SoftwareAssignmentModal({
         <FormControl fullWidth sx={{ mb: 2 }}>
           <Autocomplete
             options={state.employees}
-            getOptionLabel={(employee) => `${employee.name} (${employee.employee_id})`}
+            getOptionLabel={employee =>
+              `${employee.name} (${employee.employee_id})`
+            }
             renderOption={(props, employee) => (
-              <Box component="li" {...props}>
+              <Box component='li' {...props}>
                 <Box>
-                  <Typography variant="body1">
-                    {employee.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {employee.employee_id} • {employee.department} • {employee.position}
+                  <Typography variant='body1'>{employee.name}</Typography>
+                  <Typography variant='body2' color='text.secondary'>
+                    {employee.employee_id} • {employee.department} •{' '}
+                    {employee.position}
                   </Typography>
                 </Box>
               </Box>
@@ -256,16 +261,18 @@ export function SoftwareAssignmentModal({
             onChange={handleEmployeeChange}
             loading={state.loading}
             disabled={state.submitting || utilization.available <= 0}
-            renderInput={(params) => (
+            renderInput={params => (
               <TextField
                 {...params}
-                label="할당할 직원 선택"
+                label='할당할 직원 선택'
                 required
                 InputProps={{
                   ...params.InputProps,
                   endAdornment: (
                     <>
-                      {state.loading && <CircularProgress color="inherit" size={20} />}
+                      {state.loading && (
+                        <CircularProgress color='inherit' size={20} />
+                      )}
                       {params.InputProps.endAdornment}
                     </>
                   ),
@@ -278,34 +285,36 @@ export function SoftwareAssignmentModal({
         {/* Notes */}
         <TextField
           fullWidth
-          label="할당 메모 (선택사항)"
+          label='할당 메모 (선택사항)'
           multiline
           rows={3}
           value={state.notes}
           onChange={handleNotesChange}
           disabled={state.submitting}
-          placeholder="할당 사유나 추가 정보를 입력하세요..."
+          placeholder='할당 사유나 추가 정보를 입력하세요...'
           sx={{ mb: 2 }}
         />
 
         {/* Assignment Summary */}
         {state.selectedEmployee && (
           <Box sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-            <Typography variant="subtitle2" gutterBottom>
+            <Typography variant='subtitle2' gutterBottom>
               할당 정보 확인
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-              <Typography variant="body2">
-                <strong>소프트웨어:</strong> {software.name} {software.version && `v${software.version}`}
+              <Typography variant='body2'>
+                <strong>소프트웨어:</strong> {software.name}{' '}
+                {software.version && `v${software.version}`}
               </Typography>
-              <Typography variant="body2">
-                <strong>할당 대상:</strong> {state.selectedEmployee.name} ({state.selectedEmployee.employee_id})
+              <Typography variant='body2'>
+                <strong>할당 대상:</strong> {state.selectedEmployee.name} (
+                {state.selectedEmployee.employee_id})
               </Typography>
-              <Typography variant="body2">
+              <Typography variant='body2'>
                 <strong>부서:</strong> {state.selectedEmployee.department}
               </Typography>
               {state.notes && (
-                <Typography variant="body2">
+                <Typography variant='body2'>
                   <strong>메모:</strong> {state.notes}
                 </Typography>
               )}
@@ -315,17 +324,24 @@ export function SoftwareAssignmentModal({
       </DialogContent>
 
       <DialogActions sx={{ p: 2 }}>
-        <Button 
-          onClick={handleClose}
-          disabled={state.submitting}
-        >
+        <Button onClick={handleClose} disabled={state.submitting}>
           취소
         </Button>
         <Button
-          type="submit"
-          variant="contained"
-          disabled={!state.selectedEmployee || state.submitting || utilization.available <= 0}
-          startIcon={state.submitting ? <CircularProgress size={16} /> : <AssignmentIcon />}
+          type='submit'
+          variant='contained'
+          disabled={
+            !state.selectedEmployee ||
+            state.submitting ||
+            utilization.available <= 0
+          }
+          startIcon={
+            state.submitting ? (
+              <CircularProgress size={16} />
+            ) : (
+              <AssignmentIcon />
+            )
+          }
         >
           {state.submitting ? '할당 중...' : '할당하기'}
         </Button>
@@ -336,7 +352,9 @@ export function SoftwareAssignmentModal({
 
 export function useSoftwareAssignmentModal() {
   const [open, setOpen] = useState(false);
-  const [software, setSoftware] = useState<SoftwareWithAssignments | null>(null);
+  const [software, setSoftware] = useState<SoftwareWithAssignments | null>(
+    null
+  );
 
   const openModal = (softwareData: SoftwareWithAssignments) => {
     setSoftware(softwareData);
@@ -353,13 +371,15 @@ export function useSoftwareAssignmentModal() {
     software,
     openModal,
     closeModal,
-    SoftwareAssignmentModalComponent: (props: Omit<SoftwareAssignmentModalProps, 'open' | 'onClose' | 'software'>) => (
+    SoftwareAssignmentModalComponent: (
+      props: Omit<SoftwareAssignmentModalProps, 'open' | 'onClose' | 'software'>
+    ) => (
       <SoftwareAssignmentModal
         open={open}
         onClose={closeModal}
         software={software}
         {...props}
       />
-    )
+    ),
   };
 }

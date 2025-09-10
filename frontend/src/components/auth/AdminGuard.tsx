@@ -13,11 +13,7 @@ interface AdminGuardProps {
  * Wraps AdminOnlyGuard with a more convenient interface
  */
 export function AdminGuard({ children, fallback }: AdminGuardProps) {
-  return (
-    <AdminOnlyGuard fallback={fallback}>
-      {children}
-    </AdminOnlyGuard>
-  );
+  return <AdminOnlyGuard fallback={fallback}>{children}</AdminOnlyGuard>;
 }
 
 export default AdminGuard;

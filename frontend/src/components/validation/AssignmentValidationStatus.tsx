@@ -1,6 +1,6 @@
 /**
  * Assignment Validation Status Component
- * 
+ *
  * Displays real-time validation status for assignment forms
  * with detailed availability and eligibility information.
  */
@@ -23,7 +23,7 @@ import {
   ListItemIcon,
   ListItemText,
   useTheme,
-  alpha
+  alpha,
 } from '@mui/material';
 import {
   CheckCircle as CheckIcon,
@@ -35,12 +35,16 @@ import {
   Person as PersonIcon,
   Computer as ComputerIcon,
   License as LicenseIcon,
-  Assignment as AssignmentIcon
+  Assignment as AssignmentIcon,
 } from '@mui/icons-material';
 
 // Types for validation status
 interface ValidationIssue {
-  type: 'asset_availability' | 'employee_limit' | 'software_license' | 'conflict';
+  type:
+    | 'asset_availability'
+    | 'employee_limit'
+    | 'software_license'
+    | 'conflict';
   severity: 'error' | 'warning';
   message: string;
   details?: any;
@@ -74,7 +78,7 @@ export function AssignmentValidationStatus({
   showDetails = true,
   employeeName,
   assetName,
-  assetType
+  assetType,
 }: AssignmentValidationStatusProps) {
   const theme = useTheme();
   const [expanded, setExpanded] = React.useState(showDetails);
@@ -85,11 +89,11 @@ export function AssignmentValidationStatus({
 
   if (loading) {
     return (
-      <Card variant="outlined" sx={{ mb: 2 }}>
+      <Card variant='outlined' sx={{ mb: 2 }}>
         <CardContent>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <LinearProgress sx={{ flexGrow: 1 }} />
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant='body2' color='text.secondary'>
               가용성 확인 중...
             </Typography>
           </Box>
@@ -105,23 +109,27 @@ export function AssignmentValidationStatus({
   const warningIssues = issues.filter(issue => issue.severity === 'warning');
 
   // Determine overall status
-  const overallStatus = errorIssues.length > 0 ? 'error' : 
-                       warningIssues.length > 0 ? 'warning' : 'success';
+  const overallStatus =
+    errorIssues.length > 0
+      ? 'error'
+      : warningIssues.length > 0
+        ? 'warning'
+        : 'success';
 
   const statusColor = {
     success: theme.palette.success.main,
     warning: theme.palette.warning.main,
-    error: theme.palette.error.main
+    error: theme.palette.error.main,
   }[overallStatus];
 
   const StatusIcon = {
     success: CheckIcon,
     warning: WarningIcon,
-    error: ErrorIcon
+    error: ErrorIcon,
   }[overallStatus];
 
-  const statusMessage = isEligible 
-    ? '할당이 가능합니다' 
+  const statusMessage = isEligible
+    ? '할당이 가능합니다'
     : '할당이 불가능합니다';
 
   if (compact) {
@@ -132,10 +140,15 @@ export function AssignmentValidationStatus({
           label={statusMessage}
           color={overallStatus as 'success' | 'warning' | 'error'}
           variant={isEligible ? 'filled' : 'outlined'}
-          size="small"
+          size='small'
         />
         {errorIssues.length > 0 && (
-          <Typography variant="caption" color="error" display="block" sx={{ mt: 0.5 }}>
+          <Typography
+            variant='caption'
+            color='error'
+            display='block'
+            sx={{ mt: 0.5 }}
+          >
             {errorIssues[0].message}
           </Typography>
         )}
@@ -144,29 +157,36 @@ export function AssignmentValidationStatus({
   }
 
   return (
-    <Card 
-      variant="outlined" 
-      sx={{ 
+    <Card
+      variant='outlined'
+      sx={{
         mb: 2,
         border: `1px solid ${statusColor}`,
-        backgroundColor: alpha(statusColor, 0.05)
+        backgroundColor: alpha(statusColor, 0.05),
       }}
     >
       <CardContent>
         {/* Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            mb: 2,
+          }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <StatusIcon sx={{ color: statusColor }} />
-            <Typography variant="h6" sx={{ color: statusColor }}>
+            <Typography variant='h6' sx={{ color: statusColor }}>
               {statusMessage}
             </Typography>
           </Box>
-          
+
           {!showDetails && (
-            <IconButton 
-              size="small" 
+            <IconButton
+              size='small'
               onClick={() => setExpanded(!expanded)}
-              aria-label={expanded ? "접기" : "펼치기"}
+              aria-label={expanded ? '접기' : '펼치기'}
             >
               {expanded ? <CollapseIcon /> : <ExpandIcon />}
             </IconButton>
@@ -176,20 +196,25 @@ export function AssignmentValidationStatus({
         {/* Assignment Summary */}
         {(employeeName || assetName) && (
           <Box sx={{ mb: 2 }}>
-            <Stack direction="row" spacing={2} divider={<Divider orientation="vertical" flexItem />}>
+            <Stack
+              direction='row'
+              spacing={2}
+              divider={<Divider orientation='vertical' flexItem />}
+            >
               {employeeName && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <PersonIcon fontSize="small" color="action" />
-                  <Typography variant="body2">{employeeName}</Typography>
+                  <PersonIcon fontSize='small' color='action' />
+                  <Typography variant='body2'>{employeeName}</Typography>
                 </Box>
               )}
               {assetName && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  {assetType === 'software' ? 
-                    <LicenseIcon fontSize="small" color="action" /> : 
-                    <ComputerIcon fontSize="small" color="action" />
-                  }
-                  <Typography variant="body2">{assetName}</Typography>
+                  {assetType === 'software' ? (
+                    <LicenseIcon fontSize='small' color='action' />
+                  ) : (
+                    <ComputerIcon fontSize='small' color='action' />
+                  )}
+                  <Typography variant='body2'>{assetName}</Typography>
                 </Box>
               )}
             </Stack>
@@ -202,16 +227,16 @@ export function AssignmentValidationStatus({
             {/* Error Issues */}
             {errorIssues.length > 0 && (
               <Box sx={{ mb: 2 }}>
-                <Typography variant="subtitle2" color="error" gutterBottom>
+                <Typography variant='subtitle2' color='error' gutterBottom>
                   오류 ({errorIssues.length})
                 </Typography>
                 <List dense>
                   {errorIssues.map((issue, index) => (
                     <ListItem key={index} sx={{ pl: 0 }}>
                       <ListItemIcon sx={{ minWidth: 32 }}>
-                        <ErrorIcon color="error" fontSize="small" />
+                        <ErrorIcon color='error' fontSize='small' />
                       </ListItemIcon>
-                      <ListItemText 
+                      <ListItemText
                         primary={issue.message}
                         primaryTypographyProps={{ variant: 'body2' }}
                       />
@@ -224,16 +249,20 @@ export function AssignmentValidationStatus({
             {/* Warning Issues */}
             {warningIssues.length > 0 && (
               <Box sx={{ mb: 2 }}>
-                <Typography variant="subtitle2" color="warning.main" gutterBottom>
+                <Typography
+                  variant='subtitle2'
+                  color='warning.main'
+                  gutterBottom
+                >
                   주의사항 ({warningIssues.length})
                 </Typography>
                 <List dense>
                   {warningIssues.map((issue, index) => (
                     <ListItem key={index} sx={{ pl: 0 }}>
                       <ListItemIcon sx={{ minWidth: 32 }}>
-                        <WarningIcon color="warning" fontSize="small" />
+                        <WarningIcon color='warning' fontSize='small' />
                       </ListItemIcon>
-                      <ListItemText 
+                      <ListItemText
                         primary={issue.message}
                         primaryTypographyProps={{ variant: 'body2' }}
                       />
@@ -246,16 +275,20 @@ export function AssignmentValidationStatus({
             {/* General Warnings */}
             {warnings.length > 0 && (
               <Box sx={{ mb: 2 }}>
-                <Typography variant="subtitle2" color="warning.main" gutterBottom>
+                <Typography
+                  variant='subtitle2'
+                  color='warning.main'
+                  gutterBottom
+                >
                   일반 경고 ({warnings.length})
                 </Typography>
                 <List dense>
                   {warnings.map((warning, index) => (
                     <ListItem key={index} sx={{ pl: 0 }}>
                       <ListItemIcon sx={{ minWidth: 32 }}>
-                        <WarningIcon color="warning" fontSize="small" />
+                        <WarningIcon color='warning' fontSize='small' />
                       </ListItemIcon>
-                      <ListItemText 
+                      <ListItemText
                         primary={warning}
                         primaryTypographyProps={{ variant: 'body2' }}
                       />
@@ -268,16 +301,16 @@ export function AssignmentValidationStatus({
             {/* Recommendations */}
             {recommendations.length > 0 && (
               <Box sx={{ mb: 2 }}>
-                <Typography variant="subtitle2" color="info.main" gutterBottom>
+                <Typography variant='subtitle2' color='info.main' gutterBottom>
                   권장사항
                 </Typography>
                 <List dense>
                   {recommendations.map((recommendation, index) => (
                     <ListItem key={index} sx={{ pl: 0 }}>
                       <ListItemIcon sx={{ minWidth: 32 }}>
-                        <InfoIcon color="info" fontSize="small" />
+                        <InfoIcon color='info' fontSize='small' />
                       </ListItemIcon>
-                      <ListItemText 
+                      <ListItemText
                         primary={recommendation}
                         primaryTypographyProps={{ variant: 'body2' }}
                       />
@@ -288,11 +321,13 @@ export function AssignmentValidationStatus({
             )}
 
             {/* Success State */}
-            {isEligible && errorIssues.length === 0 && warningIssues.length === 0 && (
-              <Alert severity="success" icon={<CheckIcon />}>
-                모든 검증을 통과했습니다. 할당을 진행할 수 있습니다.
-              </Alert>
-            )}
+            {isEligible &&
+              errorIssues.length === 0 &&
+              warningIssues.length === 0 && (
+                <Alert severity='success' icon={<CheckIcon />}>
+                  모든 검증을 통과했습니다. 할당을 진행할 수 있습니다.
+                </Alert>
+              )}
           </Box>
         </Collapse>
       </CardContent>
@@ -310,7 +345,7 @@ export function AssignmentValidationStatus({
 export function EmployeeAssignmentLimitDisplay({
   currentCount,
   maxCount = 5,
-  employeeName
+  employeeName,
 }: {
   currentCount: number;
   maxCount?: number;
@@ -318,7 +353,7 @@ export function EmployeeAssignmentLimitDisplay({
 }) {
   const theme = useTheme();
   const utilizationRate = (currentCount / maxCount) * 100;
-  
+
   const getColor = () => {
     if (utilizationRate >= 100) return theme.palette.error.main;
     if (utilizationRate >= 80) return theme.palette.warning.main;
@@ -327,24 +362,24 @@ export function EmployeeAssignmentLimitDisplay({
 
   return (
     <Box sx={{ mb: 2 }}>
-      <Typography variant="body2" gutterBottom>
+      <Typography variant='body2' gutterBottom>
         {employeeName ? `${employeeName}의 할당 현황` : '직원 할당 현황'}
       </Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <LinearProgress 
-          variant="determinate" 
+        <LinearProgress
+          variant='determinate'
           value={Math.min(utilizationRate, 100)}
-          sx={{ 
-            flexGrow: 1, 
-            height: 8, 
+          sx={{
+            flexGrow: 1,
+            height: 8,
             borderRadius: 1,
             backgroundColor: alpha(getColor(), 0.2),
             '& .MuiLinearProgress-bar': {
-              backgroundColor: getColor()
-            }
+              backgroundColor: getColor(),
+            },
           }}
         />
-        <Typography variant="caption" sx={{ minWidth: 60, textAlign: 'right' }}>
+        <Typography variant='caption' sx={{ minWidth: 60, textAlign: 'right' }}>
           {currentCount}/{maxCount}
         </Typography>
       </Box>
@@ -358,15 +393,16 @@ export function EmployeeAssignmentLimitDisplay({
 export function SoftwareLicenseUtilizationDisplay({
   currentUsage,
   maxLicenses,
-  softwareName
+  softwareName,
 }: {
   currentUsage: number;
   maxLicenses: number;
   softwareName?: string;
 }) {
   const theme = useTheme();
-  const utilizationRate = maxLicenses > 0 ? (currentUsage / maxLicenses) * 100 : 0;
-  
+  const utilizationRate =
+    maxLicenses > 0 ? (currentUsage / maxLicenses) * 100 : 0;
+
   const getColor = () => {
     if (utilizationRate >= 100) return theme.palette.error.main;
     if (utilizationRate >= 80) return theme.palette.warning.main;
@@ -375,24 +411,26 @@ export function SoftwareLicenseUtilizationDisplay({
 
   return (
     <Box sx={{ mb: 2 }}>
-      <Typography variant="body2" gutterBottom>
-        {softwareName ? `${softwareName} 라이선스 사용률` : '소프트웨어 라이선스 사용률'}
+      <Typography variant='body2' gutterBottom>
+        {softwareName
+          ? `${softwareName} 라이선스 사용률`
+          : '소프트웨어 라이선스 사용률'}
       </Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <LinearProgress 
-          variant="determinate" 
+        <LinearProgress
+          variant='determinate'
           value={Math.min(utilizationRate, 100)}
-          sx={{ 
-            flexGrow: 1, 
-            height: 8, 
+          sx={{
+            flexGrow: 1,
+            height: 8,
             borderRadius: 1,
             backgroundColor: alpha(getColor(), 0.2),
             '& .MuiLinearProgress-bar': {
-              backgroundColor: getColor()
-            }
+              backgroundColor: getColor(),
+            },
           }}
         />
-        <Typography variant="caption" sx={{ minWidth: 80, textAlign: 'right' }}>
+        <Typography variant='caption' sx={{ minWidth: 80, textAlign: 'right' }}>
           {currentUsage}/{maxLicenses} ({utilizationRate.toFixed(1)}%)
         </Typography>
       </Box>

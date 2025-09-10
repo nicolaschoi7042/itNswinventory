@@ -2,15 +2,15 @@
 // Handles login, logout, token management, and user session
 
 import { apiClient, ApiError } from '@/lib/api-client';
-import { 
-  setStoredToken, 
-  removeStoredToken, 
+import {
+  setStoredToken,
+  removeStoredToken,
   setStoredUser,
   getStoredToken,
   getStoredUser,
-  type User, 
-  type LoginCredentials, 
-  type AuthResponse 
+  type User,
+  type LoginCredentials,
+  type AuthResponse,
 } from '@/lib/auth';
 import type { ApiResponse } from '@/types/api';
 
@@ -29,7 +29,7 @@ export class AuthService {
 
       if (response.success && response.data) {
         const { token, user } = response.data;
-        
+
         // Store token and user data
         setStoredToken(token);
         setStoredUser(user);
@@ -38,27 +38,27 @@ export class AuthService {
           success: true,
           token,
           user,
-          message: response.data.message || '로그인 성공'
+          message: response.data.message || '로그인 성공',
         };
       }
 
       return {
         success: false,
-        message: response.message || '로그인에 실패했습니다.'
+        message: response.message || '로그인에 실패했습니다.',
       };
     } catch (error) {
       console.error('Login error:', error);
-      
+
       if (error instanceof ApiError) {
         return {
           success: false,
-          message: error.message
+          message: error.message,
         };
       }
 
       return {
         success: false,
-        message: '로그인 중 오류가 발생했습니다.'
+        message: '로그인 중 오류가 발생했습니다.',
       };
     }
   }
@@ -77,7 +77,7 @@ export class AuthService {
     } finally {
       // Always clear local storage
       removeStoredToken();
-      
+
       // Redirect to login page
       if (typeof window !== 'undefined') {
         window.location.href = '/login';
@@ -98,7 +98,7 @@ export class AuthService {
   isAuthenticated(): boolean {
     const token = getStoredToken();
     const user = getStoredUser();
-    
+
     if (!token || !user) {
       return false;
     }
@@ -113,21 +113,21 @@ export class AuthService {
   async refreshUser(): Promise<User | null> {
     try {
       const response = await apiClient.get<User>('/api/auth/me');
-      
+
       if (response.success && response.data) {
         setStoredUser(response.data);
         return response.data;
       }
-      
+
       return null;
     } catch (error) {
       console.error('Failed to refresh user data:', error);
-      
+
       // If unauthorized, clear stored data
       if (error instanceof ApiError && error.status === 401) {
         removeStoredToken();
       }
-      
+
       return null;
     }
   }
@@ -141,11 +141,11 @@ export class AuthService {
       return response.success;
     } catch (error) {
       console.error('Token validation failed:', error);
-      
+
       if (error instanceof ApiError && error.status === 401) {
         removeStoredToken();
       }
-      
+
       return false;
     }
   }
@@ -153,30 +153,37 @@ export class AuthService {
   /**
    * Change password (for local accounts only)
    */
-  async changePassword(currentPassword: string, newPassword: string): Promise<{ success: boolean; message: string }> {
+  async changePassword(
+    currentPassword: string,
+    newPassword: string
+  ): Promise<{ success: boolean; message: string }> {
     try {
       const response = await apiClient.post('/api/auth/change-password', {
         currentPassword,
-        newPassword
+        newPassword,
       });
 
       return {
         success: response.success,
-        message: response.message || (response.success ? '비밀번호가 변경되었습니다.' : '비밀번호 변경에 실패했습니다.')
+        message:
+          response.message ||
+          (response.success
+            ? '비밀번호가 변경되었습니다.'
+            : '비밀번호 변경에 실패했습니다.'),
       };
     } catch (error) {
       console.error('Password change error:', error);
-      
+
       if (error instanceof ApiError) {
         return {
           success: false,
-          message: error.message
+          message: error.message,
         };
       }
 
       return {
         success: false,
-        message: '비밀번호 변경 중 오류가 발생했습니다.'
+        message: '비밀번호 변경 중 오류가 발생했습니다.',
       };
     }
   }
@@ -193,7 +200,7 @@ export class AuthService {
     isManager: boolean;
   } {
     const currentUser = user || this.getCurrentUser();
-    
+
     if (!currentUser) {
       return {
         canManageUsers: false,

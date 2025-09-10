@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken, extractTokenFromHeader, hasRole, JWTPayload } from './jwt';
+import {
+  verifyToken,
+  extractTokenFromHeader,
+  hasRole,
+  JWTPayload,
+} from './jwt';
 
 // Note: This is kept for future reference but not currently used
 // due to NextRequest structure limitations
@@ -10,7 +15,9 @@ export interface AuthenticatedRequest {
 /**
  * Authentication middleware for API routes
  */
-export async function authenticateToken(request: NextRequest): Promise<{ success: boolean; user?: JWTPayload; error?: string }> {
+export async function authenticateToken(
+  request: NextRequest
+): Promise<{ success: boolean; user?: JWTPayload; error?: string }> {
   const authHeader = request.headers.get('authorization');
   const token = extractTokenFromHeader(authHeader || '');
 
@@ -42,7 +49,7 @@ export function authorize(requiredRoles: string[]) {
  * Combined authentication and authorization middleware
  */
 export async function authenticateAndAuthorize(
-  request: NextRequest, 
+  request: NextRequest,
   requiredRoles: string[] = []
 ): Promise<{ success: boolean; user?: JWTPayload; error?: string }> {
   // First authenticate
@@ -65,7 +72,10 @@ export async function authenticateAndAuthorize(
 /**
  * Create error response for authentication/authorization failures
  */
-export function createAuthErrorResponse(error: string, status: number = 401): NextResponse {
+export function createAuthErrorResponse(
+  error: string,
+  status: number = 401
+): NextResponse {
   return NextResponse.json({ error }, { status });
 }
 
@@ -78,7 +88,7 @@ export function withAuth(
 ) {
   return async (request: NextRequest): Promise<NextResponse> => {
     const authResult = await authenticateAndAuthorize(request, requiredRoles);
-    
+
     if (!authResult.success || !authResult.user) {
       const status = authResult.error?.includes('권한이 없습니다') ? 403 : 401;
       return createAuthErrorResponse(authResult.error || '인증 실패', status);

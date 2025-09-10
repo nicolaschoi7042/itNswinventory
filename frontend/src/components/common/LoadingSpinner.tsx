@@ -6,10 +6,10 @@ interface LoadingSpinnerProps {
   fullHeight?: boolean;
 }
 
-export function LoadingSpinner({ 
-  message = '로딩 중...', 
-  size = 40, 
-  fullHeight = true 
+export function LoadingSpinner({
+  message = '로딩 중...',
+  size = 40,
+  fullHeight = true,
 }: LoadingSpinnerProps) {
   return (
     <Box
@@ -25,7 +25,7 @@ export function LoadingSpinner({
     >
       <CircularProgress size={size} thickness={4} />
       {message && (
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant='body2' color='text.secondary'>
           {message}
         </Typography>
       )}

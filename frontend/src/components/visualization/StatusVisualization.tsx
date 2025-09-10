@@ -1,6 +1,6 @@
 /**
  * Status Visualization Components
- * 
+ *
  * Collection of components for visualizing assignment status, progress, and metrics
  * with enhanced visual indicators and animations.
  */
@@ -18,7 +18,7 @@ import {
   Grid,
   Avatar,
   useTheme,
-  alpha
+  alpha,
 } from '@mui/material';
 import {
   Warning as WarningIcon,
@@ -30,7 +30,7 @@ import {
   AccessTime as AccessTimeIcon,
   Assignment as AssignmentIcon,
   Computer as ComputerIcon,
-  Apps as AppsIcon
+  Apps as AppsIcon,
 } from '@mui/icons-material';
 
 // Import assignment types and utilities
@@ -38,13 +38,13 @@ import {
   Assignment,
   AssignmentWithDetails,
   AssignmentStatus,
-  AssignmentStats
+  AssignmentStats,
 } from '@/types/assignment';
 
 import {
   getAssignmentStatusInfo,
   formatAssignmentDuration,
-  getDurationColor
+  getDurationColor,
 } from '@/utils/assignment.utils';
 
 // ============================================================================
@@ -64,7 +64,7 @@ export function StatusIndicator({
   showLabel = true,
   showIcon = true,
   size = 'small',
-  variant = 'default'
+  variant = 'default',
 }: StatusIndicatorProps) {
   const theme = useTheme();
   const statusInfo = getAssignmentStatusInfo(status);
@@ -92,45 +92,64 @@ export function StatusIndicator({
 
   if (variant === 'minimal') {
     return (
-      <Box 
-        sx={{ 
-          width: 12, 
-          height: 12, 
-          borderRadius: '50%', 
-          backgroundColor: theme.palette[statusInfo.color].main 
-        }} 
+      <Box
+        sx={{
+          width: 12,
+          height: 12,
+          borderRadius: '50%',
+          backgroundColor: theme.palette[statusInfo.color].main,
+        }}
       />
     );
   }
 
   if (variant === 'detailed') {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 0.5,
+        }}
+      >
         <Chip
           icon={showIcon ? getStatusIcon(status) : undefined}
           label={showLabel ? statusInfo.label : ''}
           color={statusInfo.color}
           size={size}
-          sx={{ 
+          sx={{
             fontWeight: 'medium',
             '& .MuiChip-icon': {
-              fontSize: size === 'large' ? 20 : size === 'medium' ? 18 : 16
-            }
+              fontSize: size === 'large' ? 20 : size === 'medium' ? 18 : 16,
+            },
           }}
         />
         {/* Additional status indicator for specific statuses */}
         {status === '연체' && (
-          <Typography variant="caption" color="error.main" sx={{ fontSize: '0.65rem' }}>
+          <Typography
+            variant='caption'
+            color='error.main'
+            sx={{ fontSize: '0.65rem' }}
+          >
             즉시 반납 필요
           </Typography>
         )}
         {status === '분실' && (
-          <Typography variant="caption" color="warning.main" sx={{ fontSize: '0.65rem' }}>
+          <Typography
+            variant='caption'
+            color='warning.main'
+            sx={{ fontSize: '0.65rem' }}
+          >
             조사 필요
           </Typography>
         )}
         {status === '손상' && (
-          <Typography variant="caption" color="warning.main" sx={{ fontSize: '0.65rem' }}>
+          <Typography
+            variant='caption'
+            color='warning.main'
+            sx={{ fontSize: '0.65rem' }}
+          >
             수리 검토
           </Typography>
         )}
@@ -144,11 +163,11 @@ export function StatusIndicator({
       label={showLabel ? statusInfo.label : ''}
       color={statusInfo.color}
       size={size}
-      sx={{ 
+      sx={{
         fontWeight: 'medium',
         '& .MuiChip-icon': {
-          fontSize: size === 'large' ? 20 : size === 'medium' ? 18 : 16
-        }
+          fontSize: size === 'large' ? 20 : size === 'medium' ? 18 : 16,
+        },
       }}
     />
   );
@@ -169,7 +188,7 @@ export function DurationVisualization({
   assignment,
   showProgress = true,
   showCategory = true,
-  size = 'small'
+  size = 'small',
 }: DurationVisualizationProps) {
   const theme = useTheme();
   const duration = formatAssignmentDuration(assignment);
@@ -178,49 +197,75 @@ export function DurationVisualization({
   // Calculate days for progress visualization
   const assignedDate = new Date(assignment.assigned_date);
   const currentDate = new Date();
-  const daysDiff = Math.floor((currentDate.getTime() - assignedDate.getTime()) / (1000 * 60 * 60 * 24));
+  const daysDiff = Math.floor(
+    (currentDate.getTime() - assignedDate.getTime()) / (1000 * 60 * 60 * 24)
+  );
 
   // Duration category for visualization
   const getDurationCategory = (days: number) => {
-    if (days <= 30) return { label: '단기', progress: (days / 30) * 100, color: 'success' };
-    if (days <= 90) return { label: '중기', progress: ((days - 30) / 60) * 100, color: 'warning' };
+    if (days <= 30)
+      return { label: '단기', progress: (days / 30) * 100, color: 'success' };
+    if (days <= 90)
+      return {
+        label: '중기',
+        progress: ((days - 30) / 60) * 100,
+        color: 'warning',
+      };
     return { label: '장기', progress: 100, color: 'error' };
   };
 
   const durationCategory = getDurationCategory(daysDiff);
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 0.5,
+      }}
+    >
       <Chip
         icon={<AccessTimeIcon sx={{ fontSize: size === 'large' ? 18 : 14 }} />}
         label={duration}
         size={size}
         color={color}
-        variant="outlined"
+        variant='outlined'
         sx={{
           '& .MuiChip-icon': {
-            fontSize: size === 'large' ? 18 : 14
-          }
+            fontSize: size === 'large' ? 18 : 14,
+          },
         }}
       />
 
       {/* Duration visualization bar */}
       {showProgress && assignment.status === '사용중' && (
-        <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Box
+          sx={{
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
           {showCategory && (
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+            <Typography
+              variant='caption'
+              color='text.secondary'
+              sx={{ fontSize: '0.65rem' }}
+            >
               {durationCategory.label} 사용
             </Typography>
           )}
           <LinearProgress
-            variant="determinate"
+            variant='determinate'
             value={Math.min(durationCategory.progress, 100)}
             color={durationCategory.color as any}
-            sx={{ 
+            sx={{
               width: '100%',
-              height: size === 'large' ? 4 : 2, 
+              height: size === 'large' ? 4 : 2,
               borderRadius: 1,
-              mt: 0.25
+              mt: 0.25,
             }}
           />
         </Box>
@@ -240,7 +285,7 @@ interface AssignmentStatsVisualizationProps {
 
 export function AssignmentStatsVisualization({
   stats,
-  variant = 'cards'
+  variant = 'cards',
 }: AssignmentStatsVisualizationProps) {
   const theme = useTheme();
 
@@ -249,48 +294,51 @@ export function AssignmentStatsVisualization({
       label: '총 할당',
       value: stats.total_assignments,
       color: 'primary',
-      icon: <AssignmentIcon />
+      icon: <AssignmentIcon />,
     },
     {
       label: '사용 중',
       value: stats.active_assignments,
       color: 'success',
-      icon: <CheckCircleIcon />
+      icon: <CheckCircleIcon />,
     },
     {
       label: '반납 완료',
       value: stats.returned_assignments,
       color: 'info',
-      icon: <CheckCircleIcon />
+      icon: <CheckCircleIcon />,
     },
     {
       label: '연체',
       value: stats.overdue_assignments,
       color: 'error',
-      icon: <WarningIcon />
-    }
+      icon: <WarningIcon />,
+    },
   ];
 
   if (variant === 'compact') {
     return (
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
         {statsData.map((stat, index) => (
-          <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Avatar 
-              sx={{ 
-                width: 32, 
-                height: 32, 
+          <Box
+            key={index}
+            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+          >
+            <Avatar
+              sx={{
+                width: 32,
+                height: 32,
                 bgcolor: `${stat.color}.main`,
-                fontSize: '0.875rem'
+                fontSize: '0.875rem',
               }}
             >
               {stat.icon}
             </Avatar>
             <Box>
-              <Typography variant="h6" component="div">
+              <Typography variant='h6' component='div'>
                 {stat.value}
               </Typography>
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant='caption' color='text.secondary'>
                 {stat.label}
               </Typography>
             </Box>
@@ -306,26 +354,32 @@ export function AssignmentStatsVisualization({
         {statsData.map((stat, index) => (
           <Grid item xs={12} sm={6} md={3} key={index}>
             <Card sx={{ height: '100%' }}>
-              <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Avatar 
-                  sx={{ 
+              <CardContent
+                sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
+              >
+                <Avatar
+                  sx={{
                     bgcolor: `${stat.color}.main`,
                     width: 48,
-                    height: 48
+                    height: 48,
                   }}
                 >
                   {stat.icon}
                 </Avatar>
                 <Box sx={{ flexGrow: 1 }}>
-                  <Typography variant="h4" component="div" color={`${stat.color}.main`}>
+                  <Typography
+                    variant='h4'
+                    component='div'
+                    color={`${stat.color}.main`}
+                  >
                     {stat.value}
                   </Typography>
-                  <Typography variant="subtitle1" color="text.secondary">
+                  <Typography variant='subtitle1' color='text.secondary'>
                     {stat.label}
                   </Typography>
                   {/* Progress indicator */}
                   <LinearProgress
-                    variant="determinate"
+                    variant='determinate'
                     value={(stat.value / stats.total_assignments) * 100}
                     color={stat.color as any}
                     sx={{ mt: 1, height: 4, borderRadius: 2 }}
@@ -346,20 +400,28 @@ export function AssignmentStatsVisualization({
         <Card key={index} sx={{ minWidth: 200, flexGrow: 1 }}>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-              {React.cloneElement(stat.icon, { 
-                sx: { color: `${stat.color}.main`, fontSize: 20 } 
+              {React.cloneElement(stat.icon, {
+                sx: { color: `${stat.color}.main`, fontSize: 20 },
               })}
-              <Typography color="text.secondary" variant="body2">
+              <Typography color='text.secondary' variant='body2'>
                 {stat.label}
               </Typography>
             </Box>
-            <Typography variant="h5" component="div" color={`${stat.color}.main`}>
+            <Typography
+              variant='h5'
+              component='div'
+              color={`${stat.color}.main`}
+            >
               {stat.value}
             </Typography>
             <Box sx={{ mt: 1 }}>
               <LinearProgress
-                variant="determinate"
-                value={stats.total_assignments > 0 ? (stat.value / stats.total_assignments) * 100 : 0}
+                variant='determinate'
+                value={
+                  stats.total_assignments > 0
+                    ? (stat.value / stats.total_assignments) * 100
+                    : 0
+                }
                 color={stat.color as any}
                 sx={{ height: 4, borderRadius: 2 }}
               />
@@ -388,30 +450,33 @@ export function AssetTypeVisualization({
   assetName,
   assetId,
   size = 'medium',
-  showDetails = true
+  showDetails = true,
 }: AssetTypeVisualizationProps) {
   const theme = useTheme();
   const isHardware = assetType === 'hardware';
-  
+
   const avatarSize = size === 'large' ? 48 : size === 'medium' ? 32 : 24;
   const iconSize = size === 'large' ? 24 : size === 'medium' ? 20 : 16;
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-      <Avatar sx={{ 
-        width: avatarSize, 
-        height: avatarSize, 
-        bgcolor: isHardware ? 'info.main' : 'success.main' 
-      }}>
-        {isHardware ? 
-          <ComputerIcon sx={{ fontSize: iconSize }} /> : 
+      <Avatar
+        sx={{
+          width: avatarSize,
+          height: avatarSize,
+          bgcolor: isHardware ? 'info.main' : 'success.main',
+        }}
+      >
+        {isHardware ? (
+          <ComputerIcon sx={{ fontSize: iconSize }} />
+        ) : (
           <AppsIcon sx={{ fontSize: iconSize }} />
-        }
+        )}
       </Avatar>
       <Box>
-        <Typography 
-          variant={size === 'large' ? 'subtitle1' : 'body2'} 
-          fontWeight="medium"
+        <Typography
+          variant={size === 'large' ? 'subtitle1' : 'body2'}
+          fontWeight='medium'
         >
           {assetName}
         </Typography>
@@ -419,12 +484,12 @@ export function AssetTypeVisualization({
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Chip
               label={isHardware ? '하드웨어' : '소프트웨어'}
-              size="small"
+              size='small'
               color={isHardware ? 'info' : 'success'}
-              variant="outlined"
+              variant='outlined'
             />
             {assetId && (
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant='caption' color='text.secondary'>
                 {assetId}
               </Typography>
             )}
@@ -454,14 +519,14 @@ export function ProgressRing({
   thickness = 4,
   color = 'primary',
   showLabel = true,
-  label
+  label,
 }: ProgressRingProps) {
   const theme = useTheme();
 
   return (
     <Box sx={{ position: 'relative', display: 'inline-flex' }}>
       <CircularProgress
-        variant="determinate"
+        variant='determinate'
         value={value}
         size={size}
         thickness={thickness}
@@ -469,7 +534,7 @@ export function ProgressRing({
         sx={{
           '& .MuiCircularProgress-circle': {
             strokeLinecap: 'round',
-          }
+          },
         }}
       />
       {showLabel && (
@@ -483,13 +548,13 @@ export function ProgressRing({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            flexDirection: 'column'
+            flexDirection: 'column',
           }}
         >
-          <Typography 
-            variant="caption" 
-            component="div" 
-            color="text.secondary"
+          <Typography
+            variant='caption'
+            component='div'
+            color='text.secondary'
             sx={{ fontSize: size < 50 ? '0.65rem' : '0.75rem' }}
           >
             {label || `${Math.round(value)}%`}

@@ -2,13 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { 
-  Paper, 
-  Tabs, 
-  Tab,
-  useTheme,
-  useMediaQuery 
-} from '@mui/material';
+import { Paper, Tabs, Tab, useTheme, useMediaQuery } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
   People as PeopleIcon,
@@ -43,7 +37,7 @@ const navItems: NavItem[] = [
   },
   {
     label: '소프트웨어',
-    path: '/software', 
+    path: '/software',
     icon: <AppsIcon />,
   },
   {
@@ -63,7 +57,7 @@ export function Navigation() {
   const pathname = usePathname();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
+
   // TODO: Replace with actual user role from context/store
   const userRole = 'Admin'; // Mock admin role to show all tabs
 
@@ -76,12 +70,14 @@ export function Navigation() {
   });
 
   // Find current tab index
-  const currentTab = visibleNavItems.findIndex(item => pathname.startsWith(item.path));
-  
+  const currentTab = visibleNavItems.findIndex(item =>
+    pathname.startsWith(item.path)
+  );
+
   return (
-    <Paper 
+    <Paper
       elevation={2}
-      sx={{ 
+      sx={{
         borderRadius: 2,
         overflow: 'hidden',
         mb: 2,
@@ -90,7 +86,7 @@ export function Navigation() {
       <Tabs
         value={currentTab === -1 ? false : currentTab}
         variant={isMobile ? 'scrollable' : 'fullWidth'}
-        scrollButtons="auto"
+        scrollButtons='auto'
         sx={{
           '& .MuiTabs-indicator': {
             height: 3,
@@ -98,12 +94,12 @@ export function Navigation() {
           },
         }}
       >
-        {visibleNavItems.map((item) => (
+        {visibleNavItems.map(item => (
           <Tab
             key={item.path}
             label={item.label}
             icon={item.icon}
-            iconPosition="start"
+            iconPosition='start'
             component={Link}
             href={item.path}
             sx={{

@@ -1,6 +1,6 @@
 /**
  * Error Handling Utilities
- * 
+ *
  * Utilities for consistent API error handling and user feedback
  */
 
@@ -14,11 +14,14 @@ export interface ErrorInfo {
 /**
  * Extracts user-friendly error message from API error response
  */
-export function getApiErrorMessage(error: any, defaultMessage: string = '처리 중 오류가 발생했습니다.'): ErrorInfo {
+export function getApiErrorMessage(
+  error: any,
+  defaultMessage: string = '처리 중 오류가 발생했습니다.'
+): ErrorInfo {
   // Initialize error info
   const errorInfo: ErrorInfo = {
     message: defaultMessage,
-    code: error?.code || 'UNKNOWN_ERROR'
+    code: error?.code || 'UNKNOWN_ERROR',
   };
 
   // Server provided specific error message
@@ -117,20 +120,24 @@ export function getApiErrorMessage(error: any, defaultMessage: string = '처리 
 /**
  * Get error message for specific assignment operations
  */
-export function getAssignmentErrorMessage(error: any, operation: 'create' | 'update' | 'delete' | 'return' | 'load'): ErrorInfo {
+export function getAssignmentErrorMessage(
+  error: any,
+  operation: 'create' | 'update' | 'delete' | 'return' | 'load'
+): ErrorInfo {
   const baseMessages = {
     create: '할당 생성에 실패했습니다.',
     update: '할당 수정에 실패했습니다.',
     delete: '할당 삭제에 실패했습니다.',
     return: '자산 반납에 실패했습니다.',
-    load: '할당 데이터를 불러오는데 실패했습니다.'
+    load: '할당 데이터를 불러오는데 실패했습니다.',
   };
 
   const errorInfo = getApiErrorMessage(error, baseMessages[operation]);
 
   // Add operation-specific details
   if (operation === 'create' && error?.response?.status === 409) {
-    errorInfo.message = '이미 할당된 자산이거나 직원의 할당 한도를 초과했습니다.';
+    errorInfo.message =
+      '이미 할당된 자산이거나 직원의 할당 한도를 초과했습니다.';
     errorInfo.action = '다른 자산을 선택하거나 기존 할당을 확인해주세요.';
   } else if (operation === 'return' && error?.response?.status === 400) {
     errorInfo.message = '반납 처리에 필요한 정보가 부족합니다.';
@@ -146,11 +153,14 @@ export function getAssignmentErrorMessage(error: any, operation: 'create' | 'upd
 /**
  * Get error message for export operations
  */
-export function getExportErrorMessage(error: any, exportType: 'excel' | 'csv' | 'pdf'): ErrorInfo {
+export function getExportErrorMessage(
+  error: any,
+  exportType: 'excel' | 'csv' | 'pdf'
+): ErrorInfo {
   const baseMessages = {
     excel: 'Excel 내보내기에 실패했습니다.',
     csv: 'CSV 내보내기에 실패했습니다.',
-    pdf: 'PDF 내보내기에 실패했습니다.'
+    pdf: 'PDF 내보내기에 실패했습니다.',
   };
 
   const errorInfo = getApiErrorMessage(error, baseMessages[exportType]);
@@ -172,24 +182,28 @@ export function getExportErrorMessage(error: any, exportType: 'excel' | 'csv' | 
  */
 export function formatErrorMessage(errorInfo: ErrorInfo): string {
   let message = errorInfo.message;
-  
+
   if (errorInfo.action) {
     message += ` ${errorInfo.action}`;
   }
-  
+
   if (errorInfo.details && process.env.NODE_ENV === 'development') {
     message += `\n\n개발자 정보: ${errorInfo.details}`;
   }
-  
+
   return message;
 }
 
 /**
  * Log error with context information
  */
-export function logError(operation: string, error: any, context?: Record<string, any>): void {
+export function logError(
+  operation: string,
+  error: any,
+  context?: Record<string, any>
+): void {
   const errorInfo = getApiErrorMessage(error);
-  
+
   console.group(`🚨 ${operation} Error`);
   console.error('Message:', errorInfo.message);
   console.error('Code:', errorInfo.code);

@@ -86,7 +86,13 @@ export interface SoftwareSearchParams {
     price_range?: { min?: number; max?: number };
     license_utilization?: 'low' | 'medium' | 'high' | 'full';
   };
-  sortBy?: 'name' | 'manufacturer' | 'purchase_date' | 'expiry_date' | 'price' | 'license_utilization';
+  sortBy?:
+    | 'name'
+    | 'manufacturer'
+    | 'purchase_date'
+    | 'expiry_date'
+    | 'price'
+    | 'license_utilization';
   sortOrder?: 'asc' | 'desc';
   page?: number;
   limit?: number;
@@ -122,7 +128,7 @@ export const SOFTWARE_TYPES = [
   '네트워크',
   '백업',
   '가상화',
-  '기타'
+  '기타',
 ] as const;
 
 // Software license types
@@ -135,7 +141,7 @@ export const SOFTWARE_LICENSE_TYPES = [
   '영구',
   '교육용',
   '오픈소스',
-  '기타'
+  '기타',
 ] as const;
 
 // Major software manufacturers
@@ -155,13 +161,13 @@ export const SOFTWARE_MANUFACTURERS = [
   'Atlassian',
   'Slack',
   'Zoom',
-  '기타'
+  '기타',
 ] as const;
 
 // Type definitions for constants
-export type SoftwareType = typeof SOFTWARE_TYPES[number];
-export type SoftwareLicenseType = typeof SOFTWARE_LICENSE_TYPES[number];
-export type SoftwareManufacturer = typeof SOFTWARE_MANUFACTURERS[number];
+export type SoftwareType = (typeof SOFTWARE_TYPES)[number];
+export type SoftwareLicenseType = (typeof SOFTWARE_LICENSE_TYPES)[number];
+export type SoftwareManufacturer = (typeof SOFTWARE_MANUFACTURERS)[number];
 
 // Software form validation rules
 export interface SoftwareValidationRules {
@@ -189,20 +195,20 @@ export const SOFTWARE_VALIDATION_RULES: SoftwareValidationRules = {
   name: {
     required: true,
     minLength: 2,
-    maxLength: 200
+    maxLength: 200,
   },
   total_licenses: {
     required: true,
     min: 1,
-    max: 10000
+    max: 10000,
   },
   price: {
     min: 0,
-    max: 999999999
+    max: 999999999,
   },
   expiry_date: {
-    mustBeFuture: false // Allow past expiry dates for record keeping
-  }
+    mustBeFuture: false, // Allow past expiry dates for record keeping
+  },
 };
 
 // Software filters for UI components
@@ -256,7 +262,9 @@ export function isSoftware(obj: any): obj is Software {
   );
 }
 
-export function isSoftwareWithAssignments(obj: any): obj is SoftwareWithAssignments {
+export function isSoftwareWithAssignments(
+  obj: any
+): obj is SoftwareWithAssignments {
   return (
     isSoftware(obj) &&
     typeof obj.assignedUsers === 'number' &&
@@ -266,15 +274,17 @@ export function isSoftwareWithAssignments(obj: any): obj is SoftwareWithAssignme
 }
 
 // Utility functions
-export function calculateLicenseUtilization(software: Software): LicenseUtilization {
+export function calculateLicenseUtilization(
+  software: Software
+): LicenseUtilization {
   const total = software.total_licenses;
   const used = software.current_users;
   const available = Math.max(0, total - used);
   const percentage = total > 0 ? Math.round((used / total) * 100) : 0;
-  
+
   let status: LicenseUtilization['status'];
   let color: LicenseUtilization['color'];
-  
+
   if (percentage >= 100) {
     status = 'full';
     color = 'error';
@@ -288,26 +298,30 @@ export function calculateLicenseUtilization(software: Software): LicenseUtilizat
     status = 'low';
     color = 'success';
   }
-  
+
   return {
     total,
     used,
     available,
     percentage,
     status,
-    color
+    color,
   };
 }
 
-export function getSoftwareLicenseStatus(software: Software): SoftwareLicenseStatus {
+export function getSoftwareLicenseStatus(
+  software: Software
+): SoftwareLicenseStatus {
   if (!software.expiry_date) {
     return 'active';
   }
-  
+
   const expiryDate = new Date(software.expiry_date);
   const today = new Date();
-  const thirtyDaysFromNow = new Date(today.getTime() + (30 * 24 * 60 * 60 * 1000));
-  
+  const thirtyDaysFromNow = new Date(
+    today.getTime() + 30 * 24 * 60 * 60 * 1000
+  );
+
   if (expiryDate < today) {
     return 'expired';
   } else if (expiryDate <= thirtyDaysFromNow) {
@@ -319,15 +333,15 @@ export function getSoftwareLicenseStatus(software: Software): SoftwareLicenseSta
 
 export function formatSoftwareDisplayName(software: Software): string {
   let displayName = software.name;
-  
+
   if (software.version) {
     displayName += ` v${software.version}`;
   }
-  
+
   if (software.manufacturer) {
     displayName = `${software.manufacturer} ${displayName}`;
   }
-  
+
   return displayName;
 }
 

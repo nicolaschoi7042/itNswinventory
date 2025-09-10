@@ -13,9 +13,9 @@ export const FormInput = forwardRef<HTMLDivElement, FormInputProps>(
         ref={ref}
         name={name}
         label={label}
-        variant="outlined"
+        variant='outlined'
         fullWidth
-        margin="normal"
+        margin='normal'
         {...props}
       />
     );

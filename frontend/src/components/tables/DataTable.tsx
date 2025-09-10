@@ -55,7 +55,7 @@ export function DataTable<T = any>({
   maxHeight,
   onRowClick,
   rowKey,
-  dense = false
+  dense = false,
 }: DataTableProps<T>) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(pageSize);
@@ -66,7 +66,9 @@ export function DataTable<T = any>({
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
@@ -77,20 +79,21 @@ export function DataTable<T = any>({
     setOrderBy(property);
   };
 
-  const sortedData = sortable && orderBy
-    ? [...data].sort((a, b) => {
-        const aVal = a[orderBy];
-        const bVal = b[orderBy];
-        
-        if (aVal === null || aVal === undefined) return 1;
-        if (bVal === null || bVal === undefined) return -1;
-        
-        const comparison = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
-        return order === 'asc' ? comparison : -comparison;
-      })
-    : data;
+  const sortedData =
+    sortable && orderBy
+      ? [...data].sort((a, b) => {
+          const aVal = a[orderBy];
+          const bVal = b[orderBy];
 
-  const paginatedData = pagination 
+          if (aVal === null || aVal === undefined) return 1;
+          if (bVal === null || bVal === undefined) return -1;
+
+          const comparison = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+          return order === 'asc' ? comparison : -comparison;
+        })
+      : data;
+
+  const paginatedData = pagination
     ? sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
     : sortedData;
 
@@ -107,40 +110,40 @@ export function DataTable<T = any>({
   return (
     <Box>
       {(title || actions) && (
-        <Box 
-          sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center', 
-            mb: 2 
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 2,
           }}
         >
           {title && (
-            <Typography variant="h5" component="h2" sx={{ fontWeight: 600 }}>
+            <Typography variant='h5' component='h2' sx={{ fontWeight: 600 }}>
               {title}
             </Typography>
           )}
           {actions && <Box>{actions}</Box>}
         </Box>
       )}
-      
-      <TableContainer 
+
+      <TableContainer
         component={Paper}
         sx={{ maxHeight, ...(maxHeight && { overflow: 'auto' }) }}
       >
         <Table stickyHeader={stickyHeader} size={dense ? 'small' : 'medium'}>
           <TableHead>
             <TableRow>
-              {columns.map((column) => (
+              {columns.map(column => (
                 <TableCell
                   key={column.key as string}
                   align={column.align || 'left'}
                   sortDirection={orderBy === column.key ? order : false}
-                  sx={{ 
+                  sx={{
                     width: column.width,
                     minWidth: column.width,
                     fontWeight: 600,
-                    backgroundColor: 'grey.50'
+                    backgroundColor: 'grey.50',
                   }}
                 >
                   {column.headerRender ? (
@@ -164,35 +167,43 @@ export function DataTable<T = any>({
             {loading ? (
               Array.from(new Array(5)).map((_, index) => (
                 <TableRow key={index}>
-                  {columns.map((column) => (
+                  {columns.map(column => (
                     <TableCell key={column.key as string}>
-                      <Skeleton variant="text" height={20} />
+                      <Skeleton variant='text' height={20} />
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : paginatedData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length} align="center">
-                  <Typography color="text.secondary">{emptyMessage}</Typography>
+                <TableCell colSpan={columns.length} align='center'>
+                  <Typography color='text.secondary'>{emptyMessage}</Typography>
                 </TableCell>
               </TableRow>
             ) : (
               paginatedData.map((row, index) => {
-                const actualIndex = pagination ? page * rowsPerPage + index : index;
+                const actualIndex = pagination
+                  ? page * rowsPerPage + index
+                  : index;
                 return (
-                  <TableRow 
-                    key={getRowKey(row, actualIndex)} 
+                  <TableRow
+                    key={getRowKey(row, actualIndex)}
                     hover
-                    onClick={onRowClick ? () => onRowClick(row, actualIndex) : undefined}
+                    onClick={
+                      onRowClick
+                        ? () => onRowClick(row, actualIndex)
+                        : undefined
+                    }
                     sx={{
                       cursor: onRowClick ? 'pointer' : 'default',
                       '&:hover': {
-                        backgroundColor: onRowClick ? 'action.hover' : 'inherit'
-                      }
+                        backgroundColor: onRowClick
+                          ? 'action.hover'
+                          : 'inherit',
+                      },
                     }}
                   >
-                    {columns.map((column) => (
+                    {columns.map(column => (
                       <TableCell
                         key={column.key as string}
                         align={column.align || 'left'}
@@ -208,18 +219,20 @@ export function DataTable<T = any>({
             )}
           </TableBody>
         </Table>
-        
+
         {pagination && sortedData.length > 0 && (
           <TablePagination
             rowsPerPageOptions={[5, 10, 25, 50]}
-            component="div"
+            component='div'
             count={sortedData.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
-            labelRowsPerPage="페이지당 행 수:"
-            labelDisplayedRows={({ from, to, count }) => `${from}–${to} / ${count !== -1 ? count : `more than ${to}`}`}
+            labelRowsPerPage='페이지당 행 수:'
+            labelDisplayedRows={({ from, to, count }) =>
+              `${from}–${to} / ${count !== -1 ? count : `more than ${to}`}`
+            }
           />
         )}
       </TableContainer>

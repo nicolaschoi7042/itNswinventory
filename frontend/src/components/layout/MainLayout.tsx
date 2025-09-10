@@ -30,7 +30,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
   // Update current tab based on pathname
   useEffect(() => {
-    const tabFromPath = routeToTabMapping[pathname as keyof typeof routeToTabMapping];
+    const tabFromPath =
+      routeToTabMapping[pathname as keyof typeof routeToTabMapping];
     if (tabFromPath) {
       setCurrentTab(tabFromPath);
     }
@@ -39,7 +40,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   // Handle tab navigation
   const handleTabChange = (tab: string) => {
     setCurrentTab(tab);
-    
+
     // Map tab to route
     const tabToRouteMapping = {
       dashboard: '/dashboard',
@@ -81,7 +82,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
   };
 
   // Handle breadcrumb navigation
-  const handleBreadcrumbClick = (item: { id: string; label: string; path?: string }) => {
+  const handleBreadcrumbClick = (item: {
+    id: string;
+    label: string;
+    path?: string;
+  }) => {
     if (item.path) {
       router.push(item.path);
     }
@@ -106,7 +111,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         }}
       >
         <CircularProgress size={48} thickness={4} />
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant='body2' color='text.secondary'>
           인증 확인 중...
         </Typography>
       </Box>
@@ -126,10 +131,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
           gap: 2,
         }}
       >
-        <Typography variant="h6" color="error">
+        <Typography variant='h6' color='error'>
           인증 정보를 찾을 수 없습니다.
         </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant='body2' color='text.secondary'>
           다시 로그인해주세요.
         </Typography>
       </Box>
@@ -149,15 +154,17 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
   return (
     <NavigationLayout
-      user={{
-        id: user.id,
-        name: user.full_name || user.username,
-        email: user.email || `${user.username}@company.com`,
-        role: user.role,
-        avatar: undefined, // No avatar implementation yet
-        department: undefined, // user.department not available yet
-        isActive: true,
-      } as User}
+      user={
+        {
+          id: user.id,
+          name: user.full_name || user.username,
+          email: user.email || `${user.username}@company.com`,
+          role: user.role,
+          avatar: undefined, // No avatar implementation yet
+          department: undefined, // user.department not available yet
+          isActive: true,
+        } as User
+      }
       stats={stats}
       currentTab={currentTab}
       currentRoute={pathname}

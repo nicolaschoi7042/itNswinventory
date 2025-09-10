@@ -128,8 +128,8 @@ export function getRouteConfig(path: string): RouteConfig | null {
   if (exactMatch) return exactMatch;
 
   // Find partial match (for nested routes)
-  const partialMatch = routeConfig.find(config => 
-    path.startsWith(config.path) && config.path !== '/'
+  const partialMatch = routeConfig.find(
+    config => path.startsWith(config.path) && config.path !== '/'
   );
   return partialMatch || null;
 }
@@ -147,35 +147,39 @@ export function requiresAuthentication(path: string): boolean {
  */
 export function isRoleAllowed(path: string, userRole: string): boolean {
   const config = getRouteConfig(path);
-  
+
   if (!config) return false;
   if (!config.requireAuth) return true; // Public routes
   if (!config.allowedRoles) return true; // No role restriction
-  
+
   return config.allowedRoles.includes(userRole as any);
 }
 
 /**
  * Get redirect URL for unauthorized access
  */
-export function getRedirectUrl(path: string, isAuthenticated: boolean, userRole?: string): string | null {
+export function getRedirectUrl(
+  path: string,
+  isAuthenticated: boolean,
+  userRole?: string
+): string | null {
   const config = getRouteConfig(path);
-  
+
   // If route doesn't require auth, no redirect needed
   if (!requiresAuthentication(path)) {
     return null;
   }
-  
+
   // If user is not authenticated, redirect to login
   if (!isAuthenticated) {
     return '/login';
   }
-  
+
   // If user role is not allowed, redirect to specified page or dashboard
   if (userRole && !isRoleAllowed(path, userRole)) {
     return config?.redirectTo || '/dashboard';
   }
-  
+
   return null;
 }
 
@@ -191,7 +195,9 @@ export function isPublicRoute(path: string): boolean {
  */
 export function isAdminOnlyRoute(path: string): boolean {
   const config = getRouteConfig(path);
-  return config?.allowedRoles?.length === 1 && config.allowedRoles[0] === 'admin';
+  return (
+    config?.allowedRoles?.length === 1 && config.allowedRoles[0] === 'admin'
+  );
 }
 
 /**
@@ -207,19 +213,25 @@ export function allowsManagerRole(path: string): boolean {
  */
 export function getAccessDeniedMessage(path: string, userRole: string): string {
   const config = getRouteConfig(path);
-  
+
   if (!config?.allowedRoles) {
     return '이 페이지에 접근할 권한이 없습니다.';
   }
-  
-  if (config.allowedRoles.includes('admin') && !config.allowedRoles.includes('manager')) {
+
+  if (
+    config.allowedRoles.includes('admin') &&
+    !config.allowedRoles.includes('manager')
+  ) {
     return '이 페이지는 관리자만 접근할 수 있습니다.';
   }
-  
-  if (config.allowedRoles.includes('manager') && !config.allowedRoles.includes('user')) {
+
+  if (
+    config.allowedRoles.includes('manager') &&
+    !config.allowedRoles.includes('user')
+  ) {
     return '이 페이지는 관리자 또는 매니저만 접근할 수 있습니다.';
   }
-  
+
   return '이 페이지에 접근할 권한이 없습니다.';
 }
 

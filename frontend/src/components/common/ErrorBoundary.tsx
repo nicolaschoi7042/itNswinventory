@@ -39,43 +39,45 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <Paper 
+        <Paper
           elevation={1}
-          sx={{ 
-            p: 4, 
-            m: 2, 
+          sx={{
+            p: 4,
+            m: 2,
             textAlign: 'center',
             borderColor: 'error.main',
             borderWidth: 1,
             borderStyle: 'solid',
           }}
         >
-          <Typography variant="h6" color="error.main" gutterBottom>
+          <Typography variant='h6' color='error.main' gutterBottom>
             오류가 발생했습니다
           </Typography>
-          
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+
+          <Typography variant='body2' color='text.secondary' sx={{ mb: 3 }}>
             컴포넌트를 로드하는 중 문제가 발생했습니다.
           </Typography>
-          
+
           {this.state.error && (
-            <Box sx={{ 
-              backgroundColor: 'error.light', 
-              color: 'error.contrastText', 
-              p: 2, 
-              borderRadius: 1,
-              mb: 3,
-              fontFamily: 'monospace',
-              fontSize: '0.75rem',
-              textAlign: 'left',
-              overflow: 'auto',
-            }}>
+            <Box
+              sx={{
+                backgroundColor: 'error.light',
+                color: 'error.contrastText',
+                p: 2,
+                borderRadius: 1,
+                mb: 3,
+                fontFamily: 'monospace',
+                fontSize: '0.75rem',
+                textAlign: 'left',
+                overflow: 'auto',
+              }}
+            >
               {this.state.error.message}
             </Box>
           )}
-          
+
           <Button
-            variant="outlined"
+            variant='outlined'
             startIcon={<RefreshIcon />}
             onClick={this.handleReset}
           >

@@ -38,7 +38,13 @@ interface ConfirmDialogProps {
   showIcon?: boolean;
   destructive?: boolean;
   additionalInfo?: string | ReactNode;
-  confirmColor?: 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success';
+  confirmColor?:
+    | 'primary'
+    | 'secondary'
+    | 'error'
+    | 'warning'
+    | 'info'
+    | 'success';
 }
 
 const variantConfig = {
@@ -85,7 +91,8 @@ export function ConfirmDialog({
 
   const config = variantConfig[variant];
   const IconComponent = config.icon;
-  const finalConfirmColor = confirmColor || (destructive ? 'error' : config.confirmColor);
+  const finalConfirmColor =
+    confirmColor || (destructive ? 'error' : config.confirmColor);
 
   const handleConfirm = async () => {
     if (loading || disabled || isConfirming) return;
@@ -127,12 +134,9 @@ export function ConfirmDialog({
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           {showIcon && (
-            <IconComponent
-              color={config.color}
-              sx={{ fontSize: 28 }}
-            />
+            <IconComponent color={config.color} sx={{ fontSize: 28 }} />
           )}
-          <Typography variant="h6" component="h2" sx={{ fontWeight: 600 }}>
+          <Typography variant='h6' component='h2' sx={{ fontWeight: 600 }}>
             {title}
           </Typography>
         </Box>
@@ -140,25 +144,21 @@ export function ConfirmDialog({
         <IconButton
           onClick={handleClose}
           disabled={isLoading}
-          size="small"
+          size='small'
           sx={{ mt: -0.5, mr: -0.5 }}
-          aria-label="Close dialog"
+          aria-label='Close dialog'
         >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
 
       <DialogContent sx={{ pb: 2 }}>
-        <Typography variant="body1" sx={{ mb: additionalInfo ? 2 : 0 }}>
+        <Typography variant='body1' sx={{ mb: additionalInfo ? 2 : 0 }}>
           {message}
         </Typography>
 
         {additionalInfo && (
-          <Alert
-            severity={config.color}
-            variant="outlined"
-            sx={{ mt: 2 }}
-          >
+          <Alert severity={config.color} variant='outlined' sx={{ mt: 2 }}>
             {additionalInfo}
           </Alert>
         )}
@@ -168,20 +168,20 @@ export function ConfirmDialog({
         <Button
           onClick={handleClose}
           disabled={isLoading}
-          variant="outlined"
-          color="inherit"
+          variant='outlined'
+          color='inherit'
         >
           {cancelLabel}
         </Button>
-        
+
         <Button
           onClick={handleConfirm}
           disabled={disabled || isLoading}
-          variant="contained"
+          variant='contained'
           color={finalConfirmColor}
           startIcon={
             isLoading ? (
-              <CircularProgress size={16} color="inherit" />
+              <CircularProgress size={16} color='inherit' />
             ) : destructive ? (
               <DeleteIcon />
             ) : undefined
@@ -195,7 +195,11 @@ export function ConfirmDialog({
 }
 
 // Specialized confirm dialogs for common use cases
-interface DeleteConfirmDialogProps extends Omit<ConfirmDialogProps, 'variant' | 'destructive' | 'confirmLabel' | 'title'> {
+interface DeleteConfirmDialogProps
+  extends Omit<
+    ConfirmDialogProps,
+    'variant' | 'destructive' | 'confirmLabel' | 'title'
+  > {
   itemName?: string;
   itemType?: string;
   customTitle?: string;
@@ -210,12 +214,12 @@ export function DeleteConfirmDialog({
   ...props
 }: DeleteConfirmDialogProps) {
   const title = customTitle || `Delete ${itemType}`;
-  const baseMessage = itemName 
+  const baseMessage = itemName
     ? `Are you sure you want to delete "${itemName}"?`
     : `Are you sure you want to delete this ${itemType}?`;
 
-  const warningMessage = showWarning 
-    ? "This action cannot be undone and may affect related data."
+  const warningMessage = showWarning
+    ? 'This action cannot be undone and may affect related data.'
     : undefined;
 
   return (
@@ -223,15 +227,19 @@ export function DeleteConfirmDialog({
       {...props}
       title={title}
       message={baseMessage}
-      confirmLabel="Delete"
-      variant="error"
+      confirmLabel='Delete'
+      variant='error'
       destructive
       additionalInfo={warningMessage}
     />
   );
 }
 
-interface LogoutConfirmDialogProps extends Omit<ConfirmDialogProps, 'variant' | 'title' | 'message' | 'confirmLabel'> {
+interface LogoutConfirmDialogProps
+  extends Omit<
+    ConfirmDialogProps,
+    'variant' | 'title' | 'message' | 'confirmLabel'
+  > {
   showUnsavedWarning?: boolean;
 }
 
@@ -240,22 +248,26 @@ export function LogoutConfirmDialog({
   ...props
 }: LogoutConfirmDialogProps) {
   const warningMessage = showUnsavedWarning
-    ? "You have unsaved changes that will be lost."
+    ? 'You have unsaved changes that will be lost.'
     : undefined;
 
   return (
     <ConfirmDialog
       {...props}
-      title="Sign Out"
-      message="Are you sure you want to sign out?"
-      confirmLabel="Sign Out"
-      variant="warning"
+      title='Sign Out'
+      message='Are you sure you want to sign out?'
+      confirmLabel='Sign Out'
+      variant='warning'
       additionalInfo={warningMessage}
     />
   );
 }
 
-interface UnsavedChangesDialogProps extends Omit<ConfirmDialogProps, 'variant' | 'title' | 'message' | 'confirmLabel'> {
+interface UnsavedChangesDialogProps
+  extends Omit<
+    ConfirmDialogProps,
+    'variant' | 'title' | 'message' | 'confirmLabel'
+  > {
   action?: string;
 }
 
@@ -266,11 +278,11 @@ export function UnsavedChangesDialog({
   return (
     <ConfirmDialog
       {...props}
-      title="Unsaved Changes"
+      title='Unsaved Changes'
       message={`You have unsaved changes. Are you sure you want to ${action}?`}
-      confirmLabel="Discard Changes"
-      variant="warning"
-      additionalInfo="All unsaved changes will be lost."
+      confirmLabel='Discard Changes'
+      variant='warning'
+      additionalInfo='All unsaved changes will be lost.'
     />
   );
 }
@@ -305,7 +317,7 @@ export function useConfirmDialog() {
   ) => {
     showConfirm({
       title: `Delete ${options.itemType || 'item'}`,
-      message: options.itemName 
+      message: options.itemName
         ? `Are you sure you want to delete "${options.itemName}"?`
         : `Are you sure you want to delete this ${options.itemType || 'item'}?`,
       confirmLabel: 'Delete',
@@ -363,11 +375,8 @@ export function withConfirmDialog<T extends object>(
 
     return (
       <>
-        <WrappedComponent
-          {...props}
-          confirmDialog={confirmDialog}
-        />
-        
+        <WrappedComponent {...props} confirmDialog={confirmDialog} />
+
         <ConfirmDialog
           open={confirmDialog.open}
           onClose={confirmDialog.hideConfirm}

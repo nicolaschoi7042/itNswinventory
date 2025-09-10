@@ -5,7 +5,11 @@
  */
 
 import { ApiClient } from '@/lib/api-client';
-import type { Assignment, CreateAssignmentData, UpdateAssignmentData } from '@/types/assignment';
+import type {
+  Assignment,
+  CreateAssignmentData,
+  UpdateAssignmentData,
+} from '@/types/assignment';
 import type { ApiResponse } from '@/types/api';
 
 export class AssignmentService {
@@ -35,7 +39,10 @@ export class AssignmentService {
   /**
    * Update assignment
    */
-  async update(id: string, data: UpdateAssignmentData): Promise<ApiResponse<Assignment>> {
+  async update(
+    id: string,
+    data: UpdateAssignmentData
+  ): Promise<ApiResponse<Assignment>> {
     return this.client.put<Assignment>(`/assignments/${id}`, data);
   }
 
@@ -49,13 +56,16 @@ export class AssignmentService {
   /**
    * Return asset (mark assignment as returned)
    */
-  async returnAsset(id: string, returnData: {
-    notes?: string;
-    condition?: string;
-    rating?: number;
-    issues?: string[];
-    return_date?: string;
-  }): Promise<ApiResponse<Assignment>> {
+  async returnAsset(
+    id: string,
+    returnData: {
+      notes?: string;
+      condition?: string;
+      rating?: number;
+      issues?: string[];
+      return_date?: string;
+    }
+  ): Promise<ApiResponse<Assignment>> {
     return this.client.put<Assignment>(`/assignments/${id}/return`, returnData);
   }
 
@@ -63,14 +73,20 @@ export class AssignmentService {
    * Get assignments by employee
    */
   async getByEmployee(employeeId: string): Promise<ApiResponse<Assignment[]>> {
-    return this.client.get<Assignment[]>(`/assignments?employee_id=${employeeId}`);
+    return this.client.get<Assignment[]>(
+      `/assignments?employee_id=${employeeId}`
+    );
   }
 
   /**
    * Get assignments by asset type
    */
-  async getByAssetType(assetType: 'hardware' | 'software'): Promise<ApiResponse<Assignment[]>> {
-    return this.client.get<Assignment[]>(`/assignments?asset_type=${assetType}`);
+  async getByAssetType(
+    assetType: 'hardware' | 'software'
+  ): Promise<ApiResponse<Assignment[]>> {
+    return this.client.get<Assignment[]>(
+      `/assignments?asset_type=${assetType}`
+    );
   }
 
   /**
@@ -91,7 +107,9 @@ export class AssignmentService {
    * Search assignments
    */
   async search(query: string): Promise<ApiResponse<Assignment[]>> {
-    return this.client.get<Assignment[]>(`/assignments/search?q=${encodeURIComponent(query)}`);
+    return this.client.get<Assignment[]>(
+      `/assignments/search?q=${encodeURIComponent(query)}`
+    );
   }
 
   /**
@@ -99,7 +117,10 @@ export class AssignmentService {
    */
   async exportToExcel(): Promise<ApiResponse<Blob>> {
     return this.client.get<Blob>('/assignments/export/excel', {
-      headers: { 'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }
+      headers: {
+        Accept:
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      },
     });
   }
 }

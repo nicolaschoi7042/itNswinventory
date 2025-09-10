@@ -48,7 +48,7 @@ export interface BreadcrumbProps {
 export function Breadcrumb({
   items,
   showHome = true,
-  homeIcon = <HomeIcon fontSize="small" />,
+  homeIcon = <HomeIcon fontSize='small' />,
   homeLabel = '홈',
   homePath = '/',
   onHomeClick,
@@ -65,7 +65,7 @@ export function Breadcrumb({
 
   const handleItemClick = (item: BreadcrumbItem) => {
     if (item.disabled) return;
-    
+
     if (item.onClick) {
       item.onClick();
     } else if (onItemClick) {
@@ -89,12 +89,12 @@ export function Breadcrumb({
   if (loading) {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 1, ...sx }}>
-        <Skeleton variant="rectangular" width={24} height={24} />
-        <Skeleton variant="text" width={60} />
-        <NavigateNextIcon fontSize="small" color="disabled" />
-        <Skeleton variant="text" width={80} />
-        <NavigateNextIcon fontSize="small" color="disabled" />
-        <Skeleton variant="text" width={100} />
+        <Skeleton variant='rectangular' width={24} height={24} />
+        <Skeleton variant='text' width={60} />
+        <NavigateNextIcon fontSize='small' color='disabled' />
+        <Skeleton variant='text' width={80} />
+        <NavigateNextIcon fontSize='small' color='disabled' />
+        <Skeleton variant='text' width={100} />
       </Box>
     );
   }
@@ -121,7 +121,7 @@ export function Breadcrumb({
     const lastItem = allItems[allItems.length - 1];
     const firstItems = allItems.slice(0, 2); // Always show first 2 items
     const remainingItems = allItems.slice(-2); // Always show last 2 items
-    
+
     if (allItems.length > 4) {
       displayItems = [
         ...firstItems,
@@ -129,7 +129,7 @@ export function Breadcrumb({
           id: 'collapsed',
           label: '...',
           disabled: true,
-          icon: <MoreHorizIcon fontSize="small" />,
+          icon: <MoreHorizIcon fontSize='small' />,
         },
         ...remainingItems,
       ];
@@ -141,13 +141,11 @@ export function Breadcrumb({
     const content = (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
         {item.icon && (
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            {item.icon}
-          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>{item.icon}</Box>
         )}
-        
+
         <Typography
-          variant="body2"
+          variant='body2'
           sx={{
             fontWeight: isLast ? 600 : 400,
             color: isLast ? 'text.primary' : 'text.secondary',
@@ -162,8 +160,8 @@ export function Breadcrumb({
         {item.badge && (
           <Chip
             label={item.badge}
-            size="small"
-            color="primary"
+            size='small'
+            color='primary'
             sx={{
               height: 16,
               fontSize: '0.6rem',
@@ -178,7 +176,7 @@ export function Breadcrumb({
       return (
         <Typography
           key={item.id}
-          variant="body2"
+          variant='body2'
           sx={{
             display: 'flex',
             alignItems: 'center',
@@ -198,8 +196,8 @@ export function Breadcrumb({
     return (
       <Link
         key={item.id}
-        component="button"
-        variant="body2"
+        component='button'
+        variant='body2'
         onClick={() => handleItemClick(item)}
         sx={{
           display: 'flex',
@@ -214,7 +212,10 @@ export function Breadcrumb({
           transition: 'all 0.2s',
           '&:hover': {
             color: 'primary.main',
-            backgroundColor: variant === 'outlined' ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+            backgroundColor:
+              variant === 'outlined'
+                ? alpha(theme.palette.primary.main, 0.1)
+                : 'transparent',
           },
           ...(variant === 'outlined' && {
             px: 1,
@@ -234,7 +235,7 @@ export function Breadcrumb({
 
   const breadcrumbContent = (
     <Breadcrumbs
-      separator={separator || <NavigateNextIcon fontSize="small" />}
+      separator={separator || <NavigateNextIcon fontSize='small' />}
       sx={{
         '& .MuiBreadcrumbs-ol': {
           alignItems: 'center',
@@ -251,7 +252,7 @@ export function Breadcrumb({
         }),
       }}
     >
-      {displayItems.map((item, index) => 
+      {displayItems.map((item, index) =>
         renderBreadcrumbItem(item, index === displayItems.length - 1)
       )}
     </Breadcrumbs>
@@ -269,7 +270,7 @@ export function Breadcrumb({
     >
       {showBack && onBackClick && (
         <IconButton
-          size="small"
+          size='small'
           onClick={onBackClick}
           sx={{
             mr: 1,
@@ -278,7 +279,7 @@ export function Breadcrumb({
             },
           }}
         >
-          <ArrowBackIcon fontSize="small" />
+          <ArrowBackIcon fontSize='small' />
         </IconButton>
       )}
 
@@ -289,12 +290,12 @@ export function Breadcrumb({
 
 // Compact breadcrumb for toolbars
 export function CompactBreadcrumb(props: Omit<BreadcrumbProps, 'variant'>) {
-  return <Breadcrumb {...props} variant="compact" />;
+  return <Breadcrumb {...props} variant='compact' />;
 }
 
 // Outlined breadcrumb for cards
 export function OutlinedBreadcrumb(props: Omit<BreadcrumbProps, 'variant'>) {
-  return <Breadcrumb {...props} variant="outlined" />;
+  return <Breadcrumb {...props} variant='outlined' />;
 }
 
 // Simple breadcrumb with just text
@@ -312,24 +313,27 @@ export function SimpleBreadcrumb({
   const allItems = current ? [...items, current] : items;
 
   return (
-    <Typography variant="body2" color="text.secondary">
+    <Typography variant='body2' color='text.secondary'>
       {allItems.map((item, index) => (
         <Fragment key={index}>
           {index > 0 && (
             <Typography
-              component="span"
-              variant="body2"
-              color="text.disabled"
+              component='span'
+              variant='body2'
+              color='text.disabled'
               sx={{ mx: 0.5 }}
             >
               {separator}
             </Typography>
           )}
           <Typography
-            component="span"
-            variant="body2"
+            component='span'
+            variant='body2'
             sx={{
-              color: index === allItems.length - 1 ? 'text.primary' : 'text.secondary',
+              color:
+                index === allItems.length - 1
+                  ? 'text.primary'
+                  : 'text.secondary',
               fontWeight: index === allItems.length - 1 ? 600 : 400,
             }}
           >
@@ -359,9 +363,7 @@ export function useBreadcrumbState(initialItems: BreadcrumbItem[] = []) {
 
   const updateItem = (id: string, updates: Partial<BreadcrumbItem>) => {
     setItems(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, ...updates } : item
-      )
+      prev.map(item => (item.id === id ? { ...item, ...updates } : item))
     );
   };
 
@@ -398,12 +400,17 @@ export const breadcrumbUtils = {
   }),
 
   // Create breadcrumb from path
-  fromPath: (path: string, pathLabels: Record<string, string> = {}): BreadcrumbItem[] => {
+  fromPath: (
+    path: string,
+    pathLabels: Record<string, string> = {}
+  ): BreadcrumbItem[] => {
     const segments = path.split('/').filter(Boolean);
-    
+
     return segments.map((segment, index) => ({
       id: segment,
-      label: pathLabels[segment] || segment.charAt(0).toUpperCase() + segment.slice(1),
+      label:
+        pathLabels[segment] ||
+        segment.charAt(0).toUpperCase() + segment.slice(1),
       path: '/' + segments.slice(0, index + 1).join('/'),
     }));
   },

@@ -302,11 +302,13 @@ export const newYorkBusinessTheme = createTheme(theme, {
         root: {
           borderRadius: '12px', // Slightly larger radius for modern look
           padding: '2rem',
-          boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)', // --shadow-base from CSS
+          boxShadow:
+            '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)', // --shadow-base from CSS
           transition: 'all 300ms ease-in-out', // --transition-slow from CSS
           '&:hover': {
             transform: 'translateY(-5px)',
-            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)', // --shadow-lg
+            boxShadow:
+              '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)', // --shadow-lg
           },
         },
       },

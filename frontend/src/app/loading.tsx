@@ -13,7 +13,7 @@ export default function Loading() {
       }}
     >
       <CircularProgress size={48} thickness={4} />
-      <Typography variant="body2" color="text.secondary">
+      <Typography variant='body2' color='text.secondary'>
         로딩 중...
       </Typography>
     </Box>

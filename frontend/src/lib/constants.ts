@@ -3,7 +3,7 @@
 // Asset status options
 export const ASSET_STATUSES = {
   AVAILABLE: 'available',
-  ASSIGNED: 'assigned', 
+  ASSIGNED: 'assigned',
   MAINTENANCE: 'maintenance',
   RETIRED: 'retired',
 } as const;
@@ -17,7 +17,7 @@ export const ASSET_STATUS_LABELS = {
 
 export const ASSET_STATUS_COLORS = {
   [ASSET_STATUSES.AVAILABLE]: 'success',
-  [ASSET_STATUSES.ASSIGNED]: 'warning', 
+  [ASSET_STATUSES.ASSIGNED]: 'warning',
   [ASSET_STATUSES.MAINTENANCE]: 'error',
   [ASSET_STATUSES.RETIRED]: 'default',
 } as const;
@@ -57,7 +57,7 @@ export const LICENSE_TYPE_LABELS = {
 // User roles
 export const USER_ROLES = {
   ADMIN: 'Admin',
-  MANAGER: 'Manager', 
+  MANAGER: 'Manager',
   USER: 'User',
 } as const;
 
@@ -136,31 +136,31 @@ export const API_ENDPOINTS = {
   LOGIN: '/api/auth/login',
   LOGOUT: '/api/auth/logout',
   REFRESH: '/api/auth/refresh',
-  
+
   // Employees
   EMPLOYEES: '/api/employees',
   EMPLOYEE: '/api/employees',
-  
+
   // Hardware
   HARDWARE: '/api/hardware',
   HARDWARE_ITEM: '/api/hardware',
-  
+
   // Software
   SOFTWARE: '/api/software',
   SOFTWARE_ITEM: '/api/software',
-  
+
   // Assignments
   ASSIGNMENTS: '/api/assignments',
   ASSIGNMENT: '/api/assignments',
   ASSIGNMENT_RETURN: '/api/assignments',
-  
+
   // Users
   USERS: '/api/users',
   USER: '/api/users',
-  
+
   // Activities
   ACTIVITIES: '/api/activities',
-  
+
   // Export
   EXPORT_EXCEL: '/api/export/excel',
 } as const;

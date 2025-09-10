@@ -15,7 +15,7 @@ import {
   Typography,
   Alert,
   InputAdornment,
-  Autocomplete
+  Autocomplete,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -31,7 +31,7 @@ import {
   SOFTWARE_TYPES,
   SOFTWARE_LICENSE_TYPES,
   SOFTWARE_MANUFACTURERS,
-  SOFTWARE_VALIDATION_RULES
+  SOFTWARE_VALIDATION_RULES,
 } from '@/types/software';
 import { SoftwareService } from '@/services/software.service';
 
@@ -71,7 +71,7 @@ export function SoftwareFormModal({
   onClose,
   onSave,
   software,
-  editMode = false
+  editMode = false,
 }: SoftwareFormModalProps) {
   const [formData, setFormData] = useState<FormData>({
     name: '',
@@ -82,7 +82,7 @@ export function SoftwareFormModal({
     total_licenses: 1,
     purchase_date: null,
     expiry_date: null,
-    price: ''
+    price: '',
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -99,9 +99,13 @@ export function SoftwareFormModal({
         type: software.type || '',
         license_type: software.license_type || '',
         total_licenses: software.total_licenses || 1,
-        purchase_date: software.purchase_date ? new Date(software.purchase_date) : null,
-        expiry_date: software.expiry_date ? new Date(software.expiry_date) : null,
-        price: software.price ? software.price.toString() : ''
+        purchase_date: software.purchase_date
+          ? new Date(software.purchase_date)
+          : null,
+        expiry_date: software.expiry_date
+          ? new Date(software.expiry_date)
+          : null,
+        price: software.price ? software.price.toString() : '',
       });
     } else {
       // Reset form for new software
@@ -114,7 +118,7 @@ export function SoftwareFormModal({
         total_licenses: 1,
         purchase_date: null,
         expiry_date: null,
-        price: ''
+        price: '',
       });
     }
     setErrors({});
@@ -122,10 +126,16 @@ export function SoftwareFormModal({
   }, [software, editMode, open]);
 
   // Validate form field
-  const validateField = (name: keyof FormData, value: any): string | undefined => {
+  const validateField = (
+    name: keyof FormData,
+    value: any
+  ): string | undefined => {
     switch (name) {
       case 'name':
-        if (!value || value.trim().length < SOFTWARE_VALIDATION_RULES.name.minLength) {
+        if (
+          !value ||
+          value.trim().length < SOFTWARE_VALIDATION_RULES.name.minLength
+        ) {
           return `소프트웨어명은 최소 ${SOFTWARE_VALIDATION_RULES.name.minLength}자 이상이어야 합니다.`;
         }
         if (value.length > SOFTWARE_VALIDATION_RULES.name.maxLength) {
@@ -133,8 +143,12 @@ export function SoftwareFormModal({
         }
         break;
       case 'total_licenses':
-        const licenseCount = typeof value === 'string' ? parseInt(value, 10) : value;
-        if (isNaN(licenseCount) || licenseCount < SOFTWARE_VALIDATION_RULES.total_licenses.min) {
+        const licenseCount =
+          typeof value === 'string' ? parseInt(value, 10) : value;
+        if (
+          isNaN(licenseCount) ||
+          licenseCount < SOFTWARE_VALIDATION_RULES.total_licenses.min
+        ) {
           return `라이선스 수는 최소 ${SOFTWARE_VALIDATION_RULES.total_licenses.min}개 이상이어야 합니다.`;
         }
         if (licenseCount > SOFTWARE_VALIDATION_RULES.total_licenses.max) {
@@ -164,12 +178,12 @@ export function SoftwareFormModal({
   // Handle form field changes
   const handleFieldChange = (name: keyof FormData, value: any) => {
     setFormData(prev => ({ ...prev, [name]: value }));
-    
+
     // Clear error for this field
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
     }
-    
+
     // Validate field
     const error = validateField(name, value);
     if (error) {
@@ -180,7 +194,7 @@ export function SoftwareFormModal({
   // Validate entire form
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
-    
+
     // Validate required fields
     Object.keys(formData).forEach(key => {
       const fieldName = key as keyof FormData;
@@ -217,9 +231,13 @@ export function SoftwareFormModal({
         type: formData.type || undefined,
         license_type: formData.license_type || undefined,
         total_licenses: formData.total_licenses,
-        purchase_date: formData.purchase_date ? formData.purchase_date.toISOString().split('T')[0] : undefined,
-        expiry_date: formData.expiry_date ? formData.expiry_date.toISOString().split('T')[0] : undefined,
-        price: formData.price ? parseFloat(formData.price) : undefined
+        purchase_date: formData.purchase_date
+          ? formData.purchase_date.toISOString().split('T')[0]
+          : undefined,
+        expiry_date: formData.expiry_date
+          ? formData.expiry_date.toISOString().split('T')[0]
+          : undefined,
+        price: formData.price ? parseFloat(formData.price) : undefined,
       };
 
       // Additional validation using service
@@ -230,7 +248,10 @@ export function SoftwareFormModal({
       }
 
       if (editMode && software) {
-        await SoftwareService.updateSoftware(software.id, submitData as UpdateSoftwareData);
+        await SoftwareService.updateSoftware(
+          software.id,
+          submitData as UpdateSoftwareData
+        );
       } else {
         await SoftwareService.createSoftware(submitData as CreateSoftwareData);
       }
@@ -238,7 +259,9 @@ export function SoftwareFormModal({
       onSave();
     } catch (error) {
       console.error('Failed to save software:', error);
-      setSubmitError(error instanceof Error ? error.message : '저장에 실패했습니다.');
+      setSubmitError(
+        error instanceof Error ? error.message : '저장에 실패했습니다.'
+      );
     } finally {
       setLoading(false);
     }
@@ -249,10 +272,10 @@ export function SoftwareFormModal({
       <Dialog
         open={open}
         onClose={onClose}
-        maxWidth="md"
+        maxWidth='md'
         fullWidth
         PaperProps={{
-          sx: { minHeight: '70vh' }
+          sx: { minHeight: '70vh' },
         }}
       >
         <DialogTitle>
@@ -262,7 +285,7 @@ export function SoftwareFormModal({
         <DialogContent dividers>
           <Box sx={{ mt: 2 }}>
             {submitError && (
-              <Alert severity="error" sx={{ mb: 2 }}>
+              <Alert severity='error' sx={{ mb: 2 }}>
                 {submitError.split('\n').map((line, index) => (
                   <div key={index}>{line}</div>
                 ))}
@@ -272,7 +295,7 @@ export function SoftwareFormModal({
             <Grid container spacing={3}>
               {/* Basic Information */}
               <Grid item xs={12}>
-                <Typography variant="h6" gutterBottom>
+                <Typography variant='h6' gutterBottom>
                   기본 정보
                 </Typography>
               </Grid>
@@ -280,9 +303,9 @@ export function SoftwareFormModal({
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="소프트웨어명"
+                  label='소프트웨어명'
                   value={formData.name}
-                  onChange={(e) => handleFieldChange('name', e.target.value)}
+                  onChange={e => handleFieldChange('name', e.target.value)}
                   error={!!errors.name}
                   helperText={errors.name}
                   required
@@ -294,11 +317,13 @@ export function SoftwareFormModal({
                   freeSolo
                   options={SOFTWARE_MANUFACTURERS}
                   value={formData.manufacturer}
-                  onChange={(_, value) => handleFieldChange('manufacturer', value || '')}
-                  renderInput={(params) => (
+                  onChange={(_, value) =>
+                    handleFieldChange('manufacturer', value || '')
+                  }
+                  renderInput={params => (
                     <TextField
                       {...params}
-                      label="제조사"
+                      label='제조사'
                       error={!!errors.manufacturer}
                       helperText={errors.manufacturer}
                     />
@@ -309,10 +334,10 @@ export function SoftwareFormModal({
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="버전"
+                  label='버전'
                   value={formData.version}
-                  onChange={(e) => handleFieldChange('version', e.target.value)}
-                  placeholder="예: 2024, v1.0, 23H2"
+                  onChange={e => handleFieldChange('version', e.target.value)}
+                  placeholder='예: 2024, v1.0, 23H2'
                 />
               </Grid>
 
@@ -321,11 +346,11 @@ export function SoftwareFormModal({
                   <InputLabel>소프트웨어 종류</InputLabel>
                   <Select
                     value={formData.type}
-                    onChange={(e) => handleFieldChange('type', e.target.value)}
-                    label="소프트웨어 종류"
+                    onChange={e => handleFieldChange('type', e.target.value)}
+                    label='소프트웨어 종류'
                   >
-                    <MenuItem value="">선택하지 않음</MenuItem>
-                    {SOFTWARE_TYPES.map((type) => (
+                    <MenuItem value=''>선택하지 않음</MenuItem>
+                    {SOFTWARE_TYPES.map(type => (
                       <MenuItem key={type} value={type}>
                         {type}
                       </MenuItem>
@@ -336,7 +361,7 @@ export function SoftwareFormModal({
 
               {/* License Information */}
               <Grid item xs={12}>
-                <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+                <Typography variant='h6' gutterBottom sx={{ mt: 2 }}>
                   라이선스 정보
                 </Typography>
               </Grid>
@@ -346,11 +371,13 @@ export function SoftwareFormModal({
                   <InputLabel>라이선스 유형</InputLabel>
                   <Select
                     value={formData.license_type}
-                    onChange={(e) => handleFieldChange('license_type', e.target.value)}
-                    label="라이선스 유형"
+                    onChange={e =>
+                      handleFieldChange('license_type', e.target.value)
+                    }
+                    label='라이선스 유형'
                   >
-                    <MenuItem value="">선택하지 않음</MenuItem>
-                    {SOFTWARE_LICENSE_TYPES.map((type) => (
+                    <MenuItem value=''>선택하지 않음</MenuItem>
+                    {SOFTWARE_LICENSE_TYPES.map(type => (
                       <MenuItem key={type} value={type}>
                         {type}
                       </MenuItem>
@@ -362,53 +389,58 @@ export function SoftwareFormModal({
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="총 라이선스 수"
-                  type="number"
+                  label='총 라이선스 수'
+                  type='number'
                   value={formData.total_licenses}
-                  onChange={(e) => handleFieldChange('total_licenses', parseInt(e.target.value, 10) || 1)}
+                  onChange={e =>
+                    handleFieldChange(
+                      'total_licenses',
+                      parseInt(e.target.value, 10) || 1
+                    )
+                  }
                   error={!!errors.total_licenses}
                   helperText={errors.total_licenses}
                   required
                   inputProps={{
                     min: SOFTWARE_VALIDATION_RULES.total_licenses.min,
-                    max: SOFTWARE_VALIDATION_RULES.total_licenses.max
+                    max: SOFTWARE_VALIDATION_RULES.total_licenses.max,
                   }}
                 />
               </Grid>
 
               {/* Purchase Information */}
               <Grid item xs={12}>
-                <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+                <Typography variant='h6' gutterBottom sx={{ mt: 2 }}>
                   구매 정보
                 </Typography>
               </Grid>
 
               <Grid item xs={12} md={6}>
                 <DatePicker
-                  label="구매일"
+                  label='구매일'
                   value={formData.purchase_date}
-                  onChange={(date) => handleFieldChange('purchase_date', date)}
+                  onChange={date => handleFieldChange('purchase_date', date)}
                   slotProps={{
                     textField: {
                       fullWidth: true,
                       error: !!errors.purchase_date,
-                      helperText: errors.purchase_date
-                    }
+                      helperText: errors.purchase_date,
+                    },
                   }}
                 />
               </Grid>
 
               <Grid item xs={12} md={6}>
                 <DatePicker
-                  label="만료일"
+                  label='만료일'
                   value={formData.expiry_date}
-                  onChange={(date) => handleFieldChange('expiry_date', date)}
+                  onChange={date => handleFieldChange('expiry_date', date)}
                   slotProps={{
                     textField: {
                       fullWidth: true,
                       error: !!errors.expiry_date,
-                      helperText: errors.expiry_date
-                    }
+                      helperText: errors.expiry_date,
+                    },
                   }}
                 />
               </Grid>
@@ -416,15 +448,17 @@ export function SoftwareFormModal({
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  label="구매 가격"
+                  label='구매 가격'
                   value={formData.price}
-                  onChange={(e) => handleFieldChange('price', e.target.value)}
+                  onChange={e => handleFieldChange('price', e.target.value)}
                   error={!!errors.price}
                   helperText={errors.price}
                   InputProps={{
-                    startAdornment: <InputAdornment position="start">₩</InputAdornment>,
+                    startAdornment: (
+                      <InputAdornment position='start'>₩</InputAdornment>
+                    ),
                   }}
-                  placeholder="예: 1500000"
+                  placeholder='예: 1500000'
                 />
               </Grid>
             </Grid>
@@ -435,11 +469,7 @@ export function SoftwareFormModal({
           <Button onClick={onClose} disabled={loading}>
             취소
           </Button>
-          <Button
-            onClick={handleSubmit}
-            variant="contained"
-            disabled={loading}
-          >
+          <Button onClick={handleSubmit} variant='contained' disabled={loading}>
             {loading ? '저장 중...' : editMode ? '수정' : '등록'}
           </Button>
         </DialogActions>

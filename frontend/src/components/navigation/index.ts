@@ -32,7 +32,11 @@ export {
 export type { BreadcrumbProps, BreadcrumbItem } from './Breadcrumb';
 
 // Export navigation layout components
-export { NavigationLayout, CompactNavigationLayout, type User } from './NavigationLayout';
+export {
+  NavigationLayout,
+  CompactNavigationLayout,
+  type User,
+} from './NavigationLayout';
 
 // Navigation layouts and configurations
 export const navigationConfig = {
@@ -57,7 +61,14 @@ export const navigationConfig = {
       dense: 40,
     },
     roles: {
-      admin: ['dashboard', 'employees', 'hardware', 'software', 'assignment', 'admin'],
+      admin: [
+        'dashboard',
+        'employees',
+        'hardware',
+        'software',
+        'assignment',
+        'admin',
+      ],
       manager: ['dashboard', 'employees', 'hardware', 'software', 'assignment'],
       user: ['dashboard', 'hardware', 'software', 'assignment'],
     },
@@ -152,7 +163,10 @@ export const navigationHelpers = {
   },
 
   // Check if user can access route
-  canAccessRoute: (route: string, role: 'admin' | 'manager' | 'user'): boolean => {
+  canAccessRoute: (
+    route: string,
+    role: 'admin' | 'manager' | 'user'
+  ): boolean => {
     const config = Object.values(routeConfig).find(r => r.path === route);
     if (!config) return false;
     if (!config.roles) return true;
@@ -172,9 +186,18 @@ export const navigationHelpers = {
   },
 
   // Build navigation state from current route
-  getNavigationStateFromRoute: (currentRoute: string, role: 'admin' | 'manager' | 'user') => {
-    const config = Object.values(routeConfig).find(r => r.path === currentRoute);
-    const currentTab = Object.keys(routeConfig).find(key => routeConfig[key as keyof typeof routeConfig].path === currentRoute) || 'dashboard';
+  getNavigationStateFromRoute: (
+    currentRoute: string,
+    role: 'admin' | 'manager' | 'user'
+  ) => {
+    const config = Object.values(routeConfig).find(
+      r => r.path === currentRoute
+    );
+    const currentTab =
+      Object.keys(routeConfig).find(
+        key =>
+          routeConfig[key as keyof typeof routeConfig].path === currentRoute
+      ) || 'dashboard';
     const breadcrumb = config?.breadcrumb || [];
 
     return {
@@ -188,13 +211,17 @@ export const navigationHelpers = {
   getParentRoute: (route: string): string | null => {
     const segments = route.split('/').filter(Boolean);
     if (segments.length <= 1) return '/dashboard';
-    
+
     segments.pop();
     return '/' + segments.join('/');
   },
 
   // Check if route is active
-  isRouteActive: (currentRoute: string, targetRoute: string, exact: boolean = false): boolean => {
+  isRouteActive: (
+    currentRoute: string,
+    targetRoute: string,
+    exact: boolean = false
+  ): boolean => {
     if (exact) {
       return currentRoute === targetRoute;
     }
@@ -203,8 +230,8 @@ export const navigationHelpers = {
 
   // Generate navigation items for role
   getNavigationItemsForRole: (role: 'admin' | 'manager' | 'user') => {
-    return defaultTabs.filter(tab => 
-      !tab.roles || tab.roles.length === 0 || tab.roles.includes(role)
+    return defaultTabs.filter(
+      tab => !tab.roles || tab.roles.length === 0 || tab.roles.includes(role)
     );
   },
 };
@@ -216,37 +243,37 @@ export const createNavigationContext = () => {
     currentRoute: '/',
     currentTab: 'dashboard',
     breadcrumb: [],
-    
+
     // User info
     user: null,
     userRole: 'user' as 'admin' | 'manager' | 'user',
-    
+
     // Navigation handlers
     navigateToRoute: (route: string) => {
       console.log('Navigate to:', route);
     },
-    
+
     setCurrentTab: (tab: string) => {
       console.log('Set tab:', tab);
     },
-    
+
     setBreadcrumb: (items: any[]) => {
       console.log('Set breadcrumb:', items);
     },
-    
+
     goBack: () => {
       console.log('Go back');
     },
-    
+
     // Menu handlers
     handleLogout: () => {
       console.log('Logout');
     },
-    
+
     handleUserProfile: () => {
       console.log('User profile');
     },
-    
+
     handleSettings: () => {
       console.log('Settings');
     },

@@ -12,12 +12,12 @@ export function FormGroup({ title, children, spacing = 2 }: FormGroupProps) {
     <Box sx={{ mb: spacing }}>
       {title && (
         <Typography
-          variant="h6"
-          component="legend"
-          sx={{ 
-            mb: 1, 
+          variant='h6'
+          component='legend'
+          sx={{
+            mb: 1,
             fontWeight: 600,
-            color: 'text.primary'
+            color: 'text.primary',
           }}
         >
           {title}

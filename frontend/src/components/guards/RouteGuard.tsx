@@ -3,13 +3,19 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
+import {
   requiresAuthentication,
   isRoleAllowed,
   getRedirectUrl,
-  getAccessDeniedMessage
+  getAccessDeniedMessage,
 } from '@/lib/route-protection';
-import { Alert, Box, CircularProgress, Typography, Button } from '@mui/material';
+import {
+  Alert,
+  Box,
+  CircularProgress,
+  Typography,
+  Button,
+} from '@mui/material';
 import { Warning as WarningIcon, Lock as LockIcon } from '@mui/icons-material';
 
 interface RouteGuardProps {
@@ -24,13 +30,14 @@ export function RouteGuard({ children, path }: RouteGuardProps) {
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
 
-  const currentPath = path || (typeof window !== 'undefined' ? window.location.pathname : '/');
+  const currentPath =
+    path || (typeof window !== 'undefined' ? window.location.pathname : '/');
 
   useEffect(() => {
     // Check URL for error messages from middleware
     const error = searchParams.get('error');
     const message = searchParams.get('message');
-    
+
     if (error === 'access_denied' && message) {
       setErrorMessage(decodeURIComponent(message));
     }
@@ -44,7 +51,7 @@ export function RouteGuard({ children, path }: RouteGuardProps) {
 
     // Check if route needs authentication
     const needsAuth = requiresAuthentication(currentPath);
-    
+
     if (!needsAuth) {
       // Public route - allow access
       setIsAuthorized(true);
@@ -83,16 +90,16 @@ export function RouteGuard({ children, path }: RouteGuardProps) {
   // Loading state
   if (isLoading || isAuthorized === null) {
     return (
-      <Box 
-        display="flex" 
-        justifyContent="center" 
-        alignItems="center" 
-        minHeight="100vh"
-        flexDirection="column"
+      <Box
+        display='flex'
+        justifyContent='center'
+        alignItems='center'
+        minHeight='100vh'
+        flexDirection='column'
         gap={2}
       >
         <CircularProgress size={40} />
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant='body2' color='text.secondary'>
           권한을 확인하는 중...
         </Typography>
       </Box>
@@ -102,42 +109,42 @@ export function RouteGuard({ children, path }: RouteGuardProps) {
   // Access denied - show error message
   if (!isAuthorized && errorMessage) {
     return (
-      <Box 
-        display="flex" 
-        justifyContent="center" 
-        alignItems="center" 
-        minHeight="100vh"
+      <Box
+        display='flex'
+        justifyContent='center'
+        alignItems='center'
+        minHeight='100vh'
         p={3}
       >
-        <Alert 
-          severity="error" 
+        <Alert
+          severity='error'
           icon={<LockIcon />}
-          sx={{ 
-            maxWidth: 500, 
+          sx={{
+            maxWidth: 500,
             width: '100%',
             '& .MuiAlert-message': {
-              width: '100%'
-            }
+              width: '100%',
+            },
           }}
         >
-          <Typography variant="h6" gutterBottom>
+          <Typography variant='h6' gutterBottom>
             접근 권한이 없습니다
           </Typography>
-          <Typography variant="body2" paragraph>
+          <Typography variant='body2' paragraph>
             {errorMessage}
           </Typography>
-          <Box display="flex" gap={2} mt={2}>
-            <Button 
-              variant="contained" 
+          <Box display='flex' gap={2} mt={2}>
+            <Button
+              variant='contained'
               onClick={() => router.push('/dashboard')}
-              size="small"
+              size='small'
             >
               대시보드로 이동
             </Button>
-            <Button 
-              variant="outlined" 
+            <Button
+              variant='outlined'
               onClick={() => router.back()}
-              size="small"
+              size='small'
             >
               이전 페이지로
             </Button>
@@ -150,31 +157,31 @@ export function RouteGuard({ children, path }: RouteGuardProps) {
   // Not authenticated - show login prompt
   if (!isAuthorized && !isAuthenticated) {
     return (
-      <Box 
-        display="flex" 
-        justifyContent="center" 
-        alignItems="center" 
-        minHeight="100vh"
+      <Box
+        display='flex'
+        justifyContent='center'
+        alignItems='center'
+        minHeight='100vh'
         p={3}
       >
-        <Alert 
-          severity="warning" 
+        <Alert
+          severity='warning'
           icon={<WarningIcon />}
           sx={{ maxWidth: 500, width: '100%' }}
         >
-          <Typography variant="h6" gutterBottom>
+          <Typography variant='h6' gutterBottom>
             로그인이 필요합니다
           </Typography>
-          <Typography variant="body2" paragraph>
+          <Typography variant='body2' paragraph>
             이 페이지에 접근하려면 로그인해야 합니다.
           </Typography>
-          <Button 
-            variant="contained" 
+          <Button
+            variant='contained'
             onClick={() => {
               const loginUrl = `/login?redirect=${encodeURIComponent(currentPath)}`;
               router.push(loginUrl);
             }}
-            size="small"
+            size='small'
           >
             로그인 페이지로 이동
           </Button>

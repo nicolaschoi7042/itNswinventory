@@ -1,6 +1,6 @@
 /**
  * Assignment Detail Modal Component
- * 
+ *
  * Comprehensive modal for displaying detailed assignment information
  * with enhanced employee and asset displays.
  */
@@ -21,7 +21,7 @@ import {
   Chip,
   IconButton,
   useTheme,
-  alpha
+  alpha,
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -32,26 +32,29 @@ import {
   Notes as NotesIcon,
   History as HistoryIcon,
   Edit as EditIcon,
-  Undo as ReturnIcon
+  Undo as ReturnIcon,
 } from '@mui/icons-material';
 
 // Import types and utilities
 import {
   Assignment,
   AssignmentWithDetails,
-  AssignmentStatus
+  AssignmentStatus,
 } from '@/types/assignment';
 
 import {
   formatDate,
   formatAssignmentDuration,
-  getAssignmentStatusInfo
+  getAssignmentStatusInfo,
 } from '@/utils/assignment.utils';
 
 // Import enhanced display components
 import { EmployeeInfoDisplay } from '@/components/display/EmployeeInfoDisplay';
 import { AssetInfoDisplay } from '@/components/display/AssetInfoDisplay';
-import { StatusIndicator, DurationVisualization } from '@/components/visualization/StatusVisualization';
+import {
+  StatusIndicator,
+  DurationVisualization,
+} from '@/components/visualization/StatusVisualization';
 
 // Import role guards
 import { AdminGuard, ManagerGuard } from '@/components/guards/RoleGuards';
@@ -79,7 +82,7 @@ export function AssignmentDetailModal({
   onClose,
   onEdit,
   onReturn,
-  onDelete
+  onDelete,
 }: AssignmentDetailModalProps) {
   const theme = useTheme();
 
@@ -90,48 +93,52 @@ export function AssignmentDetailModal({
   const canEdit = assignment.status !== '반납완료';
 
   // Prepare employee information
-  const employeeInfo = assignment.employee ? {
-    id: assignment.employee.id,
-    name: assignment.employee.name,
-    department: assignment.employee.department,
-    position: assignment.employee.position,
-    email: assignment.employee.email
-  } : {
-    id: assignment.employee_id,
-    name: assignment.employee_name,
-    department: '부서 정보 없음',
-    position: '직책 정보 없음'
-  };
+  const employeeInfo = assignment.employee
+    ? {
+        id: assignment.employee.id,
+        name: assignment.employee.name,
+        department: assignment.employee.department,
+        position: assignment.employee.position,
+        email: assignment.employee.email,
+      }
+    : {
+        id: assignment.employee_id,
+        name: assignment.employee_name,
+        department: '부서 정보 없음',
+        position: '직책 정보 없음',
+      };
 
   // Prepare asset information
-  const assetInfo = assignment.asset ? {
-    id: assignment.asset.id,
-    name: assignment.asset.name,
-    type: assignment.asset.type,
-    manufacturer: assignment.asset.manufacturer,
-    model: assignment.asset.model,
-    serial_number: assignment.asset.serial_number,
-    status: 'assigned' as const
-  } : {
-    id: assignment.asset_id,
-    name: assignment.asset_description || assignment.asset_id,
-    type: assignment.asset_type === 'hardware' ? 'Hardware' : 'Software',
-    manufacturer: '',
-    model: '',
-    status: 'assigned' as const
-  };
+  const assetInfo = assignment.asset
+    ? {
+        id: assignment.asset.id,
+        name: assignment.asset.name,
+        type: assignment.asset.type,
+        manufacturer: assignment.asset.manufacturer,
+        model: assignment.asset.model,
+        serial_number: assignment.asset.serial_number,
+        status: 'assigned' as const,
+      }
+    : {
+        id: assignment.asset_id,
+        name: assignment.asset_description || assignment.asset_id,
+        type: assignment.asset_type === 'hardware' ? 'Hardware' : 'Software',
+        manufacturer: '',
+        model: '',
+        status: 'assigned' as const,
+      };
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="md"
+      maxWidth='md'
       fullWidth
       PaperProps={{
         sx: {
           borderRadius: 2,
-          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.02)} 0%, ${alpha(theme.palette.background.paper, 1)} 100%)`
-        }
+          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.02)} 0%, ${alpha(theme.palette.background.paper, 1)} 100%)`,
+        },
       }}
     >
       {/* Dialog Header */}
@@ -141,21 +148,19 @@ export function AssignmentDetailModal({
           alignItems: 'center',
           justifyContent: 'space-between',
           pb: 2,
-          borderBottom: `1px solid ${theme.palette.divider}`
+          borderBottom: `1px solid ${theme.palette.divider}`,
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <AssignmentIcon color="primary" />
-          <Typography variant="h6">
-            할당 상세 정보
-          </Typography>
-          <StatusIndicator 
-            status={assignment.status} 
-            size="small" 
-            variant="detailed"
+          <AssignmentIcon color='primary' />
+          <Typography variant='h6'>할당 상세 정보</Typography>
+          <StatusIndicator
+            status={assignment.status}
+            size='small'
+            variant='detailed'
           />
         </Box>
-        <IconButton onClick={onClose} size="small">
+        <IconButton onClick={onClose} size='small'>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -167,38 +172,64 @@ export function AssignmentDetailModal({
           <Grid item xs={12}>
             <Card sx={{ mb: 2 }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <AssignmentIcon color="primary" />
+                <Typography
+                  variant='h6'
+                  gutterBottom
+                  sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                >
+                  <AssignmentIcon color='primary' />
                   할당 개요
                 </Typography>
-                
+
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                      <CalendarIcon fontSize="small" color="action" />
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        mb: 2,
+                      }}
+                    >
+                      <CalendarIcon fontSize='small' color='action' />
                       <Box>
-                        <Typography variant="caption" color="text.secondary" display="block">
+                        <Typography
+                          variant='caption'
+                          color='text.secondary'
+                          display='block'
+                        >
                           할당일
                         </Typography>
-                        <Typography variant="body2" fontWeight="medium">
+                        <Typography variant='body2' fontWeight='medium'>
                           {formatDate(assignment.assigned_date)}
                         </Typography>
                       </Box>
                     </Box>
                   </Grid>
-                  
+
                   <Grid item xs={12} sm={6}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                      <HistoryIcon fontSize="small" color="action" />
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        mb: 2,
+                      }}
+                    >
+                      <HistoryIcon fontSize='small' color='action' />
                       <Box>
-                        <Typography variant="caption" color="text.secondary" display="block">
+                        <Typography
+                          variant='caption'
+                          color='text.secondary'
+                          display='block'
+                        >
                           사용 기간
                         </Typography>
-                        <DurationVisualization 
+                        <DurationVisualization
                           assignment={assignment}
                           showProgress={true}
                           showCategory={true}
-                          size="small"
+                          size='small'
                         />
                       </Box>
                     </Box>
@@ -206,13 +237,28 @@ export function AssignmentDetailModal({
 
                   {assignment.return_date && (
                     <Grid item xs={12} sm={6}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                        <CalendarIcon fontSize="small" color="success" />
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          mb: 2,
+                        }}
+                      >
+                        <CalendarIcon fontSize='small' color='success' />
                         <Box>
-                          <Typography variant="caption" color="text.secondary" display="block">
+                          <Typography
+                            variant='caption'
+                            color='text.secondary'
+                            display='block'
+                          >
                             반납일
                           </Typography>
-                          <Typography variant="body2" fontWeight="medium" color="success.main">
+                          <Typography
+                            variant='body2'
+                            fontWeight='medium'
+                            color='success.main'
+                          >
                             {formatDate(assignment.return_date)}
                           </Typography>
                         </Box>
@@ -221,13 +267,24 @@ export function AssignmentDetailModal({
                   )}
 
                   <Grid item xs={12} sm={6}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                      <PersonIcon fontSize="small" color="action" />
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        mb: 2,
+                      }}
+                    >
+                      <PersonIcon fontSize='small' color='action' />
                       <Box>
-                        <Typography variant="caption" color="text.secondary" display="block">
+                        <Typography
+                          variant='caption'
+                          color='text.secondary'
+                          display='block'
+                        >
                           할당자
                         </Typography>
-                        <Typography variant="body2" fontWeight="medium">
+                        <Typography variant='body2' fontWeight='medium'>
                           {assignment.assigned_by}
                         </Typography>
                       </Box>
@@ -235,10 +292,18 @@ export function AssignmentDetailModal({
                   </Grid>
 
                   <Grid item xs={12}>
-                    <Typography variant="caption" color="text.secondary" display="block">
+                    <Typography
+                      variant='caption'
+                      color='text.secondary'
+                      display='block'
+                    >
                       할당 ID
                     </Typography>
-                    <Typography variant="body2" fontWeight="medium" sx={{ fontFamily: 'monospace' }}>
+                    <Typography
+                      variant='body2'
+                      fontWeight='medium'
+                      sx={{ fontFamily: 'monospace' }}
+                    >
                       {assignment.id}
                     </Typography>
                   </Grid>
@@ -251,15 +316,19 @@ export function AssignmentDetailModal({
           <Grid item xs={12} md={6}>
             <Card sx={{ height: '100%' }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <PersonIcon color="primary" />
+                <Typography
+                  variant='h6'
+                  gutterBottom
+                  sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                >
+                  <PersonIcon color='primary' />
                   직원 정보
                 </Typography>
-                
+
                 <EmployeeInfoDisplay
                   employee={employeeInfo}
-                  variant="detailed"
-                  size="large"
+                  variant='detailed'
+                  size='large'
                   showContact={true}
                   showDepartment={true}
                   showPosition={true}
@@ -272,16 +341,20 @@ export function AssignmentDetailModal({
           <Grid item xs={12} md={6}>
             <Card sx={{ height: '100%' }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <ComputerIcon color="primary" />
+                <Typography
+                  variant='h6'
+                  gutterBottom
+                  sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                >
+                  <ComputerIcon color='primary' />
                   자산 정보
                 </Typography>
-                
+
                 <AssetInfoDisplay
                   asset={assetInfo}
                   assetType={assignment.asset_type}
-                  variant="detailed"
-                  size="large"
+                  variant='detailed'
+                  size='large'
                   showSpecifications={true}
                   showStatus={true}
                   showWarranty={true}
@@ -295,16 +368,27 @@ export function AssignmentDetailModal({
             <Grid item xs={12}>
               <Card>
                 <CardContent>
-                  <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <NotesIcon color="primary" />
+                  <Typography
+                    variant='h6'
+                    gutterBottom
+                    sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                  >
+                    <NotesIcon color='primary' />
                     메모
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ 
-                    p: 2, 
-                    backgroundColor: alpha(theme.palette.background.default, 0.5),
-                    borderRadius: 1,
-                    border: `1px solid ${theme.palette.divider}`
-                  }}>
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{
+                      p: 2,
+                      backgroundColor: alpha(
+                        theme.palette.background.default,
+                        0.5
+                      ),
+                      borderRadius: 1,
+                      border: `1px solid ${theme.palette.divider}`,
+                    }}
+                  >
                     {assignment.notes}
                   </Typography>
                 </CardContent>
@@ -316,26 +400,33 @@ export function AssignmentDetailModal({
           <Grid item xs={12}>
             <Card>
               <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <HistoryIcon color="primary" />
+                <Typography
+                  variant='h6'
+                  gutterBottom
+                  sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                >
+                  <HistoryIcon color='primary' />
                   할당 이력
                 </Typography>
-                
+
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   {/* Created */}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Box sx={{ 
-                      width: 8, 
-                      height: 8, 
-                      borderRadius: '50%', 
-                      bgcolor: 'primary.main' 
-                    }} />
+                    <Box
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        bgcolor: 'primary.main',
+                      }}
+                    />
                     <Box sx={{ flexGrow: 1 }}>
-                      <Typography variant="body2" fontWeight="medium">
+                      <Typography variant='body2' fontWeight='medium'>
                         할당 생성
                       </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {formatDate(assignment.created_at)} • {assignment.assigned_by}
+                      <Typography variant='caption' color='text.secondary'>
+                        {formatDate(assignment.created_at)} •{' '}
+                        {assignment.assigned_by}
                       </Typography>
                     </Box>
                   </Box>
@@ -343,17 +434,19 @@ export function AssignmentDetailModal({
                   {/* Last Updated */}
                   {assignment.updated_at !== assignment.created_at && (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Box sx={{ 
-                        width: 8, 
-                        height: 8, 
-                        borderRadius: '50%', 
-                        bgcolor: 'warning.main' 
-                      }} />
+                      <Box
+                        sx={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: '50%',
+                          bgcolor: 'warning.main',
+                        }}
+                      />
                       <Box sx={{ flexGrow: 1 }}>
-                        <Typography variant="body2" fontWeight="medium">
+                        <Typography variant='body2' fontWeight='medium'>
                           정보 수정
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant='caption' color='text.secondary'>
                           {formatDate(assignment.updated_at)}
                         </Typography>
                       </Box>
@@ -363,18 +456,21 @@ export function AssignmentDetailModal({
                   {/* Returned */}
                   {assignment.return_date && assignment.returned_by && (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Box sx={{ 
-                        width: 8, 
-                        height: 8, 
-                        borderRadius: '50%', 
-                        bgcolor: 'success.main' 
-                      }} />
+                      <Box
+                        sx={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: '50%',
+                          bgcolor: 'success.main',
+                        }}
+                      />
                       <Box sx={{ flexGrow: 1 }}>
-                        <Typography variant="body2" fontWeight="medium">
+                        <Typography variant='body2' fontWeight='medium'>
                           자산 반납
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {formatDate(assignment.return_date)} • {assignment.returned_by}
+                        <Typography variant='caption' color='text.secondary'>
+                          {formatDate(assignment.return_date)} •{' '}
+                          {assignment.returned_by}
                         </Typography>
                       </Box>
                     </Box>
@@ -387,32 +483,34 @@ export function AssignmentDetailModal({
       </DialogContent>
 
       {/* Dialog Actions */}
-      <DialogActions sx={{ 
-        p: 3, 
-        borderTop: `1px solid ${theme.palette.divider}`,
-        gap: 1 
-      }}>
-        <Button onClick={onClose} color="inherit">
+      <DialogActions
+        sx={{
+          p: 3,
+          borderTop: `1px solid ${theme.palette.divider}`,
+          gap: 1,
+        }}
+      >
+        <Button onClick={onClose} color='inherit'>
           닫기
         </Button>
-        
+
         <Box sx={{ flexGrow: 1 }} />
-        
+
         <ManagerGuard>
           {canEdit && (
             <Button
-              variant="outlined"
+              variant='outlined'
               startIcon={<EditIcon />}
               onClick={() => onEdit?.(assignment)}
             >
               수정
             </Button>
           )}
-          
+
           {canReturn && (
             <Button
-              variant="contained"
-              color="primary"
+              variant='contained'
+              color='primary'
               startIcon={<ReturnIcon />}
               onClick={() => onReturn?.(assignment)}
             >
@@ -420,11 +518,11 @@ export function AssignmentDetailModal({
             </Button>
           )}
         </ManagerGuard>
-        
+
         <AdminGuard>
           <Button
-            variant="outlined"
-            color="error"
+            variant='outlined'
+            color='error'
             onClick={() => onDelete?.(assignment)}
           >
             삭제

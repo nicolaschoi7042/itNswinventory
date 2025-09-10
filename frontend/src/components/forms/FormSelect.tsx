@@ -24,15 +24,10 @@ interface FormSelectProps extends Omit<SelectProps, 'label'> {
 export const FormSelect = forwardRef<HTMLDivElement, FormSelectProps>(
   ({ label, name, options, helperText, error, ...props }, ref) => {
     return (
-      <FormControl fullWidth margin="normal" error={error}>
+      <FormControl fullWidth margin='normal' error={error}>
         <InputLabel>{label}</InputLabel>
-        <Select
-          ref={ref}
-          name={name}
-          label={label}
-          {...props}
-        >
-          {options.map((option) => (
+        <Select ref={ref} name={name} label={label} {...props}>
+          {options.map(option => (
             <MenuItem key={option.value} value={option.value}>
               {option.label}
             </MenuItem>

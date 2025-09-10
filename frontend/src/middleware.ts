@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyToken } from '@/lib/jwt';
-import { 
+import {
   requiresAuthentication,
   isRoleAllowed,
   getRedirectUrl,
   isPublicRoute,
   getAccessDeniedMessage,
   getPublicRoutes,
-  getProtectedRoutes
+  getProtectedRoutes,
 } from '@/lib/route-protection';
 
 // Get route configurations dynamically
@@ -16,19 +16,16 @@ const protectedRoutes = getProtectedRoutes();
 const publicRoutes = getPublicRoutes();
 
 // API routes that don't need middleware processing
-const publicApiRoutes = [
-  '/api/auth/login',
-  '/api/auth/refresh',
-];
+const publicApiRoutes = ['/api/auth/login', '/api/auth/refresh'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
+
   // Skip processing for public API routes
   if (publicApiRoutes.some(route => pathname.startsWith(route))) {
     return NextResponse.next();
   }
-  
+
   // Skip processing for static files and Next.js internals
   if (pathname.startsWith('/_next') || pathname.includes('.')) {
     return NextResponse.next();
@@ -37,10 +34,10 @@ export async function middleware(request: NextRequest) {
   // Get token from cookies (more reliable for SSR)
   const authCookie = request.cookies.get('inventory_token');
   const token = authCookie?.value;
-  
+
   let isValidToken = false;
   let userRole: string | undefined;
-  
+
   // Verify token if it exists
   if (token) {
     try {
@@ -97,9 +94,10 @@ export async function middleware(request: NextRequest) {
       if (redirectUrl) {
         const redirectTo = new URL(redirectUrl, request.url);
         redirectTo.searchParams.set('error', 'access_denied');
-        redirectTo.searchParams.set('message', encodeURIComponent(
-          getAccessDeniedMessage(pathname, userRole)
-        ));
+        redirectTo.searchParams.set(
+          'message',
+          encodeURIComponent(getAccessDeniedMessage(pathname, userRole))
+        );
         return NextResponse.redirect(redirectTo);
       }
     }

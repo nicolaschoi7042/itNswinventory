@@ -1,15 +1,47 @@
 // Dashboard Components
-export { StatCard, CounterStatCard, PercentageStatCard, StatusStatCard, StatCardGrid } from './StatCard';
+export {
+  StatCard,
+  CounterStatCard,
+  PercentageStatCard,
+  StatusStatCard,
+  StatCardGrid,
+} from './StatCard';
 export type { StatCardProps } from './StatCard';
 
-export { RecentActivities, ActivityTimeline, useActivities } from './RecentActivities';
-export type { Activity, RecentActivitiesProps, ActivityTimelineProps } from './RecentActivities';
+export {
+  RecentActivities,
+  ActivityTimeline,
+  useActivities,
+} from './RecentActivities';
+export type {
+  Activity,
+  RecentActivitiesProps,
+  ActivityTimelineProps,
+} from './RecentActivities';
 
-export { LicenseStatus, LicenseSummary, useLicenseStatus } from './LicenseStatus';
-export type { SoftwareLicense, LicenseStatusProps, LicenseSummaryProps } from './LicenseStatus';
+export {
+  LicenseStatus,
+  LicenseSummary,
+  useLicenseStatus,
+} from './LicenseStatus';
+export type {
+  SoftwareLicense,
+  LicenseStatusProps,
+  LicenseSummaryProps,
+} from './LicenseStatus';
 
-export { AssetChart, AssetSummary, AssetDashboard, useAssetChart } from './AssetChart';
-export type { AssetData, AssetChartProps, AssetSummaryProps, AssetDashboardProps } from './AssetChart';
+export {
+  AssetChart,
+  AssetSummary,
+  AssetDashboard,
+  useAssetChart,
+} from './AssetChart';
+export type {
+  AssetData,
+  AssetChartProps,
+  AssetSummaryProps,
+  AssetDashboardProps,
+} from './AssetChart';
 
 // Common dashboard utilities and configurations
 export const dashboardConfig = {
@@ -28,7 +60,16 @@ export const dashboardConfig = {
     defaultHeight: 300,
     compactHeight: 200,
     colors: {
-      default: ['#2196f3', '#4caf50', '#ff9800', '#f44336', '#9c27b0', '#00bcd4', '#795548', '#607d8b'],
+      default: [
+        '#2196f3',
+        '#4caf50',
+        '#ff9800',
+        '#f44336',
+        '#9c27b0',
+        '#00bcd4',
+        '#795548',
+        '#607d8b',
+      ],
       category: {
         hardware: '#2196f3',
         software: '#4caf50',
@@ -61,9 +102,24 @@ export const dashboardConfig = {
   // Statistics card configurations
   statCard: {
     sizes: {
-      small: { padding: 2, iconSize: 24, titleVariant: 'body2' as const, valueVariant: 'h6' as const },
-      medium: { padding: 3, iconSize: 32, titleVariant: 'body1' as const, valueVariant: 'h4' as const },
-      large: { padding: 4, iconSize: 40, titleVariant: 'h6' as const, valueVariant: 'h3' as const },
+      small: {
+        padding: 2,
+        iconSize: 24,
+        titleVariant: 'body2' as const,
+        valueVariant: 'h6' as const,
+      },
+      medium: {
+        padding: 3,
+        iconSize: 32,
+        titleVariant: 'body1' as const,
+        valueVariant: 'h4' as const,
+      },
+      large: {
+        padding: 4,
+        iconSize: 40,
+        titleVariant: 'h6' as const,
+        valueVariant: 'h3' as const,
+      },
     },
   },
 };
@@ -162,11 +218,14 @@ export const dashboardUtils = {
   },
 
   // Calculate trend direction
-  getTrend: (current: number, previous: number): { value: number; direction: 'up' | 'down' | 'stable' } => {
+  getTrend: (
+    current: number,
+    previous: number
+  ): { value: number; direction: 'up' | 'down' | 'stable' } => {
     if (previous === 0) return { value: 0, direction: 'stable' };
-    
+
     const change = ((current - previous) / previous) * 100;
-    
+
     return {
       value: Math.abs(Math.round(change)),
       direction: change > 0 ? 'up' : change < 0 ? 'down' : 'stable',
@@ -174,21 +233,26 @@ export const dashboardUtils = {
   },
 
   // Group data by category
-  groupByCategory: <T extends { category: string }>(data: T[]): Record<string, T[]> => {
-    return data.reduce((groups, item) => {
-      const category = item.category;
-      if (!groups[category]) {
-        groups[category] = [];
-      }
-      groups[category].push(item);
-      return groups;
-    }, {} as Record<string, T[]>);
+  groupByCategory: <T extends { category: string }>(
+    data: T[]
+  ): Record<string, T[]> => {
+    return data.reduce(
+      (groups, item) => {
+        const category = item.category;
+        if (!groups[category]) {
+          groups[category] = [];
+        }
+        groups[category].push(item);
+        return groups;
+      },
+      {} as Record<string, T[]>
+    );
   },
 
   // Sort data by multiple criteria
   sortData: <T>(
-    data: T[], 
-    sortBy: keyof T, 
+    data: T[],
+    sortBy: keyof T,
     sortOrder: 'asc' | 'desc' = 'desc'
   ): T[] => {
     return [...data].sort((a, b) => {
@@ -218,16 +282,19 @@ export const dashboardUtils = {
 
     return data.filter(item => {
       const itemDate = new Date(item.timestamp);
-      
+
       if (startDate && itemDate < startDate) return false;
       if (endDate && itemDate > endDate) return false;
-      
+
       return true;
     });
   },
 
   // Generate color palette
-  generateColorPalette: (count: number, baseColors: string[] = dashboardConfig.chart.colors.default): string[] => {
+  generateColorPalette: (
+    count: number,
+    baseColors: string[] = dashboardConfig.chart.colors.default
+  ): string[] => {
     if (count <= baseColors.length) {
       return baseColors.slice(0, count);
     }
@@ -237,8 +304,9 @@ export const dashboardUtils = {
 
     for (let i = baseColorCount; i < count; i++) {
       const baseColor = baseColors[i % baseColorCount];
-      const variation = Math.floor((i - baseColorCount) / baseColorCount) * 20 + 20;
-      
+      const variation =
+        Math.floor((i - baseColorCount) / baseColorCount) * 20 + 20;
+
       // Create color variations by adjusting lightness
       colors.push(adjustColorLightness(baseColor, variation));
     }
@@ -253,8 +321,8 @@ function adjustColorLightness(color: string, amount: number): string {
   if (color.startsWith('#')) {
     const num = parseInt(color.slice(1), 16);
     const r = Math.min(255, Math.max(0, (num >> 16) + amount));
-    const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
-    const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
+    const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00ff) + amount));
+    const b = Math.min(255, Math.max(0, (num & 0x0000ff) + amount));
     return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
   }
   return color;
@@ -266,7 +334,7 @@ export const useDashboardRefresh = (
   interval: number = 300000 // 5 minutes
 ) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
-  
+
   const refreshAll = async () => {
     setIsRefreshing(true);
     try {

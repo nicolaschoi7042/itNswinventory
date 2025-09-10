@@ -14,13 +14,18 @@ export class ActivityService {
   /**
    * Get all activities
    */
-  async getAll(limit?: number, offset?: number): Promise<ApiResponse<Activity[]>> {
+  async getAll(
+    limit?: number,
+    offset?: number
+  ): Promise<ApiResponse<Activity[]>> {
     const params = new URLSearchParams();
     if (limit) params.append('limit', limit.toString());
     if (offset) params.append('offset', offset.toString());
-    
+
     const query = params.toString();
-    return this.client.get<Activity[]>(`/activities${query ? `?${query}` : ''}`);
+    return this.client.get<Activity[]>(
+      `/activities${query ? `?${query}` : ''}`
+    );
   }
 
   /**
@@ -40,22 +45,28 @@ export class ActivityService {
   /**
    * Get activities by user
    */
-  async getByUser(userId: string, limit?: number): Promise<ApiResponse<Activity[]>> {
+  async getByUser(
+    userId: string,
+    limit?: number
+  ): Promise<ApiResponse<Activity[]>> {
     const params = new URLSearchParams();
     params.append('user_id', userId);
     if (limit) params.append('limit', limit.toString());
-    
+
     return this.client.get<Activity[]>(`/activities?${params.toString()}`);
   }
 
   /**
    * Get activities by type
    */
-  async getByType(type: string, limit?: number): Promise<ApiResponse<Activity[]>> {
+  async getByType(
+    type: string,
+    limit?: number
+  ): Promise<ApiResponse<Activity[]>> {
     const params = new URLSearchParams();
     params.append('type', type);
     if (limit) params.append('limit', limit.toString());
-    
+
     return this.client.get<Activity[]>(`/activities?${params.toString()}`);
   }
 
@@ -69,11 +80,14 @@ export class ActivityService {
   /**
    * Get activities by date range
    */
-  async getByDateRange(startDate: string, endDate: string): Promise<ApiResponse<Activity[]>> {
+  async getByDateRange(
+    startDate: string,
+    endDate: string
+  ): Promise<ApiResponse<Activity[]>> {
     const params = new URLSearchParams();
     params.append('start_date', startDate);
     params.append('end_date', endDate);
-    
+
     return this.client.get<Activity[]>(`/activities?${params.toString()}`);
   }
 
@@ -81,20 +95,31 @@ export class ActivityService {
    * Search activities
    */
   async search(query: string): Promise<ApiResponse<Activity[]>> {
-    return this.client.get<Activity[]>(`/activities/search?q=${encodeURIComponent(query)}`);
+    return this.client.get<Activity[]>(
+      `/activities/search?q=${encodeURIComponent(query)}`
+    );
   }
 
   /**
    * Export activities to Excel
    */
-  async exportToExcel(startDate?: string, endDate?: string): Promise<ApiResponse<Blob>> {
+  async exportToExcel(
+    startDate?: string,
+    endDate?: string
+  ): Promise<ApiResponse<Blob>> {
     const params = new URLSearchParams();
     if (startDate) params.append('start_date', startDate);
     if (endDate) params.append('end_date', endDate);
-    
+
     const query = params.toString();
-    return this.client.get<Blob>(`/activities/export/excel${query ? `?${query}` : ''}`, {
-      headers: { 'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }
-    });
+    return this.client.get<Blob>(
+      `/activities/export/excel${query ? `?${query}` : ''}`,
+      {
+        headers: {
+          Accept:
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        },
+      }
+    );
   }
 }

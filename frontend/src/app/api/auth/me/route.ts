@@ -10,7 +10,7 @@ async function getCurrentUser(_request: NextRequest, user: JWTPayload) {
   try {
     // Get fresh user data from database
     const dbUser = await findUserByUsername(user.username);
-    
+
     if (!dbUser) {
       return NextResponse.json(
         { error: '사용자를 찾을 수 없습니다.' },
@@ -27,10 +27,9 @@ async function getCurrentUser(_request: NextRequest, user: JWTPayload) {
         role: dbUser.role,
         is_active: dbUser.is_active,
         last_login: dbUser.last_login,
-        ldap: user.ldap
-      }
+        ldap: user.ldap,
+      },
     });
-
   } catch (error: any) {
     console.error('Get current user error:', error);
     return NextResponse.json(

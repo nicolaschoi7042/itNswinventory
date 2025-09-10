@@ -62,7 +62,7 @@ export const exportAssignmentsToExcel = async (
     includeHistory = true,
     includeStatistics = true,
     format = 'xlsx',
-    fileName = `assignments_export_${new Date().toISOString().split('T')[0]}`
+    fileName = `assignments_export_${new Date().toISOString().split('T')[0]}`,
   } = options;
 
   try {
@@ -72,28 +72,31 @@ export const exportAssignmentsToExcel = async (
     // Main assignments sheet
     const assignmentData = prepareAssignmentData(assignments, {
       includeEmployeeDetails,
-      includeAssetDetails
+      includeAssetDetails,
     });
     const assignmentSheet = XLSX.utils.json_to_sheet(assignmentData);
-    
+
     // Style the header row
-    const assignmentRange = XLSX.utils.decode_range(assignmentSheet['!ref'] || 'A1');
+    const assignmentRange = XLSX.utils.decode_range(
+      assignmentSheet['!ref'] || 'A1'
+    );
     for (let col = assignmentRange.s.c; col <= assignmentRange.e.c; col++) {
       const cellRef = XLSX.utils.encode_cell({ r: 0, c: col });
       if (!assignmentSheet[cellRef]) continue;
       assignmentSheet[cellRef].s = {
         font: { bold: true, color: { rgb: 'FFFFFF' } },
         fill: { fgColor: { rgb: '366092' } },
-        alignment: { horizontal: 'center' }
+        alignment: { horizontal: 'center' },
       };
     }
 
     // Auto-size columns
-    const colWidths = assignmentData.length > 0 
-      ? Object.keys(assignmentData[0]).map(key => ({
-          wch: Math.max(key.length, 15)
-        }))
-      : [];
+    const colWidths =
+      assignmentData.length > 0
+        ? Object.keys(assignmentData[0]).map(key => ({
+            wch: Math.max(key.length, 15),
+          }))
+        : [];
     assignmentSheet['!cols'] = colWidths;
 
     XLSX.utils.book_append_sheet(workbook, assignmentSheet, '할당 목록');
@@ -134,7 +137,9 @@ export const exportAssignmentsToExcel = async (
     console.log(`Assignments exported successfully: ${fileName}.${format}`);
   } catch (error) {
     console.error('Assignment export failed:', error);
-    throw new Error(`Excel 내보내기에 실패했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
+    throw new Error(
+      `Excel 내보내기에 실패했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`
+    );
   }
 };
 
@@ -147,13 +152,17 @@ export const exportFilteredAssignments = async (
   searchQuery: string = '',
   options: ExportOptions = {}
 ): Promise<void> => {
-  const filteredAssignments = applyFiltersForExport(assignments, filters, searchQuery);
-  
+  const filteredAssignments = applyFiltersForExport(
+    assignments,
+    filters,
+    searchQuery
+  );
+
   const fileName = `filtered_assignments_${Object.keys(filters).join('_')}_${new Date().toISOString().split('T')[0]}`;
-  
+
   await exportAssignmentsToExcel(filteredAssignments, {
     ...options,
-    fileName
+    fileName,
   });
 };
 
@@ -171,24 +180,27 @@ const prepareAssignmentData = (
   return assignments.map(assignment => {
     const baseData = {
       '할당 ID': assignment.id,
-      '직원명': assignment.employee_name,
-      '자산명': assignment.asset_description,
-      '자산 유형': assignment.asset_type === 'hardware' ? '하드웨어' : '소프트웨어',
-      '할당일': formatDate(assignment.assigned_date),
-      '반납일': assignment.return_date ? formatDate(assignment.return_date) : '미반납',
-      '상태': assignment.status,
-      '할당자': assignment.assigned_by,
-      '메모': assignment.notes || '',
-      '생성일': formatDate(assignment.created_at),
-      '수정일': formatDate(assignment.updated_at)
+      직원명: assignment.employee_name,
+      자산명: assignment.asset_description,
+      '자산 유형':
+        assignment.asset_type === 'hardware' ? '하드웨어' : '소프트웨어',
+      할당일: formatDate(assignment.assigned_date),
+      반납일: assignment.return_date
+        ? formatDate(assignment.return_date)
+        : '미반납',
+      상태: assignment.status,
+      할당자: assignment.assigned_by,
+      메모: assignment.notes || '',
+      생성일: formatDate(assignment.created_at),
+      수정일: formatDate(assignment.updated_at),
     };
 
     // Add employee details if requested
     if (options.includeEmployeeDetails && assignment.employee) {
       Object.assign(baseData, {
-        '부서': assignment.employee.department,
-        '직책': assignment.employee.position,
-        '이메일': assignment.employee.email
+        부서: assignment.employee.department,
+        직책: assignment.employee.position,
+        이메일: assignment.employee.email,
       });
     }
 
@@ -196,9 +208,9 @@ const prepareAssignmentData = (
     if (options.includeAssetDetails && assignment.asset) {
       Object.assign(baseData, {
         '자산 ID': assignment.asset.id,
-        '제조사': assignment.asset.manufacturer || '',
-        '모델': assignment.asset.model || '',
-        '시리얼 번호': assignment.asset.serial_number || ''
+        제조사: assignment.asset.manufacturer || '',
+        모델: assignment.asset.model || '',
+        '시리얼 번호': assignment.asset.serial_number || '',
       });
     }
 
@@ -209,7 +221,9 @@ const prepareAssignmentData = (
 /**
  * Generate assignment summary statistics
  */
-const generateAssignmentSummary = (assignments: AssignmentWithDetails[]): AssignmentExportSummary => {
+const generateAssignmentSummary = (
+  assignments: AssignmentWithDetails[]
+): AssignmentExportSummary => {
   const total = assignments.length;
   const active = assignments.filter(a => a.status === '사용중').length;
   const returned = assignments.filter(a => a.status === '반납완료').length;
@@ -217,19 +231,25 @@ const generateAssignmentSummary = (assignments: AssignmentWithDetails[]): Assign
 
   const byAssetType = {
     hardware: assignments.filter(a => a.asset_type === 'hardware').length,
-    software: assignments.filter(a => a.asset_type === 'software').length
+    software: assignments.filter(a => a.asset_type === 'software').length,
   };
 
-  const byStatus = assignments.reduce((acc, assignment) => {
-    acc[assignment.status] = (acc[assignment.status] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const byStatus = assignments.reduce(
+    (acc, assignment) => {
+      acc[assignment.status] = (acc[assignment.status] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
-  const byDepartment = assignments.reduce((acc, assignment) => {
-    const dept = assignment.employee?.department || '알 수 없음';
-    acc[dept] = (acc[dept] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const byDepartment = assignments.reduce(
+    (acc, assignment) => {
+      const dept = assignment.employee?.department || '알 수 없음';
+      acc[dept] = (acc[dept] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
   return {
     totalAssignments: total,
@@ -238,7 +258,7 @@ const generateAssignmentSummary = (assignments: AssignmentWithDetails[]): Assign
     overdueAssignments: overdue,
     byAssetType,
     byStatus,
-    byDepartment
+    byDepartment,
   };
 };
 
@@ -247,23 +267,23 @@ const generateAssignmentSummary = (assignments: AssignmentWithDetails[]): Assign
  */
 const prepareSummaryData = (summary: AssignmentExportSummary): any[] => {
   return [
-    { '항목': '총 할당 수', '값': summary.totalAssignments },
-    { '항목': '활성 할당', '값': summary.activeAssignments },
-    { '항목': '반납 완료', '값': summary.returnedAssignments },
-    { '항목': '연체', '값': summary.overdueAssignments },
-    { '항목': '', '값': '' }, // Separator
-    { '항목': '하드웨어 할당', '값': summary.byAssetType.hardware },
-    { '항목': '소프트웨어 할당', '값': summary.byAssetType.software },
-    { '항목': '', '값': '' }, // Separator
+    { 항목: '총 할당 수', 값: summary.totalAssignments },
+    { 항목: '활성 할당', 값: summary.activeAssignments },
+    { 항목: '반납 완료', 값: summary.returnedAssignments },
+    { 항목: '연체', 값: summary.overdueAssignments },
+    { 항목: '', 값: '' }, // Separator
+    { 항목: '하드웨어 할당', 값: summary.byAssetType.hardware },
+    { 항목: '소프트웨어 할당', 값: summary.byAssetType.software },
+    { 항목: '', 값: '' }, // Separator
     ...Object.entries(summary.byStatus).map(([status, count]) => ({
-      '항목': `상태: ${status}`,
-      '값': count
+      항목: `상태: ${status}`,
+      값: count,
     })),
-    { '항목': '', '값': '' }, // Separator
+    { 항목: '', 값: '' }, // Separator
     ...Object.entries(summary.byDepartment).map(([dept, count]) => ({
-      '항목': `부서: ${dept}`,
-      '값': count
-    }))
+      항목: `부서: ${dept}`,
+      값: count,
+    })),
   ];
 };
 
@@ -275,95 +295,109 @@ const prepareHistoryData = (assignments: AssignmentWithDetails[]): any[] => {
     .filter(a => a.return_date) // Only returned assignments
     .map(assignment => ({
       '할당 ID': assignment.id,
-      '직원명': assignment.employee_name,
-      '자산명': assignment.asset_description,
-      '할당일': formatDate(assignment.assigned_date),
-      '반납일': assignment.return_date ? formatDate(assignment.return_date) : '',
-      '사용 기간(일)': assignment.return_date 
-        ? Math.ceil((new Date(assignment.return_date).getTime() - new Date(assignment.assigned_date).getTime()) / (1000 * 60 * 60 * 24))
+      직원명: assignment.employee_name,
+      자산명: assignment.asset_description,
+      할당일: formatDate(assignment.assigned_date),
+      반납일: assignment.return_date ? formatDate(assignment.return_date) : '',
+      '사용 기간(일)': assignment.return_date
+        ? Math.ceil(
+            (new Date(assignment.return_date).getTime() -
+              new Date(assignment.assigned_date).getTime()) /
+              (1000 * 60 * 60 * 24)
+          )
         : 0,
       '반납 상태': assignment.return_condition || '정상',
-      '평점': assignment.return_rating || 5,
-      '메모': assignment.notes || ''
+      평점: assignment.return_rating || 5,
+      메모: assignment.notes || '',
     }));
 };
 
 /**
  * Prepare asset utilization data
  */
-const prepareUtilizationData = (assignments: AssignmentWithDetails[]): any[] => {
-  const assetUsage = assignments.reduce((acc, assignment) => {
-    const key = `${assignment.asset_id}_${assignment.asset_type}`;
-    if (!acc[key]) {
-      acc[key] = {
-        assetId: assignment.asset_id,
-        assetName: assignment.asset_description,
-        assetType: assignment.asset_type,
-        totalAssignments: 0,
-        activeAssignments: 0,
-        averageUsageDays: 0,
-        lastAssigned: assignment.assigned_date
-      };
-    }
-    
-    acc[key].totalAssignments++;
-    if (assignment.status === '사용중') {
-      acc[key].activeAssignments++;
-    }
-    
-    if (assignment.assigned_date > acc[key].lastAssigned) {
-      acc[key].lastAssigned = assignment.assigned_date;
-    }
-    
-    return acc;
-  }, {} as Record<string, any>);
+const prepareUtilizationData = (
+  assignments: AssignmentWithDetails[]
+): any[] => {
+  const assetUsage = assignments.reduce(
+    (acc, assignment) => {
+      const key = `${assignment.asset_id}_${assignment.asset_type}`;
+      if (!acc[key]) {
+        acc[key] = {
+          assetId: assignment.asset_id,
+          assetName: assignment.asset_description,
+          assetType: assignment.asset_type,
+          totalAssignments: 0,
+          activeAssignments: 0,
+          averageUsageDays: 0,
+          lastAssigned: assignment.assigned_date,
+        };
+      }
+
+      acc[key].totalAssignments++;
+      if (assignment.status === '사용중') {
+        acc[key].activeAssignments++;
+      }
+
+      if (assignment.assigned_date > acc[key].lastAssigned) {
+        acc[key].lastAssigned = assignment.assigned_date;
+      }
+
+      return acc;
+    },
+    {} as Record<string, any>
+  );
 
   return Object.values(assetUsage).map((asset: any) => ({
     '자산 ID': asset.assetId,
-    '자산명': asset.assetName,
+    자산명: asset.assetName,
     '자산 유형': asset.assetType === 'hardware' ? '하드웨어' : '소프트웨어',
     '총 할당 횟수': asset.totalAssignments,
     '현재 활성 할당': asset.activeAssignments,
     '최근 할당일': formatDate(asset.lastAssigned),
-    '활용도': asset.totalAssignments > 0 ? '높음' : '낮음'
+    활용도: asset.totalAssignments > 0 ? '높음' : '낮음',
   }));
 };
 
 /**
  * Prepare employee assignment data
  */
-const prepareEmployeeAssignmentData = (assignments: AssignmentWithDetails[]): any[] => {
-  const employeeStats = assignments.reduce((acc, assignment) => {
-    const empId = assignment.employee_id;
-    if (!acc[empId]) {
-      acc[empId] = {
-        name: assignment.employee_name,
-        department: assignment.employee?.department || '',
-        position: assignment.employee?.position || '',
-        totalAssignments: 0,
-        activeAssignments: 0,
-        returnedAssignments: 0,
-        overdueAssignments: 0
-      };
-    }
-    
-    acc[empId].totalAssignments++;
-    
-    if (assignment.status === '사용중') acc[empId].activeAssignments++;
-    if (assignment.status === '반납완료') acc[empId].returnedAssignments++;
-    if (assignment.status === '연체') acc[empId].overdueAssignments++;
-    
-    return acc;
-  }, {} as Record<string, any>);
+const prepareEmployeeAssignmentData = (
+  assignments: AssignmentWithDetails[]
+): any[] => {
+  const employeeStats = assignments.reduce(
+    (acc, assignment) => {
+      const empId = assignment.employee_id;
+      if (!acc[empId]) {
+        acc[empId] = {
+          name: assignment.employee_name,
+          department: assignment.employee?.department || '',
+          position: assignment.employee?.position || '',
+          totalAssignments: 0,
+          activeAssignments: 0,
+          returnedAssignments: 0,
+          overdueAssignments: 0,
+        };
+      }
+
+      acc[empId].totalAssignments++;
+
+      if (assignment.status === '사용중') acc[empId].activeAssignments++;
+      if (assignment.status === '반납완료') acc[empId].returnedAssignments++;
+      if (assignment.status === '연체') acc[empId].overdueAssignments++;
+
+      return acc;
+    },
+    {} as Record<string, any>
+  );
 
   return Object.values(employeeStats).map((emp: any) => ({
-    '직원명': emp.name,
-    '부서': emp.department,
-    '직책': emp.position,
+    직원명: emp.name,
+    부서: emp.department,
+    직책: emp.position,
     '총 할당': emp.totalAssignments,
     '현재 사용중': emp.activeAssignments,
     '반납 완료': emp.returnedAssignments,
-    '연체': emp.overdueAssignments
+    연체: emp.overdueAssignments,
   }));
 };
 
@@ -380,29 +414,40 @@ const applyFiltersForExport = (
   // Apply search
   if (searchQuery.trim()) {
     const query = searchQuery.toLowerCase();
-    filtered = filtered.filter(assignment => 
-      assignment.employee_name.toLowerCase().includes(query) ||
-      assignment.asset_description.toLowerCase().includes(query) ||
-      assignment.id.toLowerCase().includes(query)
+    filtered = filtered.filter(
+      assignment =>
+        assignment.employee_name.toLowerCase().includes(query) ||
+        assignment.asset_description.toLowerCase().includes(query) ||
+        assignment.id.toLowerCase().includes(query)
     );
   }
 
   // Apply filters
   if (filters.status) {
-    const statuses = Array.isArray(filters.status) ? filters.status : [filters.status];
-    filtered = filtered.filter(assignment => statuses.includes(assignment.status));
+    const statuses = Array.isArray(filters.status)
+      ? filters.status
+      : [filters.status];
+    filtered = filtered.filter(assignment =>
+      statuses.includes(assignment.status)
+    );
   }
 
   if (filters.asset_type) {
-    filtered = filtered.filter(assignment => assignment.asset_type === filters.asset_type);
+    filtered = filtered.filter(
+      assignment => assignment.asset_type === filters.asset_type
+    );
   }
 
   if (filters.assigned_date_from) {
-    filtered = filtered.filter(assignment => assignment.assigned_date >= filters.assigned_date_from!);
+    filtered = filtered.filter(
+      assignment => assignment.assigned_date >= filters.assigned_date_from!
+    );
   }
 
   if (filters.assigned_date_to) {
-    filtered = filtered.filter(assignment => assignment.assigned_date <= filters.assigned_date_to!);
+    filtered = filtered.filter(
+      assignment => assignment.assigned_date <= filters.assigned_date_to!
+    );
   }
 
   return filtered;
@@ -415,5 +460,5 @@ const applyFiltersForExport = (
 export default {
   exportAssignmentsToExcel,
   exportFilteredAssignments,
-  generateAssignmentSummary
+  generateAssignmentSummary,
 };

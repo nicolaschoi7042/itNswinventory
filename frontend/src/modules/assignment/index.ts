@@ -1,6 +1,6 @@
 /**
  * Assignment Module Index
- * 
+ *
  * Central export file for all assignment-related functionality.
  * This makes it easier to import assignment features across the application.
  */
@@ -23,7 +23,7 @@ export {
   formatAssignmentDuration as formatDuration,
   calculateAssignmentStats as calculateStats,
   validateCreateAssignmentData as validateCreateData,
-  validateReturnAssignmentData as validateReturnData
+  validateReturnAssignmentData as validateReturnData,
 } from '@/utils/assignment.utils';
 
 // Default configuration object for easy access
@@ -32,6 +32,6 @@ export const AssignmentConfig = {
   MAX_SEARCH_LENGTH: 100,
   VALIDATION_RULES: {
     NOTES_MAX_LENGTH: 500,
-    MIN_SEARCH_LENGTH: 2
-  }
+    MIN_SEARCH_LENGTH: 2,
+  },
 } as const;

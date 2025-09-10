@@ -10,20 +10,20 @@ export const colors = {
     end: '#764ba2',
     gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
   },
-  
+
   // Success gradient for green elements
   success: {
     start: '#28a745',
     end: '#20c997',
     gradient: 'linear-gradient(135deg, #28a745 0%, #20c997 100%)',
   },
-  
+
   // Background gradients
   background: {
     light: 'linear-gradient(135deg, #f8f9ff 0%, #e8f0ff 100%)',
     header: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
   },
-  
+
   // Status badge colors
   status: {
     available: {
@@ -31,7 +31,7 @@ export const colors = {
       color: '#155724',
     },
     assigned: {
-      background: '#fff3cd', 
+      background: '#fff3cd',
       color: '#856404',
     },
     maintenance: {

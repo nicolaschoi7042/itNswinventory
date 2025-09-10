@@ -13,11 +13,7 @@ interface ManagerGuardProps {
  * Allows access for admin and manager roles
  */
 export function ManagerGuard({ children, fallback }: ManagerGuardProps) {
-  return (
-    <ManagerRoleGuard fallback={fallback}>
-      {children}
-    </ManagerRoleGuard>
-  );
+  return <ManagerRoleGuard fallback={fallback}>{children}</ManagerRoleGuard>;
 }
 
 export default ManagerGuard;

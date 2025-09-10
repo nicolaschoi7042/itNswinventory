@@ -5,7 +5,12 @@ import { Alert, Box } from '@mui/material';
 import { FormModal } from './FormModal';
 import { FormInput } from '@/components/forms/FormInput';
 import { FormSelect } from '@/components/forms/FormSelect';
-import { Employee, CreateEmployeeData, UpdateEmployeeData, DEPARTMENTS } from '@/types/employee';
+import {
+  Employee,
+  CreateEmployeeData,
+  UpdateEmployeeData,
+  DEPARTMENTS,
+} from '@/types/employee';
 
 interface EmployeeFormData {
   name: string;
@@ -107,35 +112,37 @@ export function EmployeeFormModal({
   };
 
   // Handle input changes
-  const handleInputChange = (field: keyof EmployeeFormData) => (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const value = event.target.value;
-    setFormData(prev => ({ ...prev, [field]: value }));
-    
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
-  };
+  const handleInputChange =
+    (field: keyof EmployeeFormData) =>
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const value = event.target.value;
+      setFormData(prev => ({ ...prev, [field]: value }));
+
+      // Clear error when user starts typing
+      if (errors[field]) {
+        setErrors(prev => ({ ...prev, [field]: '' }));
+      }
+    };
 
   // Handle select changes
-  const handleSelectChange = (field: keyof EmployeeFormData) => (
-    event: any // SelectChangeEvent type is complex, using any for simplicity
-  ) => {
-    const value = event.target.value as string;
-    setFormData(prev => ({ ...prev, [field]: value }));
-    
-    // Clear error when user makes selection
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
-  };
+  const handleSelectChange =
+    (field: keyof EmployeeFormData) =>
+    (
+      event: any // SelectChangeEvent type is complex, using any for simplicity
+    ) => {
+      const value = event.target.value as string;
+      setFormData(prev => ({ ...prev, [field]: value }));
+
+      // Clear error when user makes selection
+      if (errors[field]) {
+        setErrors(prev => ({ ...prev, [field]: '' }));
+      }
+    };
 
   // Handle form submission
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -161,7 +168,7 @@ export function EmployeeFormModal({
   // Department options
   const departmentOptions = [
     { value: '', label: '선택하세요' },
-    ...DEPARTMENTS.map(dept => ({ value: dept, label: dept }))
+    ...DEPARTMENTS.map(dept => ({ value: dept, label: dept })),
   ];
 
   return (
@@ -169,32 +176,36 @@ export function EmployeeFormModal({
       open={open}
       onClose={onClose}
       title={isEditing ? '임직원 정보 수정' : '신규 임직원 등록'}
-      subtitle={isEditing ? `${employee?.name}의 정보를 수정합니다.` : '새로운 임직원 정보를 입력해주세요.'}
+      subtitle={
+        isEditing
+          ? `${employee?.name}의 정보를 수정합니다.`
+          : '새로운 임직원 정보를 입력해주세요.'
+      }
       onSubmit={handleSubmit}
       submitLabel={isEditing ? '수정' : '등록'}
-      cancelLabel="취소"
+      cancelLabel='취소'
       loading={loading}
-      maxWidth="sm"
+      maxWidth='sm'
       disableBackdropClick={loading}
       disableEscapeKeyDown={loading}
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {/* Error display */}
         {Object.keys(errors).length > 0 && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert severity='error' sx={{ mb: 2 }}>
             입력 정보를 확인해주세요.
           </Alert>
         )}
 
         {/* Name Field - Required */}
         <FormInput
-          label="이름 *"
-          name="name"
+          label='이름 *'
+          name='name'
           value={formData.name}
           onChange={handleInputChange('name')}
           error={!!errors.name}
           helperText={errors.name}
-          placeholder="홍길동"
+          placeholder='홍길동'
           autoFocus
           disabled={loading}
           required
@@ -202,8 +213,8 @@ export function EmployeeFormModal({
 
         {/* Department Field - Required */}
         <FormSelect
-          label="부서 *"
-          name="department"
+          label='부서 *'
+          name='department'
           value={formData.department}
           onChange={handleSelectChange('department')}
           options={departmentOptions}
@@ -215,21 +226,21 @@ export function EmployeeFormModal({
 
         {/* Position Field - Optional */}
         <FormInput
-          label="직책"
-          name="position"
+          label='직책'
+          name='position'
           value={formData.position}
           onChange={handleInputChange('position')}
           error={!!errors.position}
           helperText={errors.position}
-          placeholder="대리, 과장, 부장 등"
+          placeholder='대리, 과장, 부장 등'
           disabled={loading}
         />
 
         {/* Hire Date Field - Optional */}
         <FormInput
-          label="입사일"
-          name="hire_date"
-          type="date"
+          label='입사일'
+          name='hire_date'
+          type='date'
           value={formData.hire_date}
           onChange={handleInputChange('hire_date')}
           error={!!errors.hire_date}
@@ -240,32 +251,32 @@ export function EmployeeFormModal({
 
         {/* Email Field - Optional */}
         <FormInput
-          label="이메일"
-          name="email"
-          type="email"
+          label='이메일'
+          name='email'
+          type='email'
           value={formData.email}
           onChange={handleInputChange('email')}
           error={!!errors.email}
           helperText={errors.email}
-          placeholder="example@company.com"
+          placeholder='example@company.com'
           disabled={loading}
         />
 
         {/* Phone Field - Optional */}
         <FormInput
-          label="연락처"
-          name="phone"
-          type="tel"
+          label='연락처'
+          name='phone'
+          type='tel'
           value={formData.phone}
           onChange={handleInputChange('phone')}
           error={!!errors.phone}
           helperText={errors.phone}
-          placeholder="010-1234-5678"
+          placeholder='010-1234-5678'
           disabled={loading}
         />
 
         {/* Information note */}
-        <Alert severity="info" sx={{ mt: 2 }}>
+        <Alert severity='info' sx={{ mt: 2 }}>
           <strong>*</strong> 표시된 항목은 필수 입력 항목입니다.
         </Alert>
       </Box>

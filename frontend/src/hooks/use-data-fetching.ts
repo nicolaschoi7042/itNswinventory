@@ -54,13 +54,20 @@ export function useFetch<T = any>(
   // Get the appropriate data and methods based on key
   const getData = useCallback(() => {
     switch (key) {
-      case 'employees': return dataContext.employees as T;
-      case 'hardware': return dataContext.hardware as T;
-      case 'software': return dataContext.software as T;
-      case 'assignments': return dataContext.assignments as T;
-      case 'users': return dataContext.users as T;
-      case 'activities': return dataContext.activities as T;
-      default: return [] as T;
+      case 'employees':
+        return dataContext.employees as T;
+      case 'hardware':
+        return dataContext.hardware as T;
+      case 'software':
+        return dataContext.software as T;
+      case 'assignments':
+        return dataContext.assignments as T;
+      case 'users':
+        return dataContext.users as T;
+      case 'activities':
+        return dataContext.activities as T;
+      default:
+        return [] as T;
     }
   }, [key, dataContext]);
 
@@ -82,12 +89,24 @@ export function useFetch<T = any>(
   const refresh = useCallback(async () => {
     try {
       switch (key) {
-        case 'employees': await dataContext.loadEmployees(); break;
-        case 'hardware': await dataContext.loadHardware(); break;
-        case 'software': await dataContext.loadSoftware(); break;
-        case 'assignments': await dataContext.loadAssignments(); break;
-        case 'users': await dataContext.loadUsers(); break;
-        case 'activities': await dataContext.loadActivities(); break;
+        case 'employees':
+          await dataContext.loadEmployees();
+          break;
+        case 'hardware':
+          await dataContext.loadHardware();
+          break;
+        case 'software':
+          await dataContext.loadSoftware();
+          break;
+        case 'assignments':
+          await dataContext.loadAssignments();
+          break;
+        case 'users':
+          await dataContext.loadUsers();
+          break;
+        case 'activities':
+          await dataContext.loadActivities();
+          break;
       }
     } catch (error) {
       console.error(`Failed to refresh ${key}:`, error);
@@ -133,7 +152,11 @@ export function useFetch<T = any>(
     const handleFocus = () => {
       const now = Date.now();
       // Only refresh if it's been more than 30 seconds since last focus
-      if (now - lastFocusTimeRef.current > 30000 && isStale() && !getLoadingState()) {
+      if (
+        now - lastFocusTimeRef.current > 30000 &&
+        isStale() &&
+        !getLoadingState()
+      ) {
         refresh();
       }
       lastFocusTimeRef.current = now;
@@ -176,13 +199,20 @@ export function useBulkFetch(keys: Array<keyof ReturnType<typeof useData>>) {
   const refreshAll = useCallback(async () => {
     const promises = keys.map(key => {
       switch (key) {
-        case 'employees': return dataContext.loadEmployees();
-        case 'hardware': return dataContext.loadHardware();
-        case 'software': return dataContext.loadSoftware();
-        case 'assignments': return dataContext.loadAssignments();
-        case 'users': return dataContext.loadUsers();
-        case 'activities': return dataContext.loadActivities();
-        default: return Promise.resolve();
+        case 'employees':
+          return dataContext.loadEmployees();
+        case 'hardware':
+          return dataContext.loadHardware();
+        case 'software':
+          return dataContext.loadSoftware();
+        case 'assignments':
+          return dataContext.loadAssignments();
+        case 'users':
+          return dataContext.loadUsers();
+        case 'activities':
+          return dataContext.loadActivities();
+        default:
+          return Promise.resolve();
       }
     });
 
@@ -204,12 +234,15 @@ export function useBulkFetch(keys: Array<keyof ReturnType<typeof useData>>) {
     return dataContext.errors[errorKey];
   });
 
-  const allLastUpdated = keys.reduce((acc, key) => {
-    const lastUpdatedKey = key as keyof typeof dataContext.lastUpdated;
-    const lastUpdated = dataContext.lastUpdated[lastUpdatedKey];
-    acc[key] = lastUpdated;
-    return acc;
-  }, {} as Record<string, number | null>);
+  const allLastUpdated = keys.reduce(
+    (acc, key) => {
+      const lastUpdatedKey = key as keyof typeof dataContext.lastUpdated;
+      const lastUpdated = dataContext.lastUpdated[lastUpdatedKey];
+      acc[key] = lastUpdated;
+      return acc;
+    },
+    {} as Record<string, number | null>
+  );
 
   return {
     refreshAll,
@@ -225,46 +258,49 @@ export function useBulkFetch(keys: Array<keyof ReturnType<typeof useData>>) {
 export function usePreloader() {
   const dataContext = useData();
 
-  const preloadForTab = useCallback(async (tabName: string) => {
-    try {
-      switch (tabName) {
-        case 'dashboard':
-          // Preload summary data
-          await Promise.all([
-            dataContext.loadEmployees(),
-            dataContext.loadHardware(),
-            dataContext.loadAssignments(),
-            dataContext.loadActivities(),
-          ]);
-          break;
-        case 'employees':
-          await dataContext.loadEmployees();
-          break;
-        case 'hardware':
-          await dataContext.loadHardware();
-          break;
-        case 'software':
-          await dataContext.loadSoftware();
-          break;
-        case 'assignments':
-          await Promise.all([
-            dataContext.loadAssignments(),
-            dataContext.loadEmployees(), // Needed for assignment details
-            dataContext.loadHardware(),
-            dataContext.loadSoftware(),
-          ]);
-          break;
-        case 'users':
-          await dataContext.loadUsers();
-          break;
-        case 'activities':
-          await dataContext.loadActivities();
-          break;
+  const preloadForTab = useCallback(
+    async (tabName: string) => {
+      try {
+        switch (tabName) {
+          case 'dashboard':
+            // Preload summary data
+            await Promise.all([
+              dataContext.loadEmployees(),
+              dataContext.loadHardware(),
+              dataContext.loadAssignments(),
+              dataContext.loadActivities(),
+            ]);
+            break;
+          case 'employees':
+            await dataContext.loadEmployees();
+            break;
+          case 'hardware':
+            await dataContext.loadHardware();
+            break;
+          case 'software':
+            await dataContext.loadSoftware();
+            break;
+          case 'assignments':
+            await Promise.all([
+              dataContext.loadAssignments(),
+              dataContext.loadEmployees(), // Needed for assignment details
+              dataContext.loadHardware(),
+              dataContext.loadSoftware(),
+            ]);
+            break;
+          case 'users':
+            await dataContext.loadUsers();
+            break;
+          case 'activities':
+            await dataContext.loadActivities();
+            break;
+        }
+      } catch (error) {
+        console.error(`Failed to preload data for ${tabName}:`, error);
       }
-    } catch (error) {
-      console.error(`Failed to preload data for ${tabName}:`, error);
-    }
-  }, [dataContext]);
+    },
+    [dataContext]
+  );
 
   const preloadAll = useCallback(async () => {
     try {
@@ -286,43 +322,54 @@ export function usePreloader() {
 export function useOptimisticUpdates() {
   const dataContext = useData();
 
-  const updateOptimistically = useCallback((
-    type: 'employee' | 'hardware' | 'software' | 'assignment' | 'user',
-    item: any,
-    operation: 'add' | 'update' | 'remove'
-  ) => {
-    try {
-      switch (type) {
-        case 'employee':
-          if (operation === 'add') dataContext.addEmployee(item);
-          else if (operation === 'update') dataContext.updateEmployee(item);
-          else if (operation === 'remove') dataContext.removeEmployee(item.id || item);
-          break;
-        case 'hardware':
-          if (operation === 'add') dataContext.addHardware(item);
-          else if (operation === 'update') dataContext.updateHardware(item);
-          else if (operation === 'remove') dataContext.removeHardware(item.id || item);
-          break;
-        case 'software':
-          if (operation === 'add') dataContext.addSoftware(item);
-          else if (operation === 'update') dataContext.updateSoftware(item);
-          else if (operation === 'remove') dataContext.removeSoftware(item.id || item);
-          break;
-        case 'assignment':
-          if (operation === 'add') dataContext.addAssignment(item);
-          else if (operation === 'update') dataContext.updateAssignment(item);
-          else if (operation === 'remove') dataContext.removeAssignment(item.id || item);
-          break;
-        case 'user':
-          if (operation === 'add') dataContext.addUser(item);
-          else if (operation === 'update') dataContext.updateUser(item);
-          else if (operation === 'remove') dataContext.removeUser(item.id || item);
-          break;
+  const updateOptimistically = useCallback(
+    (
+      type: 'employee' | 'hardware' | 'software' | 'assignment' | 'user',
+      item: any,
+      operation: 'add' | 'update' | 'remove'
+    ) => {
+      try {
+        switch (type) {
+          case 'employee':
+            if (operation === 'add') dataContext.addEmployee(item);
+            else if (operation === 'update') dataContext.updateEmployee(item);
+            else if (operation === 'remove')
+              dataContext.removeEmployee(item.id || item);
+            break;
+          case 'hardware':
+            if (operation === 'add') dataContext.addHardware(item);
+            else if (operation === 'update') dataContext.updateHardware(item);
+            else if (operation === 'remove')
+              dataContext.removeHardware(item.id || item);
+            break;
+          case 'software':
+            if (operation === 'add') dataContext.addSoftware(item);
+            else if (operation === 'update') dataContext.updateSoftware(item);
+            else if (operation === 'remove')
+              dataContext.removeSoftware(item.id || item);
+            break;
+          case 'assignment':
+            if (operation === 'add') dataContext.addAssignment(item);
+            else if (operation === 'update') dataContext.updateAssignment(item);
+            else if (operation === 'remove')
+              dataContext.removeAssignment(item.id || item);
+            break;
+          case 'user':
+            if (operation === 'add') dataContext.addUser(item);
+            else if (operation === 'update') dataContext.updateUser(item);
+            else if (operation === 'remove')
+              dataContext.removeUser(item.id || item);
+            break;
+        }
+      } catch (error) {
+        console.error(
+          `Optimistic update failed for ${type} ${operation}:`,
+          error
+        );
       }
-    } catch (error) {
-      console.error(`Optimistic update failed for ${type} ${operation}:`, error);
-    }
-  }, [dataContext]);
+    },
+    [dataContext]
+  );
 
   return {
     updateOptimistically,

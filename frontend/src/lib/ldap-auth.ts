@@ -35,13 +35,22 @@ export class LDAPAuth {
     this.config = {
       server: config.server || process.env['LDAP_SERVER'] || '',
       bindDN: config.bindDN || process.env['LDAP_BIND_DN'] || '',
-      bindPassword: config.bindPassword || process.env['LDAP_BIND_PASSWORD'] || '',
+      bindPassword:
+        config.bindPassword || process.env['LDAP_BIND_PASSWORD'] || '',
       userBase: config.userBase || process.env['LDAP_USER_BASE'] || '',
       groupBase: config.groupBase || process.env['LDAP_GROUP_BASE'] || '',
-      userFilter: config.userFilter || process.env['LDAP_USER_FILTER'] || '(|(cn=%s)(uid=%s)(sAMAccountName=%s)(mail=%s))',
-      groupFilter: config.groupFilter || process.env['LDAP_GROUP_FILTER'] || '(member=%s)',
-      userFullnameAttr: config.userFullnameAttr || process.env['LDAP_USER_FULLNAME_ATTR'] || 'cn',
-      userEmailAttr: config.userEmailAttr || process.env['LDAP_USER_EMAIL_ATTR'] || 'mail'
+      userFilter:
+        config.userFilter ||
+        process.env['LDAP_USER_FILTER'] ||
+        '(|(cn=%s)(uid=%s)(sAMAccountName=%s)(mail=%s))',
+      groupFilter:
+        config.groupFilter || process.env['LDAP_GROUP_FILTER'] || '(member=%s)',
+      userFullnameAttr:
+        config.userFullnameAttr ||
+        process.env['LDAP_USER_FULLNAME_ATTR'] ||
+        'cn',
+      userEmailAttr:
+        config.userEmailAttr || process.env['LDAP_USER_EMAIL_ATTR'] || 'mail',
     };
   }
 
@@ -51,7 +60,10 @@ export class LDAPAuth {
    * @param password - Password to verify
    * @returns User object if authenticated, null otherwise
    */
-  async authenticate(username: string, password: string): Promise<LDAPUser | null> {
+  async authenticate(
+    username: string,
+    password: string
+  ): Promise<LDAPUser | null> {
     if (!username || !password) {
       throw new Error('Username and password are required');
     }
@@ -69,24 +81,27 @@ export class LDAPAuth {
       // Search for user
       const userFilter = this.config.userFilter.replace(/%s/g, username);
       console.log(`🔍 LDAP: Searching for user with filter: ${userFilter}`);
-      
+
       const searchOptions = {
         scope: 'sub' as const,
         filter: userFilter,
         attributes: [
-          'dn', 
-          'uid', 
-          'cn', 
-          'sn', 
+          'dn',
+          'uid',
+          'cn',
+          'sn',
           'givenName',
           this.config.userFullnameAttr,
           this.config.userEmailAttr,
           'memberOf',
-          'objectClass'
-        ]
+          'objectClass',
+        ],
       };
 
-      const searchResult = await client.search(this.config.userBase, searchOptions);
+      const searchResult = await client.search(
+        this.config.userBase,
+        searchOptions
+      );
       const users = searchResult.searchEntries;
 
       if (users.length === 0) {
@@ -95,7 +110,9 @@ export class LDAPAuth {
       }
 
       if (users.length > 1) {
-        console.log(`⚠️ LDAP: Multiple users found for ${username}, using first match`);
+        console.log(
+          `⚠️ LDAP: Multiple users found for ${username}, using first match`
+        );
       }
 
       const user = users[0];
@@ -116,17 +133,20 @@ export class LDAPAuth {
         // Try to bind with user credentials
         await userClient.bind(userDN, password);
         console.log(`✅ LDAP: User ${username} authenticated successfully`);
-        
+
         // Get user groups
         const groups = await this.getUserGroups(userDN);
-        
+
         // Build user object with safe property access
         const authenticatedUser: LDAPUser = {
-          username: (user['uid'] as string) || (user['cn'] as string) || username,
+          username:
+            (user['uid'] as string) || (user['cn'] as string) || username,
           dn: userDN,
-          fullName: (user[this.config.userFullnameAttr] as string) || 
-                   `${user['givenName'] || ''} ${user['sn'] || ''}`.trim() || 
-                   (user['cn'] as string) || '',
+          fullName:
+            (user[this.config.userFullnameAttr] as string) ||
+            `${user['givenName'] || ''} ${user['sn'] || ''}`.trim() ||
+            (user['cn'] as string) ||
+            '',
           email: (user[this.config.userEmailAttr] as string) || '',
           groups: groups,
           role: this.determineRole(groups),
@@ -135,21 +155,24 @@ export class LDAPAuth {
             uid: user['uid'] as string,
             sn: user['sn'] as string,
             givenName: user['givenName'] as string,
-            memberOf: user['memberOf'] as string[]
-          }
+            memberOf: user['memberOf'] as string[],
+          },
         };
 
         await userClient.unbind();
         return authenticatedUser;
-
       } catch (bindError: any) {
-        console.log(`❌ LDAP: Authentication failed for ${username}: ${bindError.message}`);
+        console.log(
+          `❌ LDAP: Authentication failed for ${username}: ${bindError.message}`
+        );
         await userClient.unbind();
         return null;
       }
-
     } catch (error: any) {
-      console.error(`❌ LDAP: Error during authentication for ${username}:`, error.message);
+      console.error(
+        `❌ LDAP: Error during authentication for ${username}:`,
+        error.message
+      );
       throw new Error(`LDAP authentication failed: ${error.message}`);
     } finally {
       try {
@@ -186,17 +209,26 @@ export class LDAPAuth {
       const searchOptions = {
         scope: 'sub' as const,
         filter: groupFilter,
-        attributes: ['cn', 'description']
+        attributes: ['cn', 'description'],
       };
 
-      const searchResult = await client.search(this.config.groupBase, searchOptions);
-      const groups = searchResult.searchEntries.map(group => group['cn'] as string);
+      const searchResult = await client.search(
+        this.config.groupBase,
+        searchOptions
+      );
+      const groups = searchResult.searchEntries.map(
+        group => group['cn'] as string
+      );
 
-      console.log(`✅ LDAP: Found ${groups.length} groups for user: ${groups.join(', ')}`);
+      console.log(
+        `✅ LDAP: Found ${groups.length} groups for user: ${groups.join(', ')}`
+      );
       return groups;
-
     } catch (error: any) {
-      console.warn(`⚠️ LDAP: Could not retrieve groups for ${userDN}:`, error.message);
+      console.warn(
+        `⚠️ LDAP: Could not retrieve groups for ${userDN}:`,
+        error.message
+      );
       return [];
     } finally {
       try {
@@ -215,15 +247,19 @@ export class LDAPAuth {
   determineRole(groups: string[]): string {
     // Define role mapping based on group membership
     const roleMapping = {
-      'admin': ['administrators', 'it-admin', 'domain admins', 'inventory-admin'],
-      'manager': ['managers', 'it-managers', 'inventory-managers', 'supervisors'],
-      'user': ['users', 'employees', 'staff', 'inventory-users']
+      admin: ['administrators', 'it-admin', 'domain admins', 'inventory-admin'],
+      manager: ['managers', 'it-managers', 'inventory-managers', 'supervisors'],
+      user: ['users', 'employees', 'staff', 'inventory-users'],
     };
 
     // Check for admin role first
     for (const group of groups) {
       const groupLower = group.toLowerCase();
-      if (roleMapping.admin.some(adminGroup => groupLower.includes(adminGroup.toLowerCase()))) {
+      if (
+        roleMapping.admin.some(adminGroup =>
+          groupLower.includes(adminGroup.toLowerCase())
+        )
+      ) {
         return 'admin';
       }
     }
@@ -231,7 +267,11 @@ export class LDAPAuth {
     // Check for manager role
     for (const group of groups) {
       const groupLower = group.toLowerCase();
-      if (roleMapping.manager.some(managerGroup => groupLower.includes(managerGroup.toLowerCase()))) {
+      if (
+        roleMapping.manager.some(managerGroup =>
+          groupLower.includes(managerGroup.toLowerCase())
+        )
+      ) {
         return 'manager';
       }
     }

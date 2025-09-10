@@ -6,12 +6,14 @@ interface FormButtonProps extends ButtonProps {
   loading?: boolean;
 }
 
-export function FormButton({ children, loading, disabled, ...props }: FormButtonProps) {
+export function FormButton({
+  children,
+  loading,
+  disabled,
+  ...props
+}: FormButtonProps) {
   return (
-    <Button
-      disabled={disabled || loading}
-      {...props}
-    >
+    <Button disabled={disabled || loading} {...props}>
       {children}
     </Button>
   );

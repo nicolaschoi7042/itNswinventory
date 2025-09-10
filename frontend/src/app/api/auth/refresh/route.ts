@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       id: user.id,
       username: user.username,
       role: user.role,
-      ldap: payload.ldap
+      ldap: payload.ldap,
     });
 
     return NextResponse.json({
@@ -56,10 +56,9 @@ export async function POST(request: NextRequest) {
         full_name: user.full_name,
         email: user.email,
         role: user.role,
-        ldap: payload.ldap
-      }
+        ldap: payload.ldap,
+      },
     });
-
   } catch (error: any) {
     console.error('Token refresh error:', error);
     return NextResponse.json(

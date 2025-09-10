@@ -88,7 +88,8 @@ export function Header({
 }: HeaderProps) {
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [notificationAnchorEl, setNotificationAnchorEl] = useState<null | HTMLElement>(null);
+  const [notificationAnchorEl, setNotificationAnchorEl] =
+    useState<null | HTMLElement>(null);
 
   const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -136,7 +137,16 @@ export function Header({
     return roleLabels[role as keyof typeof roleLabels] || role;
   };
 
-  const getRoleColor = (role: string): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
+  const getRoleColor = (
+    role: string
+  ):
+    | 'default'
+    | 'primary'
+    | 'secondary'
+    | 'error'
+    | 'info'
+    | 'success'
+    | 'warning' => {
     const roleColors = {
       admin: 'error' as const,
       manager: 'warning' as const,
@@ -149,39 +159,48 @@ export function Header({
     if (!showStats || !stats || variant === 'compact') return null;
 
     return (
-      <Stack direction="row" spacing={3} sx={{ mr: 3 }}>
+      <Stack direction='row' spacing={3} sx={{ mr: 3 }}>
         <Box sx={{ textAlign: 'center' }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
+          <Typography
+            variant='h6'
+            sx={{ fontWeight: 700, color: 'primary.main' }}
+          >
             {stats.totalEmployees.toLocaleString()}
           </Typography>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant='caption' color='text.secondary'>
             임직원
           </Typography>
         </Box>
-        
+
         <Box sx={{ textAlign: 'center' }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: 'secondary.main' }}>
+          <Typography
+            variant='h6'
+            sx={{ fontWeight: 700, color: 'secondary.main' }}
+          >
             {stats.totalHardware.toLocaleString()}
           </Typography>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant='caption' color='text.secondary'>
             하드웨어
           </Typography>
         </Box>
-        
+
         <Box sx={{ textAlign: 'center' }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: 'info.main' }}>
+          <Typography variant='h6' sx={{ fontWeight: 700, color: 'info.main' }}>
             {stats.totalSoftware.toLocaleString()}
           </Typography>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant='caption' color='text.secondary'>
             소프트웨어
           </Typography>
         </Box>
-        
+
         <Box sx={{ textAlign: 'center' }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: 'success.main' }}>
+          <Typography
+            variant='h6'
+            sx={{ fontWeight: 700, color: 'success.main' }}
+          >
             {stats.totalAssignments.toLocaleString()}
           </Typography>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant='caption' color='text.secondary'>
             할당
           </Typography>
         </Box>
@@ -223,17 +242,20 @@ export function Header({
           ) : (
             <AccountCircleIcon sx={{ fontSize: 32 }} />
           )}
-          
+
           <Box sx={{ textAlign: 'left' }}>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: 'inherit' }}>
+            <Typography
+              variant='body2'
+              sx={{ fontWeight: 600, color: 'inherit' }}
+            >
               {getUserDisplayName()}
             </Typography>
             <Chip
               label={getRoleLabel(user.role)}
-              size="small"
+              size='small'
               color={getRoleColor(user.role)}
-              variant="outlined"
-              sx={{ 
+              variant='outlined'
+              sx={{
                 height: 16,
                 fontSize: '0.65rem',
                 '& .MuiChip-label': { px: 0.5 },
@@ -256,20 +278,29 @@ export function Header({
           }}
         >
           <Box sx={{ px: 2, py: 1, borderBottom: 1, borderColor: 'divider' }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+            <Typography variant='subtitle2' sx={{ fontWeight: 600 }}>
               {getUserDisplayName()}
             </Typography>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant='caption' color='text.secondary'>
               {user.email || user.username}
             </Typography>
             {user.department && (
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+              <Typography
+                variant='caption'
+                color='text.secondary'
+                sx={{ display: 'block' }}
+              >
                 {user.department}
               </Typography>
             )}
             {user.lastLogin && (
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                마지막 로그인: {new Date(user.lastLogin).toLocaleDateString('ko-KR')}
+              <Typography
+                variant='caption'
+                color='text.secondary'
+                sx={{ display: 'block' }}
+              >
+                마지막 로그인:{' '}
+                {new Date(user.lastLogin).toLocaleDateString('ko-KR')}
               </Typography>
             )}
           </Box>
@@ -277,7 +308,7 @@ export function Header({
           {onUserProfile && (
             <MenuItem onClick={handleUserProfile}>
               <ListItemIcon>
-                <PersonIcon fontSize="small" />
+                <PersonIcon fontSize='small' />
               </ListItemIcon>
               <ListItemText>프로필</ListItemText>
             </MenuItem>
@@ -286,7 +317,7 @@ export function Header({
           {onSettings && (
             <MenuItem onClick={handleSettings}>
               <ListItemIcon>
-                <SettingsIcon fontSize="small" />
+                <SettingsIcon fontSize='small' />
               </ListItemIcon>
               <ListItemText>설정</ListItemText>
             </MenuItem>
@@ -294,7 +325,7 @@ export function Header({
 
           <MenuItem onClick={handleLogout}>
             <ListItemIcon>
-              <LogoutIcon fontSize="small" />
+              <LogoutIcon fontSize='small' />
             </ListItemIcon>
             <ListItemText>로그아웃</ListItemText>
           </MenuItem>
@@ -307,13 +338,13 @@ export function Header({
     if (!showNotifications) return null;
 
     return (
-      <Tooltip title="알림">
+      <Tooltip title='알림'>
         <IconButton
-          color="inherit"
+          color='inherit'
           onClick={handleNotificationMenuOpen}
           sx={{ mr: 1 }}
         >
-          <Badge badgeContent={notificationCount} color="error" max={99}>
+          <Badge badgeContent={notificationCount} color='error' max={99}>
             <NotificationsIcon />
           </Badge>
         </IconButton>
@@ -324,9 +355,9 @@ export function Header({
   const renderActions = () => (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
       {showRefresh && (
-        <Tooltip title="새로고침">
+        <Tooltip title='새로고침'>
           <IconButton
-            color="inherit"
+            color='inherit'
             onClick={onRefresh}
             disabled={loading}
             sx={{ mr: 1 }}
@@ -340,12 +371,8 @@ export function Header({
       {renderUserMenu()}
 
       {onMenuToggle && (
-        <Tooltip title="메뉴">
-          <IconButton
-            color="inherit"
-            onClick={onMenuToggle}
-            sx={{ ml: 1 }}
-          >
+        <Tooltip title='메뉴'>
+          <IconButton color='inherit' onClick={onMenuToggle} sx={{ ml: 1 }}>
             <MenuIcon />
           </IconButton>
         </Tooltip>
@@ -354,16 +381,16 @@ export function Header({
   );
 
   return (
-    <AppBar 
-      position="sticky" 
+    <AppBar
+      position='sticky'
       elevation={elevation}
       sx={{
         backgroundColor: 'primary.main',
         color: 'primary.contrastText',
       }}
     >
-      <Toolbar 
-        sx={{ 
+      <Toolbar
+        sx={{
           minHeight: variant === 'compact' ? 56 : 64,
           px: { xs: 2, sm: 3 },
         }}
@@ -384,7 +411,7 @@ export function Header({
             {title}
           </Typography>
           <Typography
-            variant="h6"
+            variant='h6'
             sx={{
               fontWeight: 600,
               display: { xs: 'block', sm: 'none' },
@@ -413,7 +440,7 @@ export function Header({
 
 // Compact header variant for mobile/small screens
 export function CompactHeader(props: Omit<HeaderProps, 'variant'>) {
-  return <Header {...props} variant="compact" showStats={false} />;
+  return <Header {...props} variant='compact' showStats={false} />;
 }
 
 // Header with minimal features for login/error pages
@@ -431,8 +458,8 @@ export function SimpleHeader({
   children,
 }: SimpleHeaderProps) {
   return (
-    <AppBar 
-      position="static" 
+    <AppBar
+      position='static'
       elevation={elevation}
       sx={{
         backgroundColor: 'primary.main',
@@ -444,7 +471,7 @@ export function SimpleHeader({
           <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
             <LaptopIcon sx={{ mr: 1, fontSize: 24 }} />
             <Typography
-              variant="h6"
+              variant='h6'
               sx={{
                 fontWeight: 600,
                 fontSize: '1rem',

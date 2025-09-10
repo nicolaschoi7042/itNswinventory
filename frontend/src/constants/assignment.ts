@@ -1,6 +1,6 @@
 /**
  * Assignment Module Constants and Validation Rules
- * 
+ *
  * This file contains all constants, validation rules, and configuration
  * used throughout the assignment management system.
  */
@@ -17,7 +17,7 @@ export const ASSIGNMENT_STATUSES = {
   PENDING: '대기중' as const,
   OVERDUE: '연체' as const,
   LOST: '분실' as const,
-  DAMAGED: '손상' as const
+  DAMAGED: '손상' as const,
 } as const;
 
 export const ASSIGNMENT_STATUS_LIST: AssignmentStatus[] = [
@@ -26,7 +26,7 @@ export const ASSIGNMENT_STATUS_LIST: AssignmentStatus[] = [
   ASSIGNMENT_STATUSES.PENDING,
   ASSIGNMENT_STATUSES.OVERDUE,
   ASSIGNMENT_STATUSES.LOST,
-  ASSIGNMENT_STATUSES.DAMAGED
+  ASSIGNMENT_STATUSES.DAMAGED,
 ];
 
 export const ASSIGNMENT_STATUS_LABELS = {
@@ -35,7 +35,7 @@ export const ASSIGNMENT_STATUS_LABELS = {
   [ASSIGNMENT_STATUSES.PENDING]: '대기 중',
   [ASSIGNMENT_STATUSES.OVERDUE]: '연체',
   [ASSIGNMENT_STATUSES.LOST]: '분실',
-  [ASSIGNMENT_STATUSES.DAMAGED]: '손상'
+  [ASSIGNMENT_STATUSES.DAMAGED]: '손상',
 } as const;
 
 export const ASSIGNMENT_STATUS_COLORS = {
@@ -44,7 +44,7 @@ export const ASSIGNMENT_STATUS_COLORS = {
   [ASSIGNMENT_STATUSES.PENDING]: 'default' as const,
   [ASSIGNMENT_STATUSES.OVERDUE]: 'error' as const,
   [ASSIGNMENT_STATUSES.LOST]: 'error' as const,
-  [ASSIGNMENT_STATUSES.DAMAGED]: 'warning' as const
+  [ASSIGNMENT_STATUSES.DAMAGED]: 'warning' as const,
 } as const;
 
 export const ASSIGNMENT_STATUS_DESCRIPTIONS = {
@@ -53,7 +53,7 @@ export const ASSIGNMENT_STATUS_DESCRIPTIONS = {
   [ASSIGNMENT_STATUSES.PENDING]: '할당 대기 중인 자산',
   [ASSIGNMENT_STATUSES.OVERDUE]: '반납 예정일을 초과한 자산',
   [ASSIGNMENT_STATUSES.LOST]: '분실된 자산',
-  [ASSIGNMENT_STATUSES.DAMAGED]: '손상된 자산'
+  [ASSIGNMENT_STATUSES.DAMAGED]: '손상된 자산',
 } as const;
 
 // ============================================================================
@@ -62,22 +62,22 @@ export const ASSIGNMENT_STATUS_DESCRIPTIONS = {
 
 export const ASSET_TYPES = {
   HARDWARE: 'hardware' as const,
-  SOFTWARE: 'software' as const
+  SOFTWARE: 'software' as const,
 } as const;
 
 export const ASSET_TYPE_LIST: AssetType[] = [
   ASSET_TYPES.HARDWARE,
-  ASSET_TYPES.SOFTWARE
+  ASSET_TYPES.SOFTWARE,
 ];
 
 export const ASSET_TYPE_LABELS = {
   [ASSET_TYPES.HARDWARE]: '하드웨어',
-  [ASSET_TYPES.SOFTWARE]: '소프트웨어'
+  [ASSET_TYPES.SOFTWARE]: '소프트웨어',
 } as const;
 
 export const ASSET_TYPE_ICONS = {
   [ASSET_TYPES.HARDWARE]: 'Computer',
-  [ASSET_TYPES.SOFTWARE]: 'Apps'
+  [ASSET_TYPES.SOFTWARE]: 'Apps',
 } as const;
 
 // ============================================================================
@@ -88,21 +88,21 @@ export const ASSET_CONDITIONS = {
   GOOD: 'good' as const,
   FAIR: 'fair' as const,
   POOR: 'poor' as const,
-  DAMAGED: 'damaged' as const
+  DAMAGED: 'damaged' as const,
 } as const;
 
 export const ASSET_CONDITION_LABELS = {
   [ASSET_CONDITIONS.GOOD]: '양호',
   [ASSET_CONDITIONS.FAIR]: '보통',
   [ASSET_CONDITIONS.POOR]: '불량',
-  [ASSET_CONDITIONS.DAMAGED]: '손상'
+  [ASSET_CONDITIONS.DAMAGED]: '손상',
 } as const;
 
 export const ASSET_CONDITION_COLORS = {
   [ASSET_CONDITIONS.GOOD]: 'success' as const,
   [ASSET_CONDITIONS.FAIR]: 'info' as const,
   [ASSET_CONDITIONS.POOR]: 'warning' as const,
-  [ASSET_CONDITIONS.DAMAGED]: 'error' as const
+  [ASSET_CONDITIONS.DAMAGED]: 'error' as const,
 } as const;
 
 // ============================================================================
@@ -134,7 +134,7 @@ export const ASSIGNMENT_VALIDATION_RULES = {
 
   // File upload (for future features)
   MAX_ATTACHMENT_SIZE: 10 * 1024 * 1024, // 10MB
-  ALLOWED_FILE_TYPES: ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png']
+  ALLOWED_FILE_TYPES: ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png'],
 } as const;
 
 // ============================================================================
@@ -144,43 +144,43 @@ export const ASSIGNMENT_VALIDATION_RULES = {
 export const ASSIGNMENT_FORM_VALIDATION = {
   employee_id: {
     required: true,
-    message: '직원을 선택해주세요.'
+    message: '직원을 선택해주세요.',
   },
   asset_id: {
     required: true,
-    message: '자산을 선택해주세요.'
+    message: '자산을 선택해주세요.',
   },
   asset_type: {
     required: true,
     values: ASSET_TYPE_LIST,
-    message: '자산 유형을 선택해주세요.'
+    message: '자산 유형을 선택해주세요.',
   },
   assigned_date: {
     required: true,
     min: ASSIGNMENT_VALIDATION_RULES.MIN_ASSIGNMENT_DATE,
     max: ASSIGNMENT_VALIDATION_RULES.MAX_ASSIGNMENT_DATE,
-    message: '올바른 할당일을 선택해주세요.'
+    message: '올바른 할당일을 선택해주세요.',
   },
   return_date: {
     required: false,
     max: ASSIGNMENT_VALIDATION_RULES.MAX_RETURN_DATE,
-    message: '올바른 반납일을 선택해주세요.'
+    message: '올바른 반납일을 선택해주세요.',
   },
   notes: {
     required: false,
     maxLength: ASSIGNMENT_VALIDATION_RULES.NOTES_MAX_LENGTH,
-    message: `메모는 ${ASSIGNMENT_VALIDATION_RULES.NOTES_MAX_LENGTH}자 이하로 입력해주세요.`
+    message: `메모는 ${ASSIGNMENT_VALIDATION_RULES.NOTES_MAX_LENGTH}자 이하로 입력해주세요.`,
   },
   return_notes: {
     required: false,
     maxLength: ASSIGNMENT_VALIDATION_RULES.RETURN_NOTES_MAX_LENGTH,
-    message: `반납 메모는 ${ASSIGNMENT_VALIDATION_RULES.RETURN_NOTES_MAX_LENGTH}자 이하로 입력해주세요.`
+    message: `반납 메모는 ${ASSIGNMENT_VALIDATION_RULES.RETURN_NOTES_MAX_LENGTH}자 이하로 입력해주세요.`,
   },
   condition: {
     required: false,
     values: Object.values(ASSET_CONDITIONS),
-    message: '올바른 상태를 선택해주세요.'
-  }
+    message: '올바른 상태를 선택해주세요.',
+  },
 } as const;
 
 // ============================================================================
@@ -191,7 +191,7 @@ export const ASSIGNMENT_SEARCH_FIELDS = [
   'employee_name',
   'asset_id',
   'asset_description',
-  'notes'
+  'notes',
 ] as const;
 
 export const ASSIGNMENT_FILTER_OPTIONS = {
@@ -199,23 +199,23 @@ export const ASSIGNMENT_FILTER_OPTIONS = {
     label: '자산 유형',
     options: ASSET_TYPE_LIST.map(type => ({
       value: type,
-      label: ASSET_TYPE_LABELS[type]
-    }))
+      label: ASSET_TYPE_LABELS[type],
+    })),
   },
   status: {
     label: '상태',
     options: ASSIGNMENT_STATUS_LIST.map(status => ({
       value: status,
-      label: ASSIGNMENT_STATUS_LABELS[status]
-    }))
+      label: ASSIGNMENT_STATUS_LABELS[status],
+    })),
   },
   condition: {
     label: '상태',
     options: Object.values(ASSET_CONDITIONS).map(condition => ({
       value: condition,
-      label: ASSET_CONDITION_LABELS[condition]
-    }))
-  }
+      label: ASSET_CONDITION_LABELS[condition],
+    })),
+  },
 } as const;
 
 export const ASSIGNMENT_SORT_OPTIONS = [
@@ -225,7 +225,7 @@ export const ASSIGNMENT_SORT_OPTIONS = [
   { value: 'asset_id', label: '자산 ID', direction: 'asc' },
   { value: 'status', label: '상태', direction: 'asc' },
   { value: 'created_at', label: '생성일', direction: 'desc' },
-  { value: 'updated_at', label: '수정일', direction: 'desc' }
+  { value: 'updated_at', label: '수정일', direction: 'desc' },
 ] as const;
 
 // ============================================================================
@@ -250,8 +250,8 @@ export const ASSIGNMENT_PERMISSIONS = {
         'assignment:update',
         'assignment:delete',
         'assignment:return',
-        'assignment:export'
-      ]
+        'assignment:export',
+      ],
     },
     MANAGER: {
       permissions: [
@@ -259,15 +259,13 @@ export const ASSIGNMENT_PERMISSIONS = {
         'assignment:read',
         'assignment:update',
         'assignment:return',
-        'assignment:export'
-      ]
+        'assignment:export',
+      ],
     },
     USER: {
-      permissions: [
-        'assignment:read'
-      ]
-    }
-  }
+      permissions: ['assignment:read'],
+    },
+  },
 } as const;
 
 // ============================================================================
@@ -282,7 +280,7 @@ export const ASSIGNMENT_UI_CONFIG = {
     STICKY_HEADER: true,
     SHOW_PAGINATION: true,
     ENABLE_SORTING: true,
-    ENABLE_FILTERING: true
+    ENABLE_FILTERING: true,
   },
 
   // Modal configurations
@@ -290,26 +288,26 @@ export const ASSIGNMENT_UI_CONFIG = {
     CREATE_ASSIGNMENT: {
       maxWidth: 'md',
       fullWidth: true,
-      disableEscapeKeyDown: false
+      disableEscapeKeyDown: false,
     },
     ASSIGNMENT_DETAILS: {
       maxWidth: 'lg',
       fullWidth: true,
-      disableEscapeKeyDown: false
+      disableEscapeKeyDown: false,
     },
     RETURN_ASSET: {
       maxWidth: 'sm',
       fullWidth: true,
-      disableEscapeKeyDown: false
-    }
+      disableEscapeKeyDown: false,
+    },
   },
 
   // Animation and timing
   ANIMATIONS: {
     LOADING_DELAY: 300,
     TOAST_DURATION: 4000,
-    MODAL_TRANSITION: 200
-  }
+    MODAL_TRANSITION: 200,
+  },
 } as const;
 
 // ============================================================================
@@ -321,23 +319,23 @@ export const ASSIGNMENT_ERROR_MESSAGES = {
   UNKNOWN_ERROR: '알 수 없는 오류가 발생했습니다.',
   NETWORK_ERROR: '네트워크 연결을 확인해주세요.',
   SERVER_ERROR: '서버 오류가 발생했습니다.',
-  
+
   // Assignment specific errors
   ASSIGNMENT_NOT_FOUND: '할당 정보를 찾을 수 없습니다.',
   ASSIGNMENT_ALREADY_RETURNED: '이미 반납된 자산입니다.',
   ASSET_NOT_AVAILABLE: '사용할 수 없는 자산입니다.',
   EMPLOYEE_NOT_FOUND: '직원 정보를 찾을 수 없습니다.',
   ASSET_ALREADY_ASSIGNED: '이미 할당된 자산입니다.',
-  
+
   // Validation errors
   INVALID_DATE_RANGE: '올바른 날짜 범위를 선택해주세요.',
   REQUIRED_FIELD: '필수 입력 항목입니다.',
   INVALID_FORMAT: '올바른 형식으로 입력해주세요.',
-  
+
   // Permission errors
   INSUFFICIENT_PERMISSIONS: '이 작업을 수행할 권한이 없습니다.',
   ADMIN_ONLY: '관리자만 수행할 수 있는 작업입니다.',
-  MANAGER_ONLY: '관리자 또는 매니저만 수행할 수 있는 작업입니다.'
+  MANAGER_ONLY: '관리자 또는 매니저만 수행할 수 있는 작업입니다.',
 } as const;
 
 // ============================================================================
@@ -350,7 +348,7 @@ export const ASSIGNMENT_SUCCESS_MESSAGES = {
   ASSIGNMENT_DELETED: '할당이 삭제되었습니다.',
   ASSET_RETURNED: '자산이 성공적으로 반납되었습니다.',
   EXPORT_COMPLETED: '데이터 내보내기가 완료되었습니다.',
-  DATA_REFRESHED: '데이터가 새로고침되었습니다.'
+  DATA_REFRESHED: '데이터가 새로고침되었습니다.',
 } as const;
 
 // ============================================================================
@@ -363,7 +361,7 @@ export const ASSIGNMENT_API_ENDPOINTS = {
   EXPORT: '/api/assignments/export',
   RETURN: (id: string) => `/api/assignments/${id}/return`,
   HISTORY: (id: string) => `/api/assignments/${id}/history`,
-  STATS: '/api/assignments/stats'
+  STATS: '/api/assignments/stats',
 } as const;
 
 // ============================================================================
@@ -376,9 +374,9 @@ export const ASSIGNMENT_DEFAULTS = {
     sortBy: 'assigned_date' as const,
     sortOrder: 'desc' as const,
     page: 1,
-    limit: ASSIGNMENT_VALIDATION_RULES.DEFAULT_PAGE_SIZE
+    limit: ASSIGNMENT_VALIDATION_RULES.DEFAULT_PAGE_SIZE,
   },
-  
+
   FILTERS: {
     asset_type: undefined,
     status: undefined,
@@ -388,13 +386,13 @@ export const ASSIGNMENT_DEFAULTS = {
     assigned_date_to: undefined,
     return_date_from: undefined,
     return_date_to: undefined,
-    overdue: undefined
+    overdue: undefined,
   },
-  
+
   FORM_DATA: {
     assigned_date: new Date().toISOString().split('T')[0],
     notes: '',
     return_notes: '',
-    condition: ASSET_CONDITIONS.GOOD
-  }
+    condition: ASSET_CONDITIONS.GOOD,
+  },
 } as const;
