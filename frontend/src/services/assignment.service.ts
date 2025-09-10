@@ -49,8 +49,14 @@ export class AssignmentService {
   /**
    * Return asset (mark assignment as returned)
    */
-  async returnAsset(id: string, notes?: string): Promise<ApiResponse<Assignment>> {
-    return this.client.put<Assignment>(`/assignments/${id}/return`, { notes });
+  async returnAsset(id: string, returnData: {
+    notes?: string;
+    condition?: string;
+    rating?: number;
+    issues?: string[];
+    return_date?: string;
+  }): Promise<ApiResponse<Assignment>> {
+    return this.client.put<Assignment>(`/assignments/${id}/return`, returnData);
   }
 
   /**

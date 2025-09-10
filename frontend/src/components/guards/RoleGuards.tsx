@@ -116,6 +116,20 @@ export function ManagerGuard({ children, fallback }: RoleGuardProps) {
 }
 
 /**
+ * Simple admin guard for inline use
+ * Only renders children if user is admin
+ */
+export function AdminGuard({ children, fallback }: RoleGuardProps) {
+  const { isAdmin } = useAuth();
+
+  if (!isAdmin) {
+    return fallback ? <>{fallback}</> : null;
+  }
+
+  return <>{children}</>;
+}
+
+/**
  * HOC for components that require admin access
  */
 export function withAdminGuard<P extends object>(

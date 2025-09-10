@@ -73,6 +73,22 @@ export {
   useSoftwareReturnModal,
 } from './SoftwareReturnModal';
 
+export {
+  AssignmentFormModal,
+} from './AssignmentFormModal';
+
+export {
+  AssignmentDetailModal,
+} from './AssignmentDetailModal';
+
+export {
+  AssetReturnModal,
+} from './AssetReturnModal';
+
+export {
+  AdvancedSearchModal,
+} from './AdvancedSearchModal';
+
 // Re-export commonly used types
 export type { UserRole } from '../tables/TableActions';
 
