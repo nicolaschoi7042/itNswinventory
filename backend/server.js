@@ -118,6 +118,54 @@ const logActivity = async (userId, action, tableName = null, recordId = null, ol
 };
 
 // LDAP 사용자를 로컬 데이터베이스에서 찾거나 생성하는 함수
+// LDAP 사용자를 employees 테이블에 동기화
+const syncLdapUserToEmployees = async (ldapUser, userId) => {
+    try {
+        // employees 테이블에서 해당 이름의 직원이 있는지 확인
+        const employeeCheck = await pool.query('SELECT * FROM employees WHERE name = $1', [ldapUser.fullName]);
+        
+        if (employeeCheck.rows.length === 0) {
+            // employees 테이블에 없으면 새로 생성
+            // 다음 사용 가능한 EMP ID 생성
+            const maxIdResult = await pool.query(`
+                SELECT MAX(CAST(SUBSTRING(id FROM 4) AS INTEGER)) as max_num 
+                FROM employees WHERE id LIKE 'EMP%'
+            `);
+            const nextNum = (maxIdResult.rows[0].max_num || 0) + 1;
+            const newEmployeeId = `EMP${String(nextNum).padStart(3, '0')}`;
+            
+            // 부서는 기본값으로 '개발팀' 설정 (나중에 관리자가 수정 가능)
+            await pool.query(`
+                INSERT INTO employees (id, name, department, position, hire_date, email, phone, is_active, created_at, updated_at, created_by)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, $8)
+            `, [
+                newEmployeeId,
+                ldapUser.fullName,
+                '개발팀', // 기본 부서
+                '사원',   // 기본 직급
+                new Date().toISOString().split('T')[0], // 오늘 날짜
+                ldapUser.email,
+                '010-0000-0000', // 기본 연락처
+                userId
+            ]);
+            
+            console.log(`✅ Auto-created employee: ${newEmployeeId} - ${ldapUser.fullName}`);
+        } else {
+            // 기존 직원 정보가 있으면 이메일만 업데이트
+            await pool.query(`
+                UPDATE employees 
+                SET email = $1, updated_at = CURRENT_TIMESTAMP
+                WHERE name = $2
+            `, [ldapUser.email, ldapUser.fullName]);
+            
+            console.log(`✅ Updated employee info: ${ldapUser.fullName}`);
+        }
+    } catch (error) {
+        console.error('Error syncing LDAP user to employees:', error);
+        // employees 동기화 실패해도 로그인은 계속 진행
+    }
+};
+
 const findOrCreateLdapUser = async (ldapUser) => {
     try {
         // 먼저 username으로 기존 사용자 찾기
@@ -135,6 +183,10 @@ const findOrCreateLdapUser = async (ldapUser) => {
             `, [ldapUser.fullName, ldapUser.email, user.id]);
             
             console.log(`✅ Updated existing LDAP user: ${ldapUser.username}`);
+            
+            // employees 테이블 동기화
+            await syncLdapUserToEmployees(ldapUser, user.id);
+            
             return updateResult.rows[0];
         } else {
             // 새 LDAP 사용자 생성
@@ -151,6 +203,10 @@ const findOrCreateLdapUser = async (ldapUser) => {
             ]);
             
             console.log(`✅ Created new LDAP user: ${ldapUser.username}`);
+            
+            // employees 테이블 동기화
+            await syncLdapUserToEmployees(ldapUser, createResult.rows[0].id);
+            
             return createResult.rows[0];
         }
     } catch (error) {
