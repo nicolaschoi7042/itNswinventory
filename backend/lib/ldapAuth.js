@@ -209,6 +209,87 @@ class LDAPAuth {
     }
 
     /**
+     * Get all users from LDAP directory
+     * @returns {Array} Array of user objects
+     */
+    async getAllUsers() {
+        const client = new Client({
+            url: this.config.server,
+            timeout: 30000,
+            connectTimeout: 30000,
+        });
+
+        try {
+            // Bind with admin credentials
+            await client.bind(this.config.bindDN, this.config.bindPassword);
+
+            // Search for all users
+            const searchOptions = {
+                scope: 'sub',
+                filter: '(objectClass=person)', // 모든 person 객체 검색
+                attributes: [
+                    'dn', 
+                    'uid', 
+                    'cn', 
+                    'sn', 
+                    'givenName', 
+                    'mail', 
+                    'sAMAccountName',
+                    'userPrincipalName',
+                    'displayName'
+                ]
+            };
+
+            console.log('🔍 LDAP: Searching for all users...');
+            const searchResult = await client.search(this.config.userBase, searchOptions);
+            const users = [];
+
+            for (const entry of searchResult.searchEntries) {
+                try {
+                    // 사용자명 결정 (우선순위: sAMAccountName > uid > cn)
+                    const username = entry.sAMAccountName || entry.uid || entry.cn;
+                    
+                    // 전체 이름 결정
+                    const fullName = entry[this.config.userFullnameAttr] || entry.displayName || entry.cn || username;
+                    
+                    // 이메일 결정
+                    const email = entry[this.config.userEmailAttr] || entry.mail || entry.userPrincipalName || '';
+
+                    if (username && fullName) {
+                        // 그룹 멤버십으로 역할 결정
+                        const groups = await this.getUserGroups(entry.dn);
+                        const role = this.determineRole(groups);
+
+                        users.push({
+                            username: username,
+                            fullName: fullName,
+                            email: email,
+                            role: role,
+                            groups: groups,
+                            dn: entry.dn
+                        });
+                    }
+                } catch (userError) {
+                    console.warn(`⚠️ LDAP: Error processing user ${entry.dn}:`, userError.message);
+                }
+            }
+
+            console.log(`✅ LDAP: Found ${users.length} users`);
+            return users;
+
+        } catch (error) {
+            console.error('❌ LDAP: Error getting all users:', error.message);
+            throw new Error(`LDAP 사용자 목록을 가져올 수 없습니다: ${error.message}`);
+        } finally {
+            try {
+                await client.unbind();
+            } catch (unbindError) {
+                console.warn('LDAP: Warning during unbind:', unbindError.message);
+            }
+        }
+    }
+
+    /**
      * Test LDAP connection
      * @returns {boolean} True if connection successful
      */

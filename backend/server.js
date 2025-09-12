@@ -951,6 +951,104 @@ app.put('/api/admin/users/:id/reset-password', authenticateToken, authorize(['ad
     }
 });
 
+// LDAP 사용자 수동 동기화 (관리자 전용)
+app.post('/api/admin/ldap-sync', authenticateToken, authorize(['admin']), async (req, res) => {
+    try {
+        if (!ldapEnabled || !ldapAuth) {
+            return res.status(400).json({ error: 'LDAP 인증이 비활성화되어 있습니다.' });
+        }
+
+        console.log('🔄 Manual LDAP sync started by admin:', req.user.username);
+        
+        // LDAP에서 모든 사용자 목록 가져오기
+        const ldapUsers = await ldapAuth.getAllUsers();
+        
+        if (!ldapUsers || ldapUsers.length === 0) {
+            return res.json({ 
+                message: 'LDAP에서 사용자를 찾을 수 없습니다.',
+                synchronized: 0,
+                created: 0,
+                updated: 0 
+            });
+        }
+
+        let createdCount = 0;
+        let updatedCount = 0;
+        let errorCount = 0;
+        const results = [];
+
+        // 각 LDAP 사용자를 순차적으로 동기화
+        for (const ldapUser of ldapUsers) {
+            try {
+                // users 테이블 확인
+                const userResult = await pool.query('SELECT * FROM users WHERE username = $1', [ldapUser.username]);
+                
+                if (userResult.rows.length > 0) {
+                    // 기존 사용자 업데이트
+                    await pool.query(`
+                        UPDATE users 
+                        SET full_name = $1, email = $2, updated_at = CURRENT_TIMESTAMP
+                        WHERE username = $3
+                    `, [ldapUser.fullName, ldapUser.email, ldapUser.username]);
+                    
+                    updatedCount++;
+                    results.push({ username: ldapUser.username, action: 'updated', name: ldapUser.fullName });
+                } else {
+                    // 새 사용자 생성
+                    const newUserResult = await pool.query(`
+                        INSERT INTO users (username, password_hash, full_name, email, role, is_active, created_at, updated_at)
+                        VALUES ($1, $2, $3, $4, $5, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                        RETURNING id
+                    `, [
+                        ldapUser.username,
+                        '',
+                        ldapUser.fullName,
+                        ldapUser.email,
+                        ldapUser.role
+                    ]);
+                    
+                    // employees 테이블에도 동기화
+                    await syncLdapUserToEmployees(ldapUser, newUserResult.rows[0].id);
+                    
+                    createdCount++;
+                    results.push({ username: ldapUser.username, action: 'created', name: ldapUser.fullName });
+                }
+                
+                // employees 테이블 동기화 (기존 사용자도)
+                if (userResult.rows.length > 0) {
+                    await syncLdapUserToEmployees(ldapUser, userResult.rows[0].id);
+                }
+                
+            } catch (userError) {
+                console.error(`Error syncing user ${ldapUser.username}:`, userError);
+                errorCount++;
+                results.push({ username: ldapUser.username, action: 'error', name: ldapUser.fullName, error: userError.message });
+            }
+        }
+
+        // 동기화 결과 로깅
+        await logActivity(
+            req.user.id, 
+            `LDAP 수동 동기화 완료: 생성 ${createdCount}명, 업데이트 ${updatedCount}명, 오류 ${errorCount}명`
+        );
+
+        console.log(`✅ Manual LDAP sync completed: Created ${createdCount}, Updated ${updatedCount}, Errors ${errorCount}`);
+
+        res.json({
+            message: 'LDAP 사용자 동기화가 완료되었습니다.',
+            synchronized: ldapUsers.length,
+            created: createdCount,
+            updated: updatedCount,
+            errors: errorCount,
+            results: results
+        });
+
+    } catch (error) {
+        console.error('Manual LDAP sync error:', error);
+        res.status(500).json({ error: 'LDAP 동기화 중 오류가 발생했습니다: ' + error.message });
+    }
+});
+
 
 // === 활동 로그 API ===
 

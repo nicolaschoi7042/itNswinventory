@@ -2889,6 +2889,70 @@ function handleLogout() {
     }
 }
 
+// LDAP 사용자 수동 동기화
+async function syncLdapUsers() {
+    if (!hasAdminRole()) {
+        showAlert('관리자 권한이 필요합니다.', 'error');
+        return;
+    }
+
+    const syncBtn = document.getElementById('ldapSyncBtn');
+    const originalText = syncBtn.innerHTML;
+    
+    try {
+        // 버튼 비활성화 및 로딩 상태
+        syncBtn.disabled = true;
+        syncBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 동기화 중...';
+        
+        showAlert('LDAP 동기화를 시작합니다...', 'info');
+
+        const response = await dataStore.api.request('/admin/ldap-sync', {
+            method: 'POST'
+        });
+
+        if (response.error) {
+            throw new Error(response.error);
+        }
+
+        // 결과 표시
+        const { synchronized, created, updated, errors, results } = response;
+        
+        let message = `LDAP 동기화 완료!\n`;
+        message += `• 전체 사용자: ${synchronized}명\n`;
+        message += `• 신규 생성: ${created}명\n`;
+        message += `• 업데이트: ${updated}명`;
+        
+        if (errors > 0) {
+            message += `\n• 오류: ${errors}명`;
+        }
+
+        // 상세 결과 콘솔 로그
+        console.log('LDAP Sync Results:', results);
+
+        showAlert(message, created > 0 || updated > 0 ? 'success' : 'info');
+
+        // 사용자 목록 새로고침
+        if (created > 0 || updated > 0) {
+            await dataStore.loadUsers();
+            renderUsers();
+            
+            // 직원 목록도 새로고침 (employees 테이블도 업데이트되었을 수 있음)
+            await dataStore.loadEmployees();
+            if (document.getElementById('employees').classList.contains('active')) {
+                renderEmployees();
+            }
+        }
+
+    } catch (error) {
+        console.error('LDAP sync error:', error);
+        showAlert(`LDAP 동기화 오류: ${error.message}`, 'error');
+    } finally {
+        // 버튼 원래 상태로 복원
+        syncBtn.disabled = false;
+        syncBtn.innerHTML = originalText;
+    }
+}
+
 // 이벤트 리스너 추가
 document.addEventListener('DOMContentLoaded', function() {
     // 로그인 폼 이벤트 리스너

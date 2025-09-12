@@ -277,6 +277,8 @@
                     <option value="프린터">프린터</option>
                     <option value="네트워크장비">네트워크장비</option>
                     <option value="서버">서버</option>
+                    <option value="재고자산">재고자산</option>
+                    <option value="저장장치">저장장치</option>
                 </select>
                 <select id="statusFilter" class="filter-select">
                     <option value="">전체 상태</option>
@@ -392,6 +394,9 @@
             <div class="section-header">
                 <h2>사용자 관리</h2>
                 <div class="section-actions">
+                    <button class="btn btn-info" onclick="syncLdapUsers()" id="ldapSyncBtn">
+                        <i class="fas fa-sync-alt"></i> LDAP 동기화
+                    </button>
                     <button class="btn btn-success" onclick="exportToExcel('users')">
                         <i class="fas fa-file-excel"></i> 엑셀 내보내기
                     </button>
@@ -495,6 +500,8 @@
                         <option value="프린터">프린터</option>
                         <option value="네트워크장비">네트워크장비</option>
                         <option value="서버">서버</option>
+                        <option value="재고자산">재고자산</option>
+                        <option value="저장장치">저장장치</option>
                     </select>
                 </div>
                 <div class="form-group">

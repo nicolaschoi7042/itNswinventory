@@ -1939,7 +1939,7 @@ fieldset::before {
     align-items: center;
     padding: var(--spacing-xs) var(--spacing-sm);
     border-radius: var(--radius-full);
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     text-transform: capitalize;
     letter-spacing: 0.025em;
