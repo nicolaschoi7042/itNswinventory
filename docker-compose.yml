@@ -25,13 +25,12 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: it-inventory-api
-    ports:
-      - "3001:3000"
+    network_mode: host
     environment:
       - NODE_ENV=production
       - TZ=Asia/Seoul
-      - PORT=3000
-      - DB_HOST=it-inventory-db
+      - PORT=3001
+      - DB_HOST=localhost
       - DB_NAME=inventory_db
       - DB_USER=inventory_user
       - DB_PASSWORD=inventory_password_2024
@@ -41,8 +40,6 @@ services:
     depends_on:
       it-inventory-db:
         condition: service_healthy
-    networks:
-      - it-inventory-network
     restart: unless-stopped
     labels:
       - "description=IT Asset and Software Inventory Management System API"

@@ -271,7 +271,9 @@ app.post('/api/auth/login', async (req, res) => {
             } catch (ldapError) {
                 console.error('LDAP authentication error:', ldapError.message);
                 // LDAP 연결 오류인 경우 로컬 인증으로 폴백
-                if (ldapError.message.includes('getaddrinfo ENOTFOUND') || ldapError.message.includes('ECONNREFUSED')) {
+                if (ldapError.message.includes('getaddrinfo ENOTFOUND') ||
+                    ldapError.message.includes('ECONNREFUSED') ||
+                    ldapError.message.includes('Connection timeout')) {
                     console.log(`⚠️ LDAP: Connection failed, falling back to local authentication for ${username}`);
                 } else {
                     return res.status(401).json({ error: 'LDAP 인증에 실패했습니다. 사용자명과 비밀번호를 확인하세요.' });
