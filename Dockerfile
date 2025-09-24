@@ -14,7 +14,7 @@ COPY nginx.conf /etc/nginx/conf.d/
 
 # 웹 애플리케이션 파일들을 컨테이너로 복사
 COPY index.html /usr/share/nginx/html/
-COPY styles.css /usr/share/nginx/html/
+COPY styles-ny-business.css /usr/share/nginx/html/
 COPY script.js /usr/share/nginx/html/
 COPY favicon.ico /usr/share/nginx/html/
 COPY SMART_Check_Plus_User_Manual_V2.0.pdf /usr/share/nginx/html/

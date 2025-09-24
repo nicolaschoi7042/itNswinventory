@@ -40,6 +40,7 @@ body.loaded {
     --color-secondary: #6B7280;        /* Medium gray */
     --color-background: #FAFAFA;       /* Off-white */
     --color-surface: #FFFFFF;          /* Pure white */
+    --color-white: #FFFFFF;            /* Pure white */
     --color-text-primary: #374151;     /* Dark gray text */
     --color-text-secondary: #9CA3AF;   /* Light gray text */
     
