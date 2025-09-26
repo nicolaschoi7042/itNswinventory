@@ -1145,11 +1145,11 @@ function showHardwareModal(hardwareId = null) {
             document.getElementById('hwPrice').value = hardware.price;
             document.getElementById('hwStatus').value = hardware.status;
             document.getElementById('hwNotes').value = hardware.notes;
-            document.getElementById('hwAssetTag').disabled = true;
         }
     } else {
         form.reset();
-        document.getElementById('hwAssetTag').disabled = false;
+        document.getElementById('hwAssetTag').value = '';
+        document.getElementById('hwAssetTag').placeholder = '자동 생성됩니다';
     }
 
     modal.style.display = 'block';
@@ -1496,8 +1496,11 @@ async function handleEmployeeSubmit(event) {
 async function handleHardwareSubmit(event) {
     event.preventDefault();
 
+    const assetTagValue = document.getElementById('hwAssetTag').value.trim();
+    const isEditMode = assetTagValue && dataStore.hardware.find(hw => hw.id === assetTagValue);
+
     const formData = {
-        id: document.getElementById('hwAssetTag').value,
+        id: assetTagValue,
         type: document.getElementById('hwType').value,
         manufacturer: document.getElementById('hwManufacturer').value,
         model: document.getElementById('hwModel').value,
@@ -1509,11 +1512,12 @@ async function handleHardwareSubmit(event) {
     };
 
     try {
-        const existingHardware = dataStore.hardware.find(hw => hw.id === formData.id);
-
-        if (existingHardware) {
+        if (isEditMode) {
+            // 편집 모드: 기존 하드웨어 수정
             await dataStore.updateHardware(formData.id, formData);
         } else {
+            // 신규 등록 모드: 자산태그 자동 생성 (서버에서 처리)
+            delete formData.id; // 서버에서 자동 생성하도록 ID 제거
             await dataStore.addHardware(formData);
         }
 
