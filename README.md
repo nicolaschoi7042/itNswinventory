@@ -62,16 +62,32 @@ docker-compose down
 ## 📁 파일 구조
 ```
 itNswinventory/
-├── Dockerfile              # Docker 이미지 빌드 설정
+├── Dockerfile              # 프론트엔드 Docker 이미지 빌드 설정
+├── Dockerfile.backend      # 백엔드 Docker 이미지 빌드 설정
 ├── docker-compose.yml      # Docker Compose 설정
 ├── nginx.conf              # Nginx 웹서버 설정
 ├── index.html              # 메인 HTML 파일
-├── styles.css              # CSS 스타일시트
+├── styles-ny-business.css  # CSS 스타일시트
 ├── script.js               # JavaScript 로직
 ├── start.sh                # 서비스 시작 스크립트
 ├── stop.sh                 # 서비스 중지 스크립트
+├── backend/
+│   ├── server.js           # Express API 서버
+│   ├── package.json        # Node.js 의존성
+│   ├── database.sql        # 데이터베이스 스키마
+│   └── .env                # 환경 변수 설정
+├── scripts/
+│   ├── backup-db.sh        # 데이터베이스 백업 스크립트
+│   ├── restore-db.sh       # 데이터베이스 복원 스크립트
+│   ├── full-backup.sh      # 전체 시스템 백업 스크립트
+│   └── monitor.sh          # 시스템 모니터링 스크립트
+├── backups/                # 백업 파일 저장 디렉토리 (자동 생성)
 ├── logs/                   # Nginx 로그 디렉토리 (자동 생성)
-└── README.md               # 이 파일
+├── README.md               # 이 파일
+├── MIGRATION_GUIDE.md      # 서버 이전 가이드
+├── DATA_RECOVERY_GUIDE.md  # 데이터 복구 가이드
+├── LDAP_SETUP.md           # LDAP 설정 가이드
+└── CLAUDE.md               # 프로젝트 개발 가이드
 ```
 
 ## 🔧 주요 기능
@@ -125,6 +141,57 @@ docker-compose restart
 docker-compose build --no-cache
 docker-compose up -d
 ```
+
+## 💾 백업 및 복원
+
+시스템은 자동화된 백업/복원 스크립트를 제공합니다.
+
+### 데이터베이스 백업
+```bash
+# 데이터베이스만 백업 (빠름)
+./scripts/backup-db.sh
+
+# 백업 디렉토리 지정
+./scripts/backup-db.sh /path/to/backup/
+```
+
+### 전체 시스템 백업
+```bash
+# 데이터베이스 + 애플리케이션 파일 + 설정 파일 전체 백업 (권장)
+./scripts/full-backup.sh
+
+# 백업 디렉토리 지정
+./scripts/full-backup.sh /path/to/backup/
+```
+
+### 데이터베이스 복원
+```bash
+# 백업 파일에서 복원
+./scripts/restore-db.sh backups/inventory_backup_YYYYMMDD_HHMMSS.sql
+
+# 압축된 백업 파일도 자동 처리
+./scripts/restore-db.sh backups/inventory_backup_YYYYMMDD_HHMMSS.sql.gz
+```
+
+### 백업 파일 위치
+- 기본 백업 디렉토리: `./backups/`
+- 백업 파일 형식:
+  - 데이터베이스: `inventory_backup_YYYYMMDD_HHMMSS.sql(.gz)`
+  - 전체 시스템: `it-inventory-full-backup_YYYYMMDD_HHMMSS.tar.gz`
+
+## 🔄 서버 이전
+
+다른 서버로 시스템을 이전해야 하는 경우 상세한 가이드를 참조하세요:
+
+**[📖 서버 이전 가이드 (MIGRATION_GUIDE.md)](MIGRATION_GUIDE.md)**
+
+마이그레이션 가이드에는 다음 내용이 포함되어 있습니다:
+- 단계별 이전 절차
+- 백업 및 복원 방법
+- 환경 설정 조정 가이드
+- 검증 및 테스트 방법
+- 문제 해결 팁
+- 롤백 절차
 
 ## 🔒 보안 설정
 - 내부망 전용 서비스 (외부 접근 차단 권장)

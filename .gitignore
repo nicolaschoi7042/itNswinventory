@@ -47,8 +47,12 @@ docker-compose.override.yml
 
 # 백업 파일들
 backup/
+backups/
 *.sql.backup
 *.dump
+inventory_backup_*.sql
+inventory_backup_*.sql.gz
+it-inventory-full-backup_*.tar.gz
 
 # 테스트 관련
 coverage/
