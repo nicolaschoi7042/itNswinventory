@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Roboe Technology inc IT 자산 및 SW 인벤토리 관리시스템</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles-ny-business.css?v=20250905105000">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <!-- 로그인 페이지 -->
+    <div id="loginPage" class="login-page">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="login-logo">
+                    <i class="fas fa-laptop"></i>
+                </div>
+                <h1>IT 자산 및 SW 인벤토리 관리시스템</h1>
+                <p class="login-subtitle">시스템에 로그인하여 자산 관리를 시작하세요</p>
+            </div>
+            
+            <form id="loginForm" class="login-form" autocomplete="off">
+                <div class="form-group">
+                    <label for="loginUsername">
+                        <i class="fas fa-user"></i>
+                        사용자명
+                    </label>
+                    <input type="text" id="loginUsername" autocomplete="off" placeholder="사용자명을 입력하세요" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="loginPassword">
+                        <i class="fas fa-lock"></i>
+                        비밀번호
+                    </label>
+                    <input type="password" id="loginPassword" autocomplete="off" placeholder="비밀번호를 입력하세요" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-login">
+                    <i class="fas fa-sign-in-alt"></i>
+                    로그인
+                </button>
+            </form>
+            
+            <div id="loginError" class="alert alert-error" style="display: none;"></div>
+            <div id="loginInfo" class="alert alert-info" style="display: none;"></div>
+            
+            <div class="login-footer">
+                <p><i class="fas fa-info-circle"></i> 로그인 오류 등 문제 발생 시 시스템 관리자에게 문의하세요</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 메인 애플리케이션 -->
+    <div id="mainApp" class="container" style="display: none;">
+        <!-- 헤더 -->
+        <header class="header">
+            <h1><i class="fas fa-laptop"></i> IT 자산 및 SW 인벤토리 관리시스템</h1>
+            <div class="header-right">
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalEmployees">0</span>
+                        <span class="stat-label">임직원</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalAssets">0</span>
+                        <span class="stat-label">하드웨어 자산</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalSoftware">0</span>
+                        <span class="stat-label">소프트웨어</span>
+                    </div>
+                </div>
+                <div class="header-user" id="headerUser" style="display: none;">
+                    <div class="user-info">
+                        <span class="user-name" id="userName">사용자</span>
+                        <button class="btn btn-logout" onclick="handleLogout()">
+                            <i class="fas fa-sign-out-alt"></i> 로그아웃
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- 네비게이션 탭 -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-tab="dashboard">
+                <i class="fas fa-chart-dashboard"></i> 대시보드
+            </button>
+            <button class="nav-tab" data-tab="employees">
+                <i class="fas fa-users"></i> 임직원 관리
+            </button>
+            <button class="nav-tab" data-tab="hardware">
+                <i class="fas fa-desktop"></i> 하드웨어 자산
+            </button>
+            <button class="nav-tab" data-tab="software">
+                <i class="fas fa-compact-disc"></i> 소프트웨어
+            </button>
+            <button class="nav-tab" data-tab="assignment">
+                <i class="fas fa-exchange-alt"></i> 자산 할당
+            </button>
+            <button class="nav-tab admin-only" data-tab="admin" style="display: none;">
+                <i class="fas fa-user-shield"></i> 사용자 관리
+            </button>
+        </nav>
+
+        <!-- 대시보드 탭 -->
+        <div id="dashboard" class="tab-content active">
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <h3>자산 현황</h3>
+                    <canvas id="assetChart" width="300" height="200"></canvas>
+                </div>
+                <div class="dashboard-card">
+                    <h3>소프트웨어 라이선스</h3>
+                    <div id="licenseStatus">
+                        <div class="license-item">
+                            <span>Microsoft Office: <strong id="officeCount">0</strong>개</span>
+                        </div>
+                        <div class="license-item">
+                            <span>Windows: <strong id="windowsCount">0</strong>개</span>
+                        </div>
+                        <div class="license-item">
+                            <span>Adobe Creative: <strong id="adobeCount">0</strong>개</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="dashboard-card">
+                    <h3>최근 활동</h3>
+                    <div id="recentActivities"></div>
+                </div>
+            </div>
+            
+            
+            <!-- SW 라이선스 점검 매뉴얼 섹션 -->
+            <div class="dashboard-manual-section">
+                <div class="section-header">
+                    <h2>SW 라이선스 점검 매뉴얼</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-primary" onclick="openPdfInNewTab()">
+                            <i class="fas fa-external-link-alt"></i> 새 창에서 열기
+                        </button>
+                        <button class="btn btn-secondary" onclick="downloadPdf()">
+                            <i class="fas fa-download"></i> PDF 다운로드
+                        </button>
+                    </div>
+                </div>
+
+                <div class="manual-container">
+                    <div class="manual-description">
+                        <h3><i class="fas fa-info-circle"></i> 소프트웨어 라이선스 개별 점검 가이드</h3>
+                        <p>이 매뉴얼은 직원들이 개별적으로 자신의 PC에 설치된 소프트웨어의 라이선스를 점검할 수 있도록 도와주는 가이드입니다.</p>
+                        <ul>
+                            <li>SMART Check Plus 프로그램 사용법</li>
+                            <li>소프트웨어 라이선스 확인 절차</li>
+                            <li>점검 결과 해석 및 조치사항</li>
+                            <li>문제 발생 시 대응 방법</li>
+                        </ul>
+                    </div>
+
+                    <!-- PDF 뷰어 - 임시 제거 (스크롤 문제 진단용) -->
+                    <div class="pdf-viewer-container" style="display: none;">
+                        <div class="pdf-viewer-tabs">
+                            <button class="pdf-tab active" onclick="showPdfEmbed()">
+                                <i class="fas fa-file-pdf"></i> 내장 뷰어
+                            </button>
+                            <button class="pdf-tab" onclick="showPdfObject()">
+                                <i class="fas fa-window-restore"></i> 브라우저 뷰어
+                            </button>
+                        </div>
+
+                        <!-- 내장 iframe 뷰어 -->
+                        <div id="embedViewer" class="pdf-viewer">
+                            <iframe id="pdfViewer"
+                                    src="SMART_Check_Plus_User_Manual_V2.0.pdf#toolbar=1&navpanes=1&scrollbar=1"
+                                    width="100%"
+                                    height="700px"
+                                    frameborder="0"
+                                    scrolling="auto">
+                                <p>PDF를 표시할 수 없습니다.
+                                   <a href="SMART_Check_Plus_User_Manual_V2.0.pdf" target="_blank">여기를 클릭하여 PDF를 다운로드하세요.</a>
+                                </p>
+                            </iframe>
+                        </div>
+
+                        <!-- 브라우저 object 뷰어 -->
+                        <div id="objectViewer" class="pdf-viewer" style="display: none;">
+                            <object data="SMART_Check_Plus_User_Manual_V2.0.pdf#toolbar=1&navpanes=1&scrollbar=1"
+                                    type="application/pdf"
+                                    width="100%"
+                                    height="700px">
+                                <p>PDF를 표시할 수 없습니다.
+                                   <a href="SMART_Check_Plus_User_Manual_V2.0.pdf" target="_blank">여기를 클릭하여 PDF를 다운로드하세요.</a>
+                                </p>
+                            </object>
+                        </div>
+
+                        <!-- PDF 뷰어 안내 -->
+                        <div class="pdf-viewer-help">
+                            <p><i class="fas fa-info-circle"></i>
+                               <strong>스크롤이 안되는 경우:</strong>
+                               "브라우저 뷰어" 탭을 클릭하거나 "새 창에서 열기" 버튼을 사용하세요.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- 임시 메시지 -->
+                    <div class="pdf-temp-message" style="padding: 20px; background: #f0f0f0; text-align: center;">
+                        <p><strong>PDF 뷰어 임시 제거됨 (스크롤 문제 진단 중)</strong></p>
+                        <p><a href="SMART_Check_Plus_User_Manual_V2.0.pdf" target="_blank" class="btn btn-primary">PDF 다운로드</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 임직원 관리 탭 -->
+        <div id="employees" class="tab-content">
+            <div class="section-header">
+                <h2>임직원 관리</h2>
+                <div class="section-actions">
+                    <button class="btn btn-success" onclick="exportToExcel('employees')">
+                        <i class="fas fa-file-excel"></i> 엑셀 내보내기
+                    </button>
+                    <button class="btn btn-primary" onclick="showEmployeeModal()">
+                        <i class="fas fa-plus"></i> 신규 등록
+                    </button>
+                </div>
+            </div>
+            <div class="search-filter">
+                <input type="text" id="employeeSearch" placeholder="이름, 부서, 사번으로 검색..." class="search-input">
+                <select id="departmentFilter" class="filter-select">
+                    <option value="">전체 부서</option>
+                    <option value="개발팀">개발팀</option>
+                    <option value="영업팀">영업팀</option>
+                    <option value="인사팀">인사팀</option>
+                    <option value="재무팀">재무팀</option>
+                </select>
+            </div>
+            <div class="table-container">
+                <table id="employeeTable">
+                    <thead>
+                        <tr>
+                            <th>사번</th>
+                            <th>이름</th>
+                            <th>부서</th>
+                            <th>할당된 자산</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 하드웨어 자산 탭 -->
+        <div id="hardware" class="tab-content">
+            <div class="section-header">
+                <h2>하드웨어 자산 관리</h2>
+                <div class="section-actions">
+                    <button class="btn btn-success" onclick="exportToExcel('hardware')">
+                        <i class="fas fa-file-excel"></i> 엑셀 내보내기
+                    </button>
+                    <button class="btn btn-primary" onclick="showHardwareModal()">
+                        <i class="fas fa-plus"></i> 자산 등록
+                    </button>
+                </div>
+            </div>
+            <div class="search-filter">
+                <input type="text" id="hardwareSearch" placeholder="자산태그, 모델명으로 검색..." class="search-input">
+                <select id="assetTypeFilter" class="filter-select">
+                    <option value="">전체 유형</option>
+                    <option value="데스크톱">데스크톱</option>
+                    <option value="노트북">노트북</option>
+                    <option value="모니터">모니터</option>
+                    <option value="프린터">프린터</option>
+                    <option value="네트워크장비">네트워크장비</option>
+                    <option value="서버">서버</option>
+                    <option value="재고자산">재고자산</option>
+                    <option value="저장장치">저장장치</option>
+                </select>
+                <select id="statusFilter" class="filter-select">
+                    <option value="">전체 상태</option>
+                    <option value="사용중">사용중</option>
+                    <option value="대기중">대기중</option>
+                    <option value="수리중">수리중</option>
+                    <option value="폐기">폐기</option>
+                </select>
+            </div>
+            <div class="table-container">
+                <table id="hardwareTable">
+                    <thead>
+                        <tr>
+                            <th>자산태그</th>
+                            <th>유형</th>
+                            <th>제조사</th>
+                            <th>모델명</th>
+                            <th>시리얼번호</th>
+                            <th>구입일</th>
+                            <th>상태</th>
+                            <th>할당자</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 소프트웨어 탭 -->
+        <div id="software" class="tab-content">
+            <div class="section-header">
+                <h2>소프트웨어 인벤토리</h2>
+                <div class="section-actions">
+                    <button class="btn btn-success" onclick="exportToExcel('software')">
+                        <i class="fas fa-file-excel"></i> 엑셀 내보내기
+                    </button>
+                    <button class="btn btn-primary" onclick="showSoftwareModal()">
+                        <i class="fas fa-plus"></i> 소프트웨어 등록
+                    </button>
+                </div>
+            </div>
+            <div class="search-filter">
+                <input type="text" id="softwareSearch" placeholder="소프트웨어명, 제조사로 검색..." class="search-input">
+                <select id="softwareTypeFilter" class="filter-select">
+                    <option value="">전체 유형</option>
+                    <option value="운영체제">운영체제</option>
+                    <option value="오피스">오피스</option>
+                    <option value="개발도구">개발도구</option>
+                    <option value="보안">보안</option>
+                    <option value="기타">기타</option>
+                </select>
+            </div>
+            <div class="table-container">
+                <table id="softwareTable">
+                    <thead>
+                        <tr>
+                            <th>자산태그</th>
+                            <th>소프트웨어명</th>
+                            <th>제조사</th>
+                            <th>버전</th>
+                            <th>유형</th>
+                            <th>라이선스 유형</th>
+                            <th>총 라이선스</th>
+                            <th>사용중</th>
+                            <th>남은 라이선스</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <!-- 자산 할당 탭 -->
+        <div id="assignment" class="tab-content">
+            <div class="section-header">
+                <h2>자산 할당 관리</h2>
+                <div class="section-actions">
+                    <button class="btn btn-success" onclick="exportToExcel('assignments')">
+                        <i class="fas fa-file-excel"></i> 엑셀 내보내기
+                    </button>
+                    <button class="btn btn-primary" onclick="showAssignmentModal()">
+                        <i class="fas fa-plus"></i> 자산 할당
+                    </button>
+                </div>
+            </div>
+            <div class="search-filter">
+                <input type="text" id="assignmentSearch" placeholder="임직원명, 자산태그로 검색..." class="search-input">
+            </div>
+            <div class="table-container">
+                <table id="assignmentTable">
+                    <thead>
+                        <tr>
+                            <th>할당일</th>
+                            <th>임직원</th>
+                            <th>부서</th>
+                            <th>자산유형</th>
+                            <th>자산태그</th>
+                            <th>모델명</th>
+                            <th>상태</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 사용자 관리 탭 (관리자 전용) -->
+        <div id="admin" class="tab-content">
+            <div class="section-header">
+                <h2>사용자 관리</h2>
+                <div class="section-actions">
+                    <button class="btn btn-info" onclick="syncLdapUsers()" id="ldapSyncBtn">
+                        <i class="fas fa-sync-alt"></i> LDAP 동기화
+                    </button>
+                    <button class="btn btn-success" onclick="exportToExcel('users')">
+                        <i class="fas fa-file-excel"></i> 엑셀 내보내기
+                    </button>
+                    <button class="btn btn-primary" onclick="showUserModal()">
+                        <i class="fas fa-plus"></i> 신규 사용자
+                    </button>
+                </div>
+            </div>
+            <div class="search-filter">
+                <input type="text" id="userSearch" placeholder="사용자명, 이름으로 검색..." class="search-input">
+                <select id="roleFilter" class="filter-select">
+                    <option value="">전체 권한</option>
+                    <option value="admin">관리자</option>
+                    <option value="manager">매니저</option>
+                    <option value="user">사용자</option>
+                </select>
+                <select id="statusFilter2" class="filter-select">
+                    <option value="">전체 상태</option>
+                    <option value="true">활성</option>
+                    <option value="false">비활성</option>
+                </select>
+            </div>
+            <div class="table-container">
+                <table id="userTable">
+                    <thead>
+                        <tr>
+                            <th>사용자명</th>
+                            <th>이름</th>
+                            <th>이메일</th>
+                            <th>권한</th>
+                            <th>상태</th>
+                            <th>생성일</th>
+                            <th>최근 로그인</th>
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 임직원 모달 -->
+    <div id="employeeModal" class="modal medium">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>임직원 정보</h3>
+                <span class="close" onclick="closeModal('employeeModal')">&times;</span>
+            </div>
+            <form id="employeeForm">
+                <div class="form-group">
+                    <label>이름 *</label>
+                    <input type="text" id="empName" required>
+                </div>
+                <div class="form-group">
+                    <label>부서 *</label>
+                    <select id="empDepartment" required>
+                        <option value="">선택하세요</option>
+                        <option value="개발팀">개발팀</option>
+                        <option value="영업팀">영업팀</option>
+                        <option value="인사팀">인사팀</option>
+                        <option value="재무팀">재무팀</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>이메일</label>
+                    <input type="email" id="empEmail">
+                </div>
+                <div class="form-group">
+                    <label>연락처</label>
+                    <input type="tel" id="empPhone">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('employeeModal')">취소</button>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 하드웨어 모달 -->
+    <div id="hardwareModal" class="modal large">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>하드웨어 자산 정보</h3>
+                <span class="close" onclick="closeModal('hardwareModal')">&times;</span>
+            </div>
+            <form id="hardwareForm">
+                <div class="form-group">
+                    <label>자산태그</label>
+                    <input type="text" id="hwAssetTag" placeholder="자동 생성됩니다" readonly>
+                </div>
+                <div class="form-group">
+                    <label>유형 *</label>
+                    <select id="hwType" required>
+                        <option value="">선택하세요</option>
+                        <option value="데스크톱">데스크톱</option>
+                        <option value="노트북">노트북</option>
+                        <option value="태블릿">태블릿</option>
+                        <option value="모니터">모니터</option>
+                        <option value="프린터">프린터</option>
+                        <option value="네트워크장비">네트워크장비</option>
+                        <option value="서버">서버</option>
+                        <option value="재고자산">재고자산</option>
+                        <option value="저장장치">저장장치</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>제조사</label>
+                    <input type="text" id="hwManufacturer">
+                </div>
+                <div class="form-group">
+                    <label>모델명</label>
+                    <input type="text" id="hwModel">
+                </div>
+                <div class="form-group">
+                    <label>시리얼번호</label>
+                    <input type="text" id="hwSerial">
+                </div>
+                <div class="form-group">
+                    <label>구입일</label>
+                    <input type="date" id="hwPurchaseDate">
+                </div>
+                <div class="form-group">
+                    <label>구입가격</label>
+                    <input type="number" id="hwPrice">
+                </div>
+                <div class="form-group">
+                    <label>상태</label>
+                    <select id="hwStatus">
+                        <option value="대기중">대기중</option>
+                        <option value="사용중">사용중</option>
+                        <option value="수리중">수리중</option>
+                        <option value="폐기">폐기</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>비고</label>
+                    <textarea id="hwNotes"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('hardwareModal')">취소</button>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 소프트웨어 모달 -->
+    <div id="softwareModal" class="modal large">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>소프트웨어 정보</h3>
+                <span class="close" onclick="closeModal('softwareModal')">&times;</span>
+            </div>
+            <form id="softwareForm">
+                <div class="form-group">
+                    <label>소프트웨어명 *</label>
+                    <input type="text" id="swName" required>
+                </div>
+                <div class="form-group">
+                    <label>제조사</label>
+                    <input type="text" id="swManufacturer">
+                </div>
+                <div class="form-group">
+                    <label>버전</label>
+                    <input type="text" id="swVersion">
+                </div>
+                <div class="form-group">
+                    <label>유형 *</label>
+                    <select id="swType" required>
+                        <option value="">선택하세요</option>
+                        <option value="운영체제">운영체제</option>
+                        <option value="오피스">오피스</option>
+                        <option value="개발도구">개발도구</option>
+                        <option value="보안">보안</option>
+                        <option value="기타">기타</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>라이선스 유형</label>
+                    <select id="swLicenseType">
+                        <option value="단일사용자">단일사용자</option>
+                        <option value="다중사용자">다중사용자</option>
+                        <option value="사이트라이선스">사이트라이선스</option>
+                        <option value="무료">무료</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>총 라이선스 수</label>
+                    <input type="number" id="swTotalLicenses" value="1">
+                </div>
+                <div class="form-group">
+                    <label>구입일</label>
+                    <input type="date" id="swPurchaseDate">
+                </div>
+                <div class="form-group">
+                    <label>만료일</label>
+                    <input type="date" id="swExpiryDate">
+                </div>
+                <div class="form-group">
+                    <label>구입가격</label>
+                    <input type="number" id="swPrice">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('softwareModal')">취소</button>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 자산 할당 모달 -->
+    <div id="assignmentModal" class="modal large">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>자산 할당</h3>
+                <span class="close" onclick="closeModal('assignmentModal')">&times;</span>
+            </div>
+            <form id="assignmentForm">
+                <div class="form-group">
+                    <label>임직원 *</label>
+                    <select id="assignEmployee" required>
+                        <option value="">선택하세요</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>자산 유형 *</label>
+                    <select id="assetType" required onchange="updateAssetOptions()">
+                        <option value="">선택하세요</option>
+                        <option value="hardware">하드웨어</option>
+                        <option value="software">소프트웨어</option>
+                    </select>
+                </div>
+                <div class="form-group" id="hardwareGroup" style="display: none;">
+                    <label>하드웨어 자산 *</label>
+                    <select id="assignHardware">
+                        <option value="">선택하세요</option>
+                    </select>
+                </div>
+                <div class="form-group" id="softwareGroup" style="display: none;">
+                    <label>소프트웨어 자산 *</label>
+                    <select id="assignSoftware">
+                        <option value="">선택하세요</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>할당일</label>
+                    <input type="date" id="assignDate" required>
+                </div>
+                <div class="form-group">
+                    <label>비고</label>
+                    <textarea id="assignNotes"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('assignmentModal')">취소</button>
+                    <button type="submit" class="btn btn-primary">할당</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    </div> <!-- mainApp 닫기 -->
+
+    <!-- 사용자 모달 -->
+    <div id="userModal" class="modal medium">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>사용자 정보</h3>
+                <span class="close" onclick="closeModal('userModal')">&times;</span>
+            </div>
+            <form id="userForm">
+                <div class="form-group">
+                    <label>사용자명 *</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group" id="passwordGroup">
+                    <label>비밀번호 *</label>
+                    <input type="password" id="password" required>
+                    <small class="form-help">최소 6자 이상</small>
+                </div>
+                <div class="form-group">
+                    <label>이름 *</label>
+                    <input type="text" id="fullName" required>
+                </div>
+                <div class="form-group">
+                    <label>이메일</label>
+                    <input type="email" id="email">
+                </div>
+                <div class="form-group">
+                    <label>권한 *</label>
+                    <select id="role" required>
+                        <option value="">선택하세요</option>
+                        <option value="admin">관리자</option>
+                        <option value="manager">매니저</option>
+                        <option value="user">사용자</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('userModal')">취소</button>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 권한 변경 모달 -->
+    <div id="roleModal" class="modal medium">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>권한 변경</h3>
+                <span class="close" onclick="closeModal('roleModal')">&times;</span>
+            </div>
+            <form id="roleForm">
+                <div class="form-group">
+                    <label>사용자: <span id="roleUsername"></span></label>
+                </div>
+                <div class="form-group">
+                    <label>새 권한 *</label>
+                    <select id="newRole" required>
+                        <option value="admin">관리자</option>
+                        <option value="manager">매니저</option>
+                        <option value="user">사용자</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('roleModal')">취소</button>
+                    <button type="submit" class="btn btn-primary">변경</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 비밀번호 재설정 모달 -->
+    <!-- Password modal removed - password changes handled through LDAP -->
+
+    <script>
+        // 무한 새로고침 문제 해결을 위한 강력한 localStorage 초기화
+        console.log('🔧 Pre-script cleanup - Starting');
+        
+        // URL에 따른 조건부 정리
+        if (window.location.href.includes('it.roboetech.com')) {
+            let shouldClear = false;
+            const token = localStorage.getItem('inventory_token');
+            const user = localStorage.getItem('inventory_user');
+            
+            console.log('🔧 Pre-script cleanup - Token exists:', !!token, 'User exists:', !!user);
+            
+            if (token) {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    const isExpired = payload.exp * 1000 < Date.now();
+                    if (isExpired) {
+                        console.log('🔧 Pre-script cleanup - Token expired');
+                        shouldClear = true;
+                    }
+                } catch (error) {
+                    console.log('🔧 Pre-script cleanup - Invalid token format');
+                    shouldClear = true;
+                }
+            }
+            
+            // 사용자 데이터가 없거나 비정상적인 경우
+            if (user) {
+                try {
+                    const userData = JSON.parse(user);
+                    if (!userData.username || userData.username === '') {
+                        console.log('🔧 Pre-script cleanup - Invalid user data');
+                        shouldClear = true;
+                    }
+                } catch (error) {
+                    console.log('🔧 Pre-script cleanup - Corrupted user data');
+                    shouldClear = true;
+                }
+            }
+            
+            if (shouldClear) {
+                console.log('🔧 Pre-script cleanup - Clearing all data');
+                localStorage.clear();
+                // 세션 스토리지도 정리
+                sessionStorage.clear();
+            }
+        }
+        
+        console.log('🔧 Pre-script cleanup - Completed');
+    </script>
+    <script src="script.js?v=20250903161500"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+   - users: 29 레코드
+   - employees: 34 레코드
+   - hardware: 131 레코드
+   - software: 15 레코드
+   - assignments: 148 레코드
+   - activities: 1049 레코드
+

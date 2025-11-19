@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # 설정
-CONTAINER_NAME="it-inventory-db"
+CONTAINER_NAME="it-inventory-postgres"
 DB_USER="inventory_user"
 DB_NAME="inventory_db"
 BACKUP_DIR="${1:-./backups}"

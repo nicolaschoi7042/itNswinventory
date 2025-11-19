@@ -1,0 +1,41 @@
+IT 자산 인벤토리 시스템 - 백업 정보
+=====================================
+
+백업 생성 시간: 2025-11-19 16:31:34
+백업 이름: it-inventory-full-backup_20251119_163134
+호스트: ubuntu
+운영 체제: Linux
+
+프로젝트 정보:
+- 프로젝트 디렉토리: /home/linux/workspace/itNswinventory
+- Git 브랜치: main
+- Git 커밋: 9458bc2
+
+백업 내용:
+- 데이터베이스 덤프: database_backup.sql
+- 환경 설정: config/
+- 애플리케이션 파일: app/
+
+복원 방법:
+1. 새 서버에 Docker 및 Docker Compose 설치
+2. 백업 파일을 새 서버로 전송
+3. app/ 디렉토리의 내용을 프로젝트 디렉토리로 복사
+4. config/.env 파일을 backend/.env로 복사 (필요시 IP 주소 등 수정)
+5. 데이터베이스 복원:
+   ./scripts/restore-db.sh /path/to/database_backup.sql
+6. 서비스 시작:
+   ./start.sh
+
+데이터베이스 통계:
+   - users: 29 레코드
+   - employees: 34 레코드
+   - hardware: 131 레코드
+   - software: 15 레코드
+   - assignments: 148 레코드
+   - activities: 1049 레코드
+
+
+주의사항:
+- 환경 변수 파일(.env)에는 민감한 정보가 포함되어 있습니다
+- 백업 파일을 안전하게 보관하세요
+- LDAP 서버 주소 등 네트워크 설정은 새 환경에 맞게 조정하세요
