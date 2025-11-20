@@ -7,6 +7,14 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 LOG_FILE="/var/log/it-inventory-monitor.log"
 ALERT_FILE="/tmp/it-inventory-alerts.json"
 
+# 컨테이너 이름 설정 (환경 변수로 오버라이드 가능)
+# 개발 환경: 기본값 사용
+# 프로덕션: CONTAINER_PREFIX=it ./scripts/monitor.sh
+CONTAINER_PREFIX="${CONTAINER_PREFIX:-it}"
+CONTAINER_WEB="${CONTAINER_WEB:-${CONTAINER_PREFIX}-frontend-prod}"
+CONTAINER_DB="${CONTAINER_DB:-${CONTAINER_PREFIX}-postgres-prod}"
+CONTAINER_API="${CONTAINER_API:-${CONTAINER_PREFIX}-backend-prod}"
+
 # 색상 코드
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -53,7 +61,7 @@ add_alert() {
 check_containers() {
     log_info "🐳 Docker 컨테이너 상태 확인..."
 
-    local containers=("it-inventory-web" "it-inventory-db" "it-inventory-api")
+    local containers=("$CONTAINER_WEB" "$CONTAINER_DB" "$CONTAINER_API")
     local all_healthy=true
 
     for container in "${containers[@]}"; do
@@ -73,11 +81,11 @@ check_containers() {
 check_database() {
     log_info "🗄️ 데이터베이스 연결 확인..."
 
-    if docker exec it-inventory-db pg_isready -U inventory_user >/dev/null 2>&1; then
+    if docker exec "$CONTAINER_DB" pg_isready -U inventory_user >/dev/null 2>&1; then
         log_success "✅ PostgreSQL: 연결 정상"
 
         # 기본 쿼리 테스트
-        local record_count=$(docker exec it-inventory-db psql -U inventory_user -d inventory_db -t -c "SELECT COUNT(*) FROM employees;" 2>/dev/null | xargs)
+        local record_count=$(docker exec "$CONTAINER_DB" psql -U inventory_user -d inventory_db -t -c "SELECT COUNT(*) FROM employees;" 2>/dev/null | xargs)
         if [[ "$record_count" =~ ^[0-9]+$ ]]; then
             log_success "✅ 데이터베이스 쿼리: 정상 ($record_count명의 임직원)"
         else
@@ -241,7 +249,7 @@ attempt_self_healing() {
     log_info "🔧 자가 치유 시도..."
 
     # 컨테이너가 중지된 경우 재시작 시도
-    if ! docker ps --format "table {{.Names}}" | grep -q "it-inventory"; then
+    if ! docker ps --format "table {{.Names}}" | grep -q "$CONTAINER_PREFIX"; then
         log_info "💡 중지된 컨테이너 재시작 시도..."
         cd "$PROJECT_ROOT" && docker compose up -d
         sleep 10

@@ -13,7 +13,10 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # 설정
-CONTAINER_NAME="it-inventory-postgres"
+# 환경 변수로 컨테이너 이름 지정 가능 (기본값: 프로덕션)
+# 개발 환경: CONTAINER_NAME=it-inventory-postgres ./scripts/backup-db.sh
+# 프로덕션: ./scripts/backup-db.sh
+CONTAINER_NAME="${CONTAINER_NAME:-it-postgres-prod}"
 DB_USER="inventory_user"
 DB_NAME="inventory_db"
 BACKUP_DIR="${1:-./backups}"
