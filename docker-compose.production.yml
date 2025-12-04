@@ -4,7 +4,7 @@ services:
     image: postgres:15-alpine
     container_name: it-postgres-prod
     ports:
-      - "5432:5432"
+      - "5435:5432"
     environment:
       - POSTGRES_DB=inventory_db
       - POSTGRES_USER=inventory_user
@@ -69,7 +69,7 @@ services:
     build: .
     container_name: it-frontend-prod
     ports:
-      - "8080:80"
+      - "8082:80"
     environment:
       - TZ=Asia/Seoul
       - API_BASE_URL=http://backend:3000/api
