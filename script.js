@@ -2305,29 +2305,39 @@ function forceShowLoginModal() {
         modal.style.opacity = '1';
         modal.style.zIndex = '10000';
         modal.classList.remove('hidden');
-        
+
         // body에 모달 관련 클래스 추가 (스크롤 방지 등)
         document.body.style.overflow = 'hidden';
-        
+
         console.log('🔒 LOGOUT: Login modal forcefully displayed');
-        
+
         // 입력 필드 초기화 및 포커스
         const usernameField = document.getElementById('loginUsername');
         const passwordField = document.getElementById('loginPassword');
-        
+
         if (usernameField && passwordField) {
             // 필드 초기화 (자동입력 제거)
             usernameField.value = '';
             passwordField.value = '';
-            
+
             setTimeout(() => {
                 usernameField.focus();
             }, 100);
         }
-        
+
+        // 로그인 버튼 초기화 (로그인 중 상태 복원)
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            const submitBtn = loginForm.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> 로그인';
+            }
+        }
+
         // 에러 메시지 숨기기
         hideLoginError();
-        
+
     } else {
         console.error('🔒 LOGOUT: Login modal not found');
     }
@@ -2493,9 +2503,14 @@ function clearAllData() {
 function showUserInfo(user) {
     const headerUser = document.getElementById('headerUser');
     const userName = document.getElementById('userName');
-    
+
     if (headerUser && userName) {
-        userName.textContent = user.full_name || user.username || '사용자';
+        // 이메일 주소가 포함된 경우 @ 앞부분만 추출
+        let displayName = user.full_name || user.username || '사용자';
+        if (displayName.includes('@')) {
+            displayName = displayName.split('@')[0];
+        }
+        userName.textContent = displayName;
         headerUser.style.display = 'block';
         console.log('👤 USER: User info displayed for', user.username);
     }
@@ -2829,7 +2844,7 @@ function showLoginPage() {
     console.log('🔐 Showing login page');
     document.getElementById('loginPage').style.display = 'flex';
     document.getElementById('mainApp').style.display = 'none';
-    
+
     // 로그인 폼 초기화
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
@@ -2837,8 +2852,15 @@ function showLoginPage() {
         // 필드 초기화 (자동입력 제거)
         document.getElementById('loginUsername').value = '';
         document.getElementById('loginPassword').value = '';
+
+        // 로그인 버튼 초기화 (로그인 중 상태 복원)
+        const submitBtn = loginForm.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> 로그인';
+        }
     }
-    
+
     // 에러 메시지 숨김
     hideLoginError();
 }
@@ -2861,9 +2883,14 @@ function updateUserInfo() {
     if (user) {
         const headerUser = document.getElementById('headerUser');
         const userName = document.getElementById('userName');
-        
+
         if (headerUser && userName) {
-            userName.textContent = user.full_name || user.username;
+            // 이메일 주소가 포함된 경우 @ 앞부분만 추출
+            let displayName = user.full_name || user.username;
+            if (displayName.includes('@')) {
+                displayName = displayName.split('@')[0];
+            }
+            userName.textContent = displayName;
             headerUser.style.display = 'block';
         }
     }

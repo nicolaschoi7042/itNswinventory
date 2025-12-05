@@ -8,7 +8,7 @@ class LDAPAuth {
             bindPassword: config.bindPassword || process.env.LDAP_BIND_PASSWORD,
             userBase: config.userBase || process.env.LDAP_USER_BASE,
             groupBase: config.groupBase || process.env.LDAP_GROUP_BASE,
-            userFilter: config.userFilter || process.env.LDAP_USER_FILTER || '(|(cn=%s)(uid=%s)(sAMAccountName=%s)(mail=%s))',
+            userFilter: config.userFilter || process.env.LDAP_USER_FILTER || '(|(cn=%s)(uid=%s)(sAMAccountName=%s))',
             groupFilter: config.groupFilter || process.env.LDAP_GROUP_FILTER || '(member=%s)',
             userFullnameAttr: config.userFullnameAttr || process.env.LDAP_USER_FULLNAME_ATTR || 'cn',
             userEmailAttr: config.userEmailAttr || process.env.LDAP_USER_EMAIL_ATTR || 'mail'
@@ -44,11 +44,12 @@ class LDAPAuth {
                 scope: 'sub',
                 filter: userFilter,
                 attributes: [
-                    'dn', 
-                    'uid', 
-                    'cn', 
-                    'sn', 
+                    'dn',
+                    'uid',
+                    'cn',
+                    'sn',
                     'givenName',
+                    'displayName',
                     this.config.userFullnameAttr,
                     this.config.userEmailAttr,
                     'memberOf',
@@ -94,7 +95,7 @@ class LDAPAuth {
                 const authenticatedUser = {
                     username: user.uid || user.cn || username,
                     dn: userDN,
-                    fullName: user[this.config.userFullnameAttr] || `${user.givenName || ''} ${user.sn || ''}`.trim() || user.cn,
+                    fullName: user.displayName || `${user.givenName || ''} ${user.sn || ''}`.trim() || user[this.config.userFullnameAttr] || user.cn,
                     email: user[this.config.userEmailAttr] || '',
                     groups: groups,
                     role: this.determineRole(groups),
@@ -103,6 +104,7 @@ class LDAPAuth {
                         uid: user.uid,
                         sn: user.sn,
                         givenName: user.givenName,
+                        displayName: user.displayName,
                         memberOf: user.memberOf
                     }
                 };
@@ -248,9 +250,9 @@ class LDAPAuth {
                 try {
                     // 사용자명 결정 (우선순위: sAMAccountName > uid > cn)
                     const username = entry.sAMAccountName || entry.uid || entry.cn;
-                    
-                    // 전체 이름 결정
-                    const fullName = entry[this.config.userFullnameAttr] || entry.displayName || entry.cn || username;
+
+                    // 전체 이름 결정 (우선순위: displayName > givenName+sn > cn)
+                    const fullName = entry.displayName || `${entry.givenName || ''} ${entry.sn || ''}`.trim() || entry[this.config.userFullnameAttr] || entry.cn || username;
                     
                     // 이메일 결정
                     const email = entry[this.config.userEmailAttr] || entry.mail || entry.userPrincipalName || '';
