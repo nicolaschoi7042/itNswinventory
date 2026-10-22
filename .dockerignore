@@ -26,6 +26,10 @@ Thumbs.db
 *.tmp
 *.log
 
+# Node
+frontend/node_modules/
+frontend/dist/
+
 # Docker 관련 (빌드 시 제외)
 Dockerfile
 docker-compose.yml
