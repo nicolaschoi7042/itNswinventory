@@ -121,4 +121,33 @@ export interface CostSummary {
   used_licenses: number;
 }
 
+export interface AnthropicUsageResult {
+  model?: string;
+  uncached_input_tokens: number;
+  output_tokens: number;
+  cache_read_input_tokens: number;
+  cache_creation?: { ephemeral_1h_input_tokens: number; ephemeral_5m_input_tokens: number };
+}
+
+export interface AnthropicCostResult {
+  description?: string;
+  workspace_id?: string | null;
+  amount: string;
+  currency: string;
+  model?: string;
+  token_type?: string;
+}
+
+export interface AnthropicBucket<T> {
+  started_at: string;
+  ended_at: string;
+  results: T[];
+}
+
+export interface AnthropicUsageResponse {
+  usage: { data: AnthropicBucket<AnthropicUsageResult>[]; has_more: boolean };
+  cost: { data: AnthropicBucket<AnthropicCostResult>[]; has_more: boolean };
+  period: { starting_at: string; ending_at: string };
+}
+
 export type Role = "admin" | "manager" | "user";

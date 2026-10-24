@@ -115,6 +115,18 @@ export const payments = {
   delete: (id: number) => request(`/payments/${id}`, { method: "DELETE" }),
 };
 
+// Anthropic
+export const anthropic = {
+  config: () => request<{ configured: boolean }>("/admin/anthropic-config"),
+  usage: (startingAt?: string, endingAt?: string) => {
+    const params = new URLSearchParams();
+    if (startingAt) params.set("starting_at", startingAt);
+    if (endingAt) params.set("ending_at", endingAt);
+    const qs = params.toString();
+    return request<import("@/types").AnthropicUsageResponse>(`/admin/anthropic-usage${qs ? `?${qs}` : ""}`);
+  },
+};
+
 // Reports
 export const reports = {
   costSummary: () => request<import("@/types").CostSummary>("/reports/cost-summary"),

@@ -1393,6 +1393,62 @@ app.delete('/api/subscriptions/:id', authenticateToken, authorize(['admin']), as
     }
 });
 
+// Anthropic 사용량/비용 조회
+app.get('/api/admin/anthropic-usage', authenticateToken, authorize(['admin', 'manager']), async (req, res) => {
+    const adminKey = process.env.ANTHROPIC_ADMIN_KEY;
+    if (!adminKey) {
+        return res.status(400).json({ error: 'ANTHROPIC_ADMIN_KEY가 설정되지 않았습니다.' });
+    }
+
+    const now = new Date();
+    const defaultEnd = now.toISOString().replace(/\.\d+Z$/, 'Z');
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const defaultStart = thirtyDaysAgo.toISOString().replace(/\.\d+Z$/, 'Z');
+
+    const starting_at = req.query.starting_at || defaultStart;
+    const ending_at = req.query.ending_at || defaultEnd;
+
+    const headers = {
+        'anthropic-version': '2023-06-01',
+        'x-api-key': adminKey,
+    };
+
+    async function fetchAllPages(baseUrl) {
+        let allData = [];
+        let url = baseUrl;
+        for (let page = 0; page < 10; page++) {
+            const r = await fetch(url, { headers });
+            if (!r.ok) {
+                const err = await r.json().catch(() => ({}));
+                throw new Error(err.error?.message || `Anthropic API ${r.status}`);
+            }
+            const body = await r.json();
+            allData = allData.concat(body.data || []);
+            if (!body.has_more || !body.next_page) break;
+            const sep = baseUrl.includes('?') ? '&' : '?';
+            url = `${baseUrl}${sep}page=${body.next_page}`;
+        }
+        return { data: allData };
+    }
+
+    try {
+        const [usage, cost] = await Promise.all([
+            fetchAllPages(`https://api.anthropic.com/v1/organizations/usage_report/messages?starting_at=${starting_at}&ending_at=${ending_at}&group_by[]=model&bucket_width=1d&limit=31`),
+            fetchAllPages(`https://api.anthropic.com/v1/organizations/cost_report?starting_at=${starting_at}&ending_at=${ending_at}&group_by[]=description&bucket_width=1d&limit=31`),
+        ]);
+
+        res.json({ usage, cost, period: { starting_at, ending_at } });
+    } catch (error) {
+        console.error('Anthropic usage fetch error:', error);
+        res.status(500).json({ error: error.message || 'Anthropic API 조회 중 오류가 발생했습니다.' });
+    }
+});
+
+// Anthropic 설정 확인
+app.get('/api/admin/anthropic-config', authenticateToken, async (req, res) => {
+    res.json({ configured: !!process.env.ANTHROPIC_ADMIN_KEY });
+});
+
 // 결제 내역 목록
 app.get('/api/payments', authenticateToken, async (req, res) => {
     try {

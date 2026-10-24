@@ -42,6 +42,7 @@ services:
       - GOOGLE_ALLOWED_DOMAIN=${GOOGLE_ALLOWED_DOMAIN:-}
       - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN:-}
       - SLACK_NOTIFY_CHANNEL=${SLACK_NOTIFY_CHANNEL:-D088R2K789F}
+      - ANTHROPIC_ADMIN_KEY=${ANTHROPIC_ADMIN_KEY:-}
     depends_on:
       it-inventory-db:
         condition: service_healthy
