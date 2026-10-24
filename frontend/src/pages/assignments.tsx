@@ -2,7 +2,6 @@ import { FileSpreadsheet, Plus, RotateCcw, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { AppHeader } from "@/components/layout/app-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -81,8 +80,8 @@ export function AssignmentsPage() {
 
   return (
     <>
-      <AppHeader title="자산 할당 관리" />
-      <div className="flex-1 space-y-4 p-6">
+      <h1 className="text-lg font-semibold text-foreground">자산 할당 관리</h1>
+      <div className="mt-6 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />

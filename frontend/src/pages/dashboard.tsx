@@ -2,7 +2,6 @@ import { Download, ExternalLink, FileText, HardDrive, Monitor, Package, Users } 
 import { useEffect, useState } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-import { AppHeader } from "@/components/layout/app-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import * as api from "@/lib/api";
@@ -44,8 +43,8 @@ export function DashboardPage() {
 
   return (
     <>
-      <AppHeader title="대시보드" />
-      <div className="flex-1 space-y-6 p-6">
+      <h1 className="text-lg font-semibold text-foreground">대시보드</h1>
+      <div className="mt-6 space-y-6">
         {/* Stats cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {stats.map((s) => (

@@ -9,6 +9,8 @@ CREATE TABLE users (
     email VARCHAR(100) UNIQUE,
     role VARCHAR(20) DEFAULT 'user' CHECK (role IN ('admin', 'manager', 'user')),
     is_active BOOLEAN DEFAULT true,
+    google_id VARCHAR(255),
+    auth_provider VARCHAR(20) DEFAULT 'local',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_login TIMESTAMP

@@ -73,4 +73,52 @@ export interface Activity {
   created_at: string;
 }
 
+export interface Subscription {
+  id: number;
+  software_id: number | null;
+  software_name: string | null;
+  software_vendor: string | null;
+  name: string;
+  vendor: string;
+  status: "active" | "expired" | "cancelled" | "pending";
+  billing_cycle: "monthly" | "quarterly" | "yearly" | "one_time";
+  amount: number;
+  currency: string;
+  total_licenses: number | null;
+  used_licenses: number;
+  start_date: string;
+  end_date: string | null;
+  renewal_date: string | null;
+  auto_renewal: boolean;
+  contract_url: string | null;
+  notes: string | null;
+  created_by_name: string | null;
+  created_at: string;
+}
+
+export interface PaymentRecord {
+  id: number;
+  subscription_id: number | null;
+  subscription_name: string | null;
+  transaction_date: string;
+  amount: number;
+  currency: string;
+  payment_method: string | null;
+  approval_number: string | null;
+  memo: string | null;
+  created_by_name: string | null;
+  created_at: string;
+}
+
+export interface CostSummary {
+  total_subscriptions: number;
+  active_count: number;
+  expired_count: number;
+  monthly_cost: number;
+  yearly_cost: number;
+  quarterly_cost: number;
+  total_licenses: number;
+  used_licenses: number;
+}
+
 export type Role = "admin" | "manager" | "user";

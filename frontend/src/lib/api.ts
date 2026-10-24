@@ -33,6 +33,11 @@ export const auth = {
       method: "POST",
       body: JSON.stringify({ username, password }),
     }),
+  sso: (osToken: string) =>
+    request<{ token: string; user: import("@/types").User }>("/auth/sso", {
+      method: "POST",
+      body: JSON.stringify({ token: osToken }),
+    }),
 };
 
 // Employees
@@ -87,7 +92,33 @@ export const users = {
     request(`/admin/users/${id}/role`, { method: "PUT", body: JSON.stringify({ role }) }),
   updateStatus: (id: number, is_active: boolean) =>
     request(`/admin/users/${id}/status`, { method: "PUT", body: JSON.stringify({ is_active }) }),
-  syncLdap: () => request("/admin/ldap/sync", { method: "POST" }),
+  syncGoogle: (code: string) => request("/admin/google-sync", { method: "POST", body: JSON.stringify({ code }) }),
+  googleConfig: () => request<{ clientId: string }>("/admin/google-sync/config"),
+};
+
+// Subscriptions
+export const subscriptions = {
+  list: () => request<import("@/types").Subscription[]>("/subscriptions"),
+  get: (id: number) => request<import("@/types").Subscription>(`/subscriptions/${id}`),
+  create: (data: Record<string, unknown>) =>
+    request<import("@/types").Subscription>("/subscriptions", { method: "POST", body: JSON.stringify(data) }),
+  update: (id: number, data: Record<string, unknown>) =>
+    request<import("@/types").Subscription>(`/subscriptions/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  delete: (id: number) => request(`/subscriptions/${id}`, { method: "DELETE" }),
+};
+
+// Payments
+export const payments = {
+  list: () => request<import("@/types").PaymentRecord[]>("/payments"),
+  create: (data: Record<string, unknown>) =>
+    request<import("@/types").PaymentRecord>("/payments", { method: "POST", body: JSON.stringify(data) }),
+  delete: (id: number) => request(`/payments/${id}`, { method: "DELETE" }),
+};
+
+// Reports
+export const reports = {
+  costSummary: () => request<import("@/types").CostSummary>("/reports/cost-summary"),
+  upcomingRenewals: (days = 90) => request<import("@/types").Subscription[]>(`/reports/upcoming-renewals?days=${days}`),
 };
 
 // Excel export helper

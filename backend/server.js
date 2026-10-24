@@ -6,6 +6,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
 const { LDAPAuth } = require('./lib/ldapAuth');
+const { GoogleWorkspaceSync } = require('./lib/googleSync');
+const { SlackNotify } = require('./lib/slackNotify');
 require('dotenv').config();
 
 const app = express();
@@ -330,6 +332,86 @@ app.post('/api/auth/login', async (req, res) => {
         });
     } catch (error) {
         console.error('Login error:', error);
+        res.status(500).json({ error: '서버 오류가 발생했습니다.' });
+    }
+});
+
+// OneSearch SSO — OneSearch JWT를 검증하고 자체 JWT를 발급
+app.post('/api/auth/sso', async (req, res) => {
+    try {
+        const { token: osToken } = req.body;
+        if (!osToken) {
+            return res.status(400).json({ error: 'token이 필요합니다.' });
+        }
+
+        const osSecret = process.env.ONESEARCH_JWT_SECRET;
+        if (!osSecret) {
+            return res.status(500).json({ error: 'SSO가 설정되지 않았습니다.' });
+        }
+
+        let payload;
+        try {
+            payload = jwt.verify(osToken, osSecret, { algorithms: ['HS256'] });
+        } catch (e) {
+            return res.status(401).json({ error: '유효하지 않은 SSO 토큰입니다.' });
+        }
+
+        if (payload.type !== 'access' || !payload.sub) {
+            return res.status(401).json({ error: '올바르지 않은 토큰 형식입니다.' });
+        }
+
+        const email = payload.sub;
+        const name = payload.name || email.split('@')[0];
+
+        let result = await pool.query(
+            'SELECT * FROM users WHERE email = $1 AND is_active = true', [email]
+        );
+        let user = result.rows[0];
+
+        if (!user) {
+            result = await pool.query(
+                'SELECT * FROM users WHERE username = $1 AND is_active = true',
+                [email.split('@')[0]]
+            );
+            user = result.rows[0];
+        }
+
+        if (!user) {
+            const username = email.split('@')[0];
+            const hashedPw = await bcrypt.hash(require('crypto').randomBytes(32).toString('hex'), 10);
+            const createResult = await pool.query(
+                `INSERT INTO users (username, password_hash, full_name, email, role, auth_provider)
+                 VALUES ($1, $2, $3, $4, 'user', 'onesearch') RETURNING *`,
+                [username, hashedPw, name, email]
+            );
+            user = createResult.rows[0];
+        } else if (!user.full_name || user.full_name === '{}' || user.full_name === '[]') {
+            await pool.query('UPDATE users SET full_name = $1 WHERE id = $2', [name, user.id]);
+            user.full_name = name;
+        }
+
+        await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
+
+        const localToken = jwt.sign(
+            { id: user.id, username: user.username, role: user.role, sso: true },
+            process.env.JWT_SECRET || 'your-secret-key',
+            { expiresIn: '3h' }
+        );
+
+        await logActivity(user.id, `SSO 로그인 (OneSearch): ${name}`);
+
+        res.json({
+            token: localToken,
+            user: {
+                id: user.id,
+                username: user.username,
+                full_name: user.full_name,
+                role: user.role,
+                authMethod: 'SSO'
+            }
+        });
+    } catch (error) {
+        console.error('SSO error:', error);
         res.status(500).json({ error: '서버 오류가 발생했습니다.' });
     }
 });
@@ -1052,6 +1134,165 @@ app.post('/api/admin/ldap-sync', authenticateToken, authorize(['admin']), async 
 });
 
 
+// === Google Workspace 동기화 API ===
+
+app.get('/api/admin/google-sync/config', authenticateToken, authorize(['admin']), (req, res) => {
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    res.json({ clientId: clientId || null });
+});
+
+app.post('/api/admin/google-sync', authenticateToken, authorize(['admin']), async (req, res) => {
+    try {
+        const { code } = req.body;
+        const clientId = process.env.GOOGLE_CLIENT_ID;
+        const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+
+        if (!clientId || !clientSecret) {
+            return res.status(400).json({
+                error: 'GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET 환경변수가 필요합니다.'
+            });
+        }
+        if (!code) {
+            return res.status(400).json({ error: 'Google 인가 코드가 필요합니다.' });
+        }
+
+        console.log('🔄 Google Workspace sync started by:', req.user.username);
+
+        const gsync = new GoogleWorkspaceSync({ clientId, clientSecret });
+        const slackNotify = new SlackNotify({});
+
+        // 인가 코드 → 액세스 토큰
+        const tokens = await gsync.getTokenFromCode(code);
+        const accessToken = tokens.access_token;
+
+        // Google Workspace 사용자 목록
+        const googleUsers = await gsync.listUsers(accessToken);
+        const googleUsernames = new Set(googleUsers.map(u => u.username.toLowerCase()));
+        const suspendedUsernames = new Set(
+            googleUsers.filter(u => u.suspended || u.archived).map(u => u.username.toLowerCase())
+        );
+
+        // DB 사용자 목록
+        const dbResult = await pool.query('SELECT id, username, full_name, email, role, is_active FROM users');
+        const dbUsers = dbResult.rows;
+
+        // 서비스 계정 제외
+        const serviceAccounts = new Set(['admin']);
+
+        let deactivated = 0;
+        let reactivated = 0;
+        let assetAlerts = [];
+        const results = [];
+
+        for (const dbUser of dbUsers) {
+            const uname = dbUser.username.toLowerCase();
+            if (serviceAccounts.has(uname)) continue;
+
+            const inGoogle = googleUsernames.has(uname);
+            const isSuspended = suspendedUsernames.has(uname);
+
+            if ((!inGoogle || isSuspended) && dbUser.is_active) {
+                await pool.query('UPDATE users SET is_active = false WHERE id = $1', [dbUser.id]);
+                deactivated++;
+
+                const assets = await checkUserAssets(dbUser.id, dbUser.username);
+                const hasAssets = assets.hardware.length > 0 || assets.software.length > 0 || assets.assignments.length > 0;
+
+                results.push({
+                    username: dbUser.username,
+                    name: dbUser.full_name,
+                    action: 'deactivated',
+                    reason: !inGoogle ? 'Google Workspace에 없음' : '계정 정지됨',
+                    hasAssets
+                });
+
+                if (hasAssets) {
+                    assetAlerts.push({ user: dbUser, assets });
+                }
+
+            } else if (inGoogle && !isSuspended && !dbUser.is_active) {
+                await pool.query('UPDATE users SET is_active = true WHERE id = $1', [dbUser.id]);
+                reactivated++;
+                results.push({
+                    username: dbUser.username,
+                    name: dbUser.full_name,
+                    action: 'reactivated'
+                });
+            }
+        }
+
+        // Slack 알림 발송
+        if (slackNotify.isEnabled() && assetAlerts.length > 0) {
+            for (const alert of assetAlerts) {
+                try {
+                    await slackNotify.notifyDeactivatedWithAssets(
+                        alert.user.full_name,
+                        alert.user.username,
+                        alert.assets
+                    );
+                } catch (slackErr) {
+                    console.error('Slack notify error:', slackErr.message);
+                }
+            }
+        }
+
+        await logActivity(
+            req.user.id,
+            `Google Workspace 동기화: 비활성화 ${deactivated}명, 재활성화 ${reactivated}명, 자산미반납 ${assetAlerts.length}명`
+        );
+
+        console.log(`✅ Google Workspace sync: deactivated=${deactivated}, reactivated=${reactivated}, assetAlerts=${assetAlerts.length}`);
+
+        res.json({
+            message: 'Google Workspace 동기화가 완료되었습니다.',
+            googleUsers: googleUsers.length,
+            deactivated,
+            reactivated,
+            assetAlerts: assetAlerts.length,
+            results
+        });
+    } catch (error) {
+        console.error('Google Workspace sync error:', error);
+        res.status(500).json({ error: 'Google Workspace 동기화 중 오류: ' + error.message });
+    }
+});
+
+async function checkUserAssets(userId, username) {
+    // employees 중 이 사용자에 연결된 것 찾기
+    const empResult = await pool.query(
+        "SELECT employee_id FROM employees WHERE LOWER(name) LIKE LOWER($1) OR employee_id IN (SELECT employee_id FROM employees WHERE created_by = $2)",
+        [`%${username}%`, userId]
+    );
+    const empIds = empResult.rows.map(r => r.employee_id);
+
+    let hardware = [];
+    let software = [];
+    let assignments = [];
+
+    if (empIds.length > 0) {
+        const hwResult = await pool.query(
+            'SELECT id, name, asset_tag FROM hardware WHERE assigned_to = ANY($1)',
+            [empIds]
+        );
+        hardware = hwResult.rows;
+
+        const asgnResult = await pool.query(
+            "SELECT id, asset_type, asset_id FROM assignments WHERE employee_id = ANY($1) AND status = 'active'",
+            [empIds]
+        );
+        assignments = asgnResult.rows;
+    }
+
+    // software assigned to user
+    const swResult = await pool.query(
+        'SELECT id, name FROM software WHERE assigned_to = $1 OR assigned_to = ANY($2::text[])',
+        [username, empIds.length > 0 ? empIds : ['']]
+    );
+    software = swResult.rows;
+
+    return { hardware, software, assignments };
+}
+
 // === 활동 로그 API ===
 
 // 최근 활동 조회
@@ -1069,6 +1310,170 @@ app.get('/api/activities', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Get activities error:', error);
         res.status(500).json({ error: '활동 내역 조회 중 오류가 발생했습니다.' });
+    }
+});
+
+// ============================================================
+// 구독/라이선스 계약 관리 API
+// ============================================================
+
+// 구독 목록
+app.get('/api/subscriptions', authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT s.*, sw.name as software_name, sw.manufacturer as software_vendor,
+                   u.full_name as created_by_name
+            FROM subscriptions s
+            LEFT JOIN software sw ON s.software_id = sw.id
+            LEFT JOIN users u ON s.created_by = u.id
+            ORDER BY s.renewal_date ASC NULLS LAST, s.created_at DESC
+        `);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Get subscriptions error:', error);
+        res.status(500).json({ error: '구독 목록 조회 중 오류가 발생했습니다.' });
+    }
+});
+
+// 구독 상세
+app.get('/api/subscriptions/:id', authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT s.*, sw.name as software_name, sw.manufacturer as software_vendor
+            FROM subscriptions s
+            LEFT JOIN software sw ON s.software_id = sw.id
+            WHERE s.id = $1
+        `, [req.params.id]);
+        if (result.rows.length === 0) return res.status(404).json({ error: '구독을 찾을 수 없습니다.' });
+        res.json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: '구독 조회 중 오류가 발생했습니다.' });
+    }
+});
+
+// 구독 생성
+app.post('/api/subscriptions', authenticateToken, authorize(['admin', 'manager']), async (req, res) => {
+    try {
+        const { software_id, name, vendor, status, billing_cycle, amount, currency, total_licenses, used_licenses, start_date, end_date, renewal_date, auto_renewal, contract_url, notes } = req.body;
+        const result = await pool.query(`
+            INSERT INTO subscriptions (software_id, name, vendor, status, billing_cycle, amount, currency, total_licenses, used_licenses, start_date, end_date, renewal_date, auto_renewal, contract_url, notes, created_by)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING *
+        `, [software_id, name, vendor, status || 'active', billing_cycle || 'yearly', amount || 0, currency || 'KRW', total_licenses, used_licenses || 0, start_date, end_date, renewal_date, auto_renewal !== false, contract_url, notes, req.user.id]);
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        console.error('Create subscription error:', error);
+        res.status(500).json({ error: '구독 생성 중 오류가 발생했습니다.' });
+    }
+});
+
+// 구독 수정
+app.put('/api/subscriptions/:id', authenticateToken, authorize(['admin', 'manager']), async (req, res) => {
+    try {
+        const { software_id, name, vendor, status, billing_cycle, amount, currency, total_licenses, used_licenses, start_date, end_date, renewal_date, auto_renewal, contract_url, notes } = req.body;
+        const result = await pool.query(`
+            UPDATE subscriptions SET software_id=$1, name=$2, vendor=$3, status=$4, billing_cycle=$5, amount=$6, currency=$7, total_licenses=$8, used_licenses=$9, start_date=$10, end_date=$11, renewal_date=$12, auto_renewal=$13, contract_url=$14, notes=$15, updated_at=CURRENT_TIMESTAMP
+            WHERE id=$16 RETURNING *
+        `, [software_id, name, vendor, status, billing_cycle, amount, currency, total_licenses, used_licenses, start_date, end_date, renewal_date, auto_renewal, contract_url, notes, req.params.id]);
+        if (result.rows.length === 0) return res.status(404).json({ error: '구독을 찾을 수 없습니다.' });
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Update subscription error:', error);
+        res.status(500).json({ error: '구독 수정 중 오류가 발생했습니다.' });
+    }
+});
+
+// 구독 삭제
+app.delete('/api/subscriptions/:id', authenticateToken, authorize(['admin']), async (req, res) => {
+    try {
+        const result = await pool.query('DELETE FROM subscriptions WHERE id=$1 RETURNING id', [req.params.id]);
+        if (result.rows.length === 0) return res.status(404).json({ error: '구독을 찾을 수 없습니다.' });
+        res.json({ message: '구독이 삭제되었습니다.' });
+    } catch (error) {
+        res.status(500).json({ error: '구독 삭제 중 오류가 발생했습니다.' });
+    }
+});
+
+// 결제 내역 목록
+app.get('/api/payments', authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT p.*, s.name as subscription_name, u.full_name as created_by_name
+            FROM payment_records p
+            LEFT JOIN subscriptions s ON p.subscription_id = s.id
+            LEFT JOIN users u ON p.created_by = u.id
+            ORDER BY p.transaction_date DESC
+        `);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Get payments error:', error);
+        res.status(500).json({ error: '결제 내역 조회 중 오류가 발생했습니다.' });
+    }
+});
+
+// 결제 내역 생성
+app.post('/api/payments', authenticateToken, authorize(['admin', 'manager']), async (req, res) => {
+    try {
+        const { subscription_id, transaction_date, amount, currency, payment_method, approval_number, memo } = req.body;
+        const result = await pool.query(`
+            INSERT INTO payment_records (subscription_id, transaction_date, amount, currency, payment_method, approval_number, memo, created_by)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *
+        `, [subscription_id, transaction_date, amount, currency || 'KRW', payment_method, approval_number, memo, req.user.id]);
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        console.error('Create payment error:', error);
+        res.status(500).json({ error: '결제 내역 생성 중 오류가 발생했습니다.' });
+    }
+});
+
+// 결제 내역 삭제
+app.delete('/api/payments/:id', authenticateToken, authorize(['admin']), async (req, res) => {
+    try {
+        const result = await pool.query('DELETE FROM payment_records WHERE id=$1 RETURNING id', [req.params.id]);
+        if (result.rows.length === 0) return res.status(404).json({ error: '결제 내역을 찾을 수 없습니다.' });
+        res.json({ message: '결제 내역이 삭제되었습니다.' });
+    } catch (error) {
+        res.status(500).json({ error: '결제 내역 삭제 중 오류가 발생했습니다.' });
+    }
+});
+
+// 구독 보고서 (비용 요약)
+app.get('/api/reports/cost-summary', authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT
+                COUNT(*) as total_subscriptions,
+                COUNT(*) FILTER (WHERE status = 'active') as active_count,
+                COUNT(*) FILTER (WHERE status = 'expired') as expired_count,
+                COALESCE(SUM(amount) FILTER (WHERE status = 'active' AND billing_cycle = 'monthly'), 0) as monthly_cost,
+                COALESCE(SUM(amount) FILTER (WHERE status = 'active' AND billing_cycle = 'yearly'), 0) as yearly_cost,
+                COALESCE(SUM(amount) FILTER (WHERE status = 'active' AND billing_cycle = 'quarterly'), 0) as quarterly_cost,
+                COALESCE(SUM(total_licenses) FILTER (WHERE status = 'active'), 0) as total_licenses,
+                COALESCE(SUM(used_licenses) FILTER (WHERE status = 'active'), 0) as used_licenses
+            FROM subscriptions
+        `);
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Cost summary error:', error);
+        res.status(500).json({ error: '비용 보고서 조회 중 오류가 발생했습니다.' });
+    }
+});
+
+// 갱신 예정 구독
+app.get('/api/reports/upcoming-renewals', authenticateToken, async (req, res) => {
+    try {
+        const days = parseInt(req.query.days) || 90;
+        const result = await pool.query(`
+            SELECT s.*, sw.name as software_name
+            FROM subscriptions s
+            LEFT JOIN software sw ON s.software_id = sw.id
+            WHERE s.status = 'active'
+              AND s.renewal_date IS NOT NULL
+              AND s.renewal_date <= CURRENT_DATE + INTERVAL '1 day' * $1
+            ORDER BY s.renewal_date ASC
+        `, [days]);
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: '갱신 예정 조회 중 오류가 발생했습니다.' });
     }
 });
 

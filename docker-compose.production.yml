@@ -49,6 +49,7 @@ services:
       - LDAP_GROUP_FILTER=${LDAP_GROUP_FILTER}
       - LDAP_USER_FULLNAME_ATTR=${LDAP_USER_FULLNAME_ATTR}
       - LDAP_USER_EMAIL_ATTR=${LDAP_USER_EMAIL_ATTR}
+      - ONESEARCH_JWT_SECRET=${ONESEARCH_JWT_SECRET:-}
     volumes:
       - ./backend/backup:/backup
       - api_logs:/app/logs
@@ -74,6 +75,7 @@ services:
       - TZ=Asia/Seoul
       - API_BASE_URL=http://backend:3000/api
     volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf:ro
       - ./logs:/var/log/nginx
     networks:
       - it-inventory-network

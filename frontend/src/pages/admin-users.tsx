@@ -2,7 +2,6 @@ import { FileSpreadsheet, Plus, RefreshCw, Search, ShieldCheck } from "lucide-re
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { AppHeader } from "@/components/layout/app-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -36,8 +35,6 @@ export function AdminUsersPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newRole, setNewRole] = useState("");
   const [form, setForm] = useState({ username: "", password: "", full_name: "", email: "", role: "" });
-  const [syncing, setSyncing] = useState(false);
-
   const load = () => api.users.list().then(setData);
   useEffect(() => { load(); }, []);
 
@@ -81,16 +78,54 @@ export function AdminUsersPage() {
     }
   };
 
-  const handleSync = async () => {
-    setSyncing(true);
+  const [googleSyncing, setGoogleSyncing] = useState(false);
+
+  const handleGoogleSync = async () => {
+    setGoogleSyncing(true);
     try {
-      await api.users.syncLdap();
-      toast.success("LDAP 동기화 완료");
+      const { clientId } = await api.users.googleConfig();
+      if (!clientId) {
+        toast.error("Google OAuth가 설정되지 않았습니다.");
+        setGoogleSyncing(false);
+        return;
+      }
+
+      // GIS 스크립트 로드
+      if (!document.getElementById("gsi-script")) {
+        await new Promise<void>((resolve, reject) => {
+          const s = document.createElement("script");
+          s.id = "gsi-script";
+          s.src = "https://accounts.google.com/gsi/client";
+          s.onload = () => resolve();
+          s.onerror = () => reject(new Error("Google 스크립트 로드 실패"));
+          document.head.appendChild(s);
+        });
+      }
+
+      const g = (window as unknown as Record<string, unknown>).google as { accounts: { oauth2: { initCodeClient: (cfg: Record<string, unknown>) => { requestCode: () => void } } } };
+
+      const code = await new Promise<string>((resolve, reject) => {
+        const client = g.accounts.oauth2.initCodeClient({
+          client_id: clientId,
+          scope: "https://www.googleapis.com/auth/admin.directory.user.readonly",
+          ux_mode: "popup",
+          callback: (resp: { code?: string; error?: string }) => {
+            if (resp.error) reject(new Error(resp.error));
+            else if (resp.code) resolve(resp.code);
+            else reject(new Error("인가 코드를 받지 못했습니다."));
+          },
+        });
+        client.requestCode();
+      });
+
+      const result = await api.users.syncGoogle(code);
+      const r = result as Record<string, number>;
+      toast.success(`Google 동기화 완료 (비활성: ${r.deactivated ?? 0}, 재활성: ${r.reactivated ?? 0}, 자산알림: ${r.assetAlerts ?? 0})`);
       load();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "LDAP 동기화 실패");
+      toast.error(e instanceof Error ? e.message : "Google Workspace 동기화 실패");
     } finally {
-      setSyncing(false);
+      setGoogleSyncing(false);
     }
   };
 
@@ -104,8 +139,8 @@ export function AdminUsersPage() {
 
   return (
     <>
-      <AppHeader title="사용자 관리" />
-      <div className="flex-1 space-y-4 p-6">
+      <h1 className="text-lg font-semibold text-foreground">사용자 관리</h1>
+      <div className="mt-6 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <div className="relative">
@@ -124,8 +159,8 @@ export function AdminUsersPage() {
             <Button variant="outline" size="sm" onClick={() => exportToExcel("users")}>
               <FileSpreadsheet className="mr-1.5 h-4 w-4" /> 엑셀 내보내기
             </Button>
-            <Button variant="outline" size="sm" onClick={handleSync} disabled={syncing}>
-              <RefreshCw className={`mr-1.5 h-4 w-4 ${syncing ? "animate-spin" : ""}`} /> LDAP 동기화
+            <Button variant="outline" size="sm" onClick={handleGoogleSync} disabled={googleSyncing}>
+              <RefreshCw className={`mr-1.5 h-4 w-4 ${googleSyncing ? "animate-spin" : ""}`} /> Google 동기화
             </Button>
             <Button size="sm" onClick={() => { setForm({ username: "", password: "", full_name: "", email: "", role: "" }); setModalOpen(true); }}>
               <Plus className="mr-1.5 h-4 w-4" /> 신규 사용자

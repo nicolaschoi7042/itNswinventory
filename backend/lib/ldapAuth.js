@@ -1,5 +1,11 @@
 const { Client } = require('ldapts');
 
+// ldapts returns empty attributes as [] (truthy in JS).
+// pg driver converts [] to PostgreSQL '{}'. Extract a real string or ''.
+const ldapStr = v =>
+    (typeof v === 'string' && v) ? v :
+    (Array.isArray(v) && v.length > 0) ? String(v[0]) : '';
+
 class LDAPAuth {
     constructor(config) {
         this.config = {
@@ -95,7 +101,7 @@ class LDAPAuth {
                 const authenticatedUser = {
                     username: user.uid || user.cn || username,
                     dn: userDN,
-                    fullName: user.displayName || `${user.givenName || ''} ${user.sn || ''}`.trim() || user[this.config.userFullnameAttr] || user.cn,
+                    fullName: ldapStr(user.displayName) || `${ldapStr(user.givenName)} ${ldapStr(user.sn)}`.trim() || ldapStr(user[this.config.userFullnameAttr]) || ldapStr(user.cn),
                     email: user[this.config.userEmailAttr] || '',
                     groups: groups,
                     role: this.determineRole(groups),
@@ -252,7 +258,7 @@ class LDAPAuth {
                     const username = entry.sAMAccountName || entry.uid || entry.cn;
 
                     // 전체 이름 결정 (우선순위: displayName > givenName+sn > cn)
-                    const fullName = entry.displayName || `${entry.givenName || ''} ${entry.sn || ''}`.trim() || entry[this.config.userFullnameAttr] || entry.cn || username;
+                    const fullName = ldapStr(entry.displayName) || `${ldapStr(entry.givenName)} ${ldapStr(entry.sn)}`.trim() || ldapStr(entry[this.config.userFullnameAttr]) || ldapStr(entry.cn) || username;
                     
                     // 이메일 결정
                     const email = entry[this.config.userEmailAttr] || entry.mail || entry.userPrincipalName || '';

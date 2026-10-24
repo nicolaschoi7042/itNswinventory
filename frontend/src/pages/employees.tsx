@@ -2,7 +2,6 @@ import { FileSpreadsheet, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { AppHeader } from "@/components/layout/app-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -77,8 +76,8 @@ export function EmployeesPage() {
 
   return (
     <>
-      <AppHeader title="임직원 관리" />
-      <div className="flex-1 space-y-4 p-6">
+      <h1 className="text-lg font-semibold text-foreground">임직원 관리</h1>
+      <div className="mt-6 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <div className="relative">

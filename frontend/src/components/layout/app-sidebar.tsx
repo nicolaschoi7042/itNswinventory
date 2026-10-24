@@ -1,10 +1,12 @@
 import {
   ClipboardList,
+  CreditCard,
   HardDrive,
   LayoutDashboard,
   LogOut,
   Monitor,
   Package,
+  Receipt,
   Settings,
   Users,
 } from "lucide-react";
@@ -39,13 +41,15 @@ const mainMenu = [
   { icon: Monitor, label: "하드웨어 자산", href: "/hardware" },
   { icon: Package, label: "소프트웨어", href: "/software" },
   { icon: ClipboardList, label: "자산 할당", href: "/assignments" },
+  { icon: CreditCard, label: "구독/계약", href: "/subscriptions" },
+  { icon: Receipt, label: "결제 내역", href: "/payments" },
 ];
 
 const adminMenu = [
   { icon: Settings, label: "사용자 관리", href: "/admin/users" },
 ];
 
-function NavLink({ item, isActive }: { item: typeof mainMenu[0]; isActive: boolean }) {
+function NavLink({ item, isActive }: { item: (typeof mainMenu)[number]; isActive: boolean }) {
   return (
     <SidebarMenuItem>
       <Link
