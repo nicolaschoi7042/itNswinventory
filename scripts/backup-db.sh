@@ -51,14 +51,27 @@ print_info() {
 # 메인 실행
 print_header
 
-# 1. Docker 컨테이너 확인
-print_info "Docker 컨테이너 상태 확인 중..."
-if ! docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
-    print_error "데이터베이스 컨테이너가 실행 중이지 않습니다: ${CONTAINER_NAME}"
-    print_info "다음 명령어로 컨테이너를 시작하세요: docker compose up -d it-inventory-db"
-    exit 1
+# 1. 데이터베이스 확인
+# 백업 스케줄러 컨테이너(it-backup-scheduler-prod)에는 docker 가 없어 docker exec 가 늘 실패했다.
+# 그때는 같은 네트워크의 DB 컨테이너 이름으로 직접 붙는다.
+if command -v docker >/dev/null 2>&1; then
+    db_run() { docker exec "${CONTAINER_NAME}" "$@"; }
+    print_info "Docker 컨테이너 상태 확인 중..."
+    if ! docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+        print_error "데이터베이스 컨테이너가 실행 중이지 않습니다: ${CONTAINER_NAME}"
+        print_info "다음 명령어로 컨테이너를 시작하세요: docker compose up -d it-inventory-db"
+        exit 1
+    fi
+else
+    export PGPASSWORD="${DB_PASSWORD:?DB_PASSWORD 환경 변수가 없습니다}"
+    db_run() { "$1" -h "${CONTAINER_NAME}" "${@:2}"; }
+    print_info "데이터베이스 접속 확인 중: ${CONTAINER_NAME}"
+    if ! pg_isready -h "${CONTAINER_NAME}" -U "${DB_USER}" -d "${DB_NAME}" >/dev/null; then
+        print_error "데이터베이스에 접속할 수 없습니다: ${CONTAINER_NAME}"
+        exit 1
+    fi
 fi
-print_success "데이터베이스 컨테이너 실행 중"
+print_success "데이터베이스 실행 중"
 
 # 2. 백업 디렉토리 생성
 print_info "백업 디렉토리 생성: ${BACKUP_DIR}"
@@ -69,7 +82,7 @@ print_success "백업 디렉토리 준비 완료"
 print_info "데이터베이스 백업 시작..."
 print_info "백업 파일: ${BACKUP_PATH}"
 
-if docker exec "${CONTAINER_NAME}" pg_dump -U "${DB_USER}" -d "${DB_NAME}" > "${BACKUP_PATH}"; then
+if db_run pg_dump -U "${DB_USER}" -d "${DB_NAME}" > "${BACKUP_PATH}"; then
     print_success "데이터베이스 백업 완료"
 else
     print_error "데이터베이스 백업 실패"
@@ -105,7 +118,7 @@ fi
 
 # 6. 테이블별 레코드 수 출력
 print_info "데이터베이스 통계:"
-docker exec "${CONTAINER_NAME}" psql -U "${DB_USER}" -d "${DB_NAME}" -t -c "
+db_run psql -U "${DB_USER}" -d "${DB_NAME}" -t -c "
 SELECT
     '  - ' || table_name || ': ' || count || ' 레코드'
 FROM (
@@ -124,9 +137,13 @@ FROM (
 "
 
 # 7. 압축 옵션
-echo ""
-read -p "백업 파일을 압축하시겠습니까? (y/N): " -n 1 -r
-echo ""
+# cron 에서는 입력이 없어 read 가 실패하고 set -e 로 스크립트가 실패 종료된다. 터미널에서만 묻는다.
+REPLY=""
+if [ -t 0 ]; then
+    echo ""
+    read -p "백업 파일을 압축하시겠습니까? (y/N): " -n 1 -r
+    echo ""
+fi
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     print_info "백업 파일 압축 중..."
     gzip "${BACKUP_PATH}"
